@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lavnor</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1e2640;--bg2:#263050;--bg3:#2f3a5c;
+  --steel:#5b8fa8;--gold:#c4974a;
+  --gold-dim:rgba(196,151,74,0.6);--gold-faint:rgba(196,151,74,0.13);
+  --steel-dim:rgba(91,143,168,0.6);--steel-faint:rgba(91,143,168,0.13);
+  --text:#edf0f5;--text-sec:rgba(237,240,245,0.72);--text-ter:rgba(237,240,245,0.38);
+  --border:rgba(237,240,245,0.1);--border2:rgba(91,143,168,0.22);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);font-family:'Open Sans',sans-serif;color:var(--text);overflow:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='36'%3E%3Ctext x='4' y='22' font-family='Georgia' font-size='6.5' fill='%23edf0f5' opacity='0.022' letter-spacing='3'%3EHAVNOR%3C/text%3E%3C/svg%3E")}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.o1{width:600px;height:600px;background:radial-gradient(circle,rgba(91,143,168,0.16) 0%,transparent 68%);top:-180px;left:-130px}
+.o2{width:440px;height:440px;background:radial-gradient(circle,rgba(196,151,74,0.11) 0%,transparent 68%);bottom:-110px;right:-90px}
+.o3{width:340px;height:340px;background:radial-gradient(circle,rgba(47,58,92,0.6) 0%,transparent 68%);bottom:130px;left:10px}
+.page{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow-y:auto;transition:opacity .32s ease,transform .32s ease}
+.page.hidden{opacity:0;pointer-events:none;transform:translateX(28px)}
+.footer{width:100%;padding:16px;display:flex;justify-content:center;align-items:center;gap:16px;
+  border-top:.5px solid var(--border);flex-shrink:0}
+.f-brand{font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:400;letter-spacing:.42em;text-transform:uppercase;color:var(--gold-dim)}
+.f-dash{width:28px;height:.5px;background:var(--steel-dim)}
+.f-name{font-size:10px;font-weight:300;letter-spacing:.28em;text-transform:uppercase;color:var(--text-ter)}
+.back-btn{position:fixed;top:28px;left:24px;z-index:20;background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;gap:9px;color:var(--steel-dim);
+  font-family:'Open Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;transition:color .2s}
+.back-btn:hover{color:var(--gold)}
+
+/* DRIVE STATUS BAR */
+.drive-bar{position:fixed;top:0;left:0;right:0;z-index:50;
+  padding:8px 20px;display:flex;align-items:center;justify-content:space-between;
+  background:rgba(30,38,64,0.92);border-bottom:.5px solid var(--border);
+  font-size:11px;font-weight:400;letter-spacing:.08em;backdrop-filter:blur(8px)}
+.drive-status{display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:#4ade80}
+.dot-warn{background:#facc15}
+.dot-err{background:#f87171}
+.drive-btns{display:flex;gap:8px}
+.dbtn{padding:5px 12px;border-radius:8px;font-family:'Open Sans',sans-serif;font-size:10px;font-weight:600;
+  letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s}
+.dbtn-login{background:rgba(91,143,168,.25);color:var(--steel);border:.5px solid rgba(91,143,168,.4)}
+.dbtn-login:hover{background:rgba(91,143,168,.4)}
+.dbtn-save{background:rgba(196,151,74,.22);color:var(--gold);border:.5px solid rgba(196,151,74,.4)}
+.dbtn-save:hover{background:rgba(196,151,74,.38)}
+.dbtn-logout{background:rgba(237,240,245,.08);color:var(--text-ter);border:.5px solid var(--border)}
+.dbtn-logout:hover{background:rgba(237,240,245,.15)}
+
+/* HOME */
+.home-inner{display:flex;flex-direction:column;align-items:center;width:100%;flex:1;justify-content:center;padding:110px 24px 40px}
+.home-logo{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:72px}
+.logo-text{font-family:'Cormorant Garamond',serif;font-size:128px;font-weight:700;
+  letter-spacing:.5em;text-transform:uppercase;
+  background:linear-gradient(160deg,#ffffff 0%,#f0f4ff 40%,#c8dff0 80%,#edf0f5 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 2px 24px rgba(255,255,255,0.18));line-height:1}
+.logo-sub{font-size:10px;font-weight:300;letter-spacing:.5em;text-transform:uppercase;color:var(--text-ter)}
+.home-actions{display:flex;gap:80px;align-items:center}
+.h-btn{display:flex;flex-direction:column;align-items:center;gap:22px;cursor:pointer;background:none;border:none;padding:0}
+.glass-icon{width:144px;height:144px;border-radius:36px;display:flex;align-items:center;justify-content:center;
+  position:relative;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.glass-icon::before{content:'';position:absolute;top:2px;left:7px;right:7px;height:44%;
+  border-radius:28px 28px 60% 60%;
+  background:linear-gradient(180deg,rgba(255,255,255,.2) 0%,rgba(255,255,255,.05) 60%,transparent 100%);
+  pointer-events:none;z-index:3}
+.glass-icon::after{content:'';position:absolute;bottom:5px;left:14px;right:14px;height:18%;
+  border-radius:50% 50% 22px 22px;
+  background:linear-gradient(0deg,transparent 0%,rgba(255,255,255,.07) 100%);
+  pointer-events:none;z-index:3}
+.gi-steel{background:linear-gradient(140deg,rgba(91,143,168,.28) 0%,rgba(91,143,168,.14) 40%,rgba(91,143,168,.05) 100%);
+  border-top:1px solid rgba(255,255,255,.26);border-left:1px solid rgba(255,255,255,.15);
+  border-right:1px solid rgba(91,143,168,.14);border-bottom:1px solid rgba(91,143,168,.1);
+  box-shadow:12px 24px 60px rgba(91,143,168,.2),4px 8px 20px rgba(91,143,168,.12),inset 0 1px 0 rgba(255,255,255,.22)}
+.gi-gold{background:linear-gradient(140deg,rgba(196,151,74,.28) 0%,rgba(196,151,74,.14) 40%,rgba(196,151,74,.05) 100%);
+  border-top:1px solid rgba(255,255,255,.26);border-left:1px solid rgba(255,255,255,.15);
+  border-right:1px solid rgba(196,151,74,.14);border-bottom:1px solid rgba(196,151,74,.1);
+  box-shadow:12px 24px 60px rgba(196,151,74,.18),4px 8px 20px rgba(196,151,74,.1),inset 0 1px 0 rgba(255,255,255,.22)}
+.h-btn:hover .glass-icon{transform:scale(1.1)}
+.h-label{font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--text-sec)}
+.h-sep{width:.5px;height:64px;background:linear-gradient(to bottom,transparent,rgba(91,143,168,.35),transparent)}
+
+/* INNER */
+.inner{width:100%;flex:1;padding:90px 28px 24px;display:flex;flex-direction:column;align-items:center;overflow-y:auto}
+.pg-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  background:linear-gradient(160deg,#fff 0%,#edf0f5 28%,#5b8fa8 62%,#c4974a 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center}
+.pg-sub{font-size:11px;font-weight:400;letter-spacing:.38em;text-transform:uppercase;color:var(--text-ter);text-align:center;margin-top:7px;margin-bottom:28px}
+
+.card{background:linear-gradient(145deg,rgba(47,58,92,.88) 0%,rgba(38,48,80,.94) 100%);
+  border-top:1px solid rgba(255,255,255,.15);border-left:1px solid rgba(255,255,255,.1);
+  border-right:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);
+  border-radius:20px;padding:28px;
+  box-shadow:0 8px 40px rgba(0,0,0,.3),0 2px 8px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.12)}
+
+.sec-lbl{font-size:10px;font-weight:700;letter-spacing:.38em;text-transform:uppercase;color:var(--steel);margin-bottom:16px}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.f-grid.one{grid-template-columns:1fr}
+.f-wrap{display:flex;flex-direction:column;gap:6px}
+.f-lbl{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--text-sec)}
+.f-inp{width:100%;padding:14px 16px;
+  background:rgba(20,26,46,.65);
+  border-top:1px solid rgba(255,255,255,.1);border-left:1px solid rgba(255,255,255,.07);
+  border-right:1px solid rgba(0,0,0,.18);border-bottom:1px solid rgba(0,0,0,.22);
+  border-radius:11px;color:var(--text);
+  font-family:'Open Sans',sans-serif;font-size:15px;font-weight:400;
+  outline:none;transition:all .2s;box-shadow:inset 0 2px 4px rgba(0,0,0,.18)}
+.f-inp::placeholder{color:rgba(237,240,245,.2)}
+.f-inp:focus{border-top-color:rgba(91,143,168,.55);border-left-color:rgba(91,143,168,.35);
+  background:rgba(20,26,46,.85);box-shadow:inset 0 2px 4px rgba(0,0,0,.18),0 0 0 3px rgba(91,143,168,.12)}
+.sep-line{width:100%;height:.5px;background:linear-gradient(to right,transparent,rgba(91,143,168,.25),transparent);margin:22px 0}
+.btn-cta{width:100%;margin-top:10px;padding:16px;
+  background:linear-gradient(135deg,#d4a455 0%,#c4974a 55%,#b08038 100%);
+  border-top:1px solid rgba(255,255,255,.22);border-left:1px solid rgba(255,255,255,.14);
+  border-right:1px solid rgba(0,0,0,.08);border-bottom:1px solid rgba(0,0,0,.12);
+  border-radius:13px;color:#fff;
+  font-family:'Open Sans',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:.36em;text-transform:uppercase;cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 18px rgba(196,151,74,.35),inset 0 1px 0 rgba(255,255,255,.18)}
+.btn-cta:hover{background:linear-gradient(135deg,#ddb060 0%,#cca050 55%,#ba8840 100%);
+  box-shadow:0 6px 24px rgba(196,151,74,.45);transform:translateY(-1px)}
+.msg{font-size:12px;font-weight:400;letter-spacing:.1em;text-align:center;margin-top:12px;min-height:18px;transition:opacity .3s;opacity:0}
+.msg.show{opacity:1}
+.msg.ok{color:#7ec8a8}
+.msg.err{color:#fc8181}
+
+.btn-search-go{width:100%;margin-top:14px;padding:16px;
+  background:linear-gradient(135deg,rgba(91,143,168,.35) 0%,rgba(91,143,168,.2) 100%);
+  border-top:1px solid rgba(255,255,255,.18);border-left:1px solid rgba(255,255,255,.1);
+  border-right:1px solid rgba(91,143,168,.12);border-bottom:1px solid rgba(91,143,168,.08);
+  border-radius:13px;color:var(--text);
+  font-family:'Open Sans',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:.36em;text-transform:uppercase;cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 16px rgba(91,143,168,.18),inset 0 1px 0 rgba(255,255,255,.14)}
+.btn-search-go:hover{background:linear-gradient(135deg,rgba(91,143,168,.5) 0%,rgba(91,143,168,.3) 100%);transform:translateY(-1px)}
+.res-card{margin-top:11px;padding:18px 22px;
+  background:linear-gradient(145deg,rgba(47,58,92,.85) 0%,rgba(38,48,80,.9) 100%);
+  border-top:1px solid rgba(255,255,255,.12);border-left:1px solid rgba(255,255,255,.07);
+  border-right:1px solid rgba(0,0,0,.12);border-bottom:1px solid rgba(0,0,0,.18);
+  border-radius:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.res-card:hover{border-top-color:rgba(196,151,74,.38);transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.28)}
+.res-name{font-size:16px;font-weight:600;color:var(--text)}
+.res-meta{font-size:12px;font-weight:400;color:var(--steel-dim);margin-top:4px;letter-spacing:.04em}
+.no-res{text-align:center;padding:30px;font-size:12px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;color:var(--text-ter)}
+
+/* DETAIL */
+.detail-wrap{width:100%;max-width:1100px;display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+.left-col{display:flex;flex-direction:column;gap:16px}
+.d-item{display:flex;flex-direction:column;gap:5px;padding:13px 15px;
+  background:rgba(20,26,46,.5);
+  border-top:1px solid rgba(255,255,255,.09);border-left:1px solid rgba(255,255,255,.06);
+  border-right:1px solid rgba(0,0,0,.14);border-bottom:1px solid rgba(0,0,0,.18);border-radius:11px}
+.d-lbl{font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--steel)}
+.d-val{font-size:14px;font-weight:500;color:var(--text);line-height:1.4}
+.note-area{width:100%;padding:13px 15px;min-height:110px;resize:vertical;
+  background:rgba(20,26,46,.55);
+  border-top:1px solid rgba(255,255,255,.1);border-left:1px solid rgba(255,255,255,.07);
+  border-right:1px solid rgba(0,0,0,.16);border-bottom:1px solid rgba(0,0,0,.22);
+  border-radius:11px;color:var(--text);
+  font-family:'Open Sans',sans-serif;font-size:14px;font-weight:400;line-height:1.6;
+  outline:none;transition:all .2s;box-shadow:inset 0 2px 4px rgba(0,0,0,.18)}
+.note-area::placeholder{color:rgba(237,240,245,.2)}
+.note-area:focus{border-top-color:rgba(91,143,168,.5);border-left-color:rgba(91,143,168,.3);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.18),0 0 0 3px rgba(91,143,168,.1)}
+.btn-note-save{width:100%;padding:13px;margin-top:8px;
+  background:linear-gradient(135deg,rgba(91,143,168,.32) 0%,rgba(91,143,168,.18) 100%);
+  border-top:1px solid rgba(255,255,255,.16);border-left:1px solid rgba(255,255,255,.1);
+  border-right:1px solid rgba(91,143,168,.1);border-bottom:1px solid rgba(91,143,168,.07);
+  border-radius:11px;color:var(--text);
+  font-family:'Open Sans',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:.32em;text-transform:uppercase;cursor:pointer;transition:all .2s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.btn-note-save:hover{background:linear-gradient(135deg,rgba(91,143,168,.48) 0%,rgba(91,143,168,.28) 100%);transform:translateY(-1px)}
+.right-col{display:flex;flex-direction:column}
+.billing-card{background:linear-gradient(145deg,rgba(47,58,92,.88) 0%,rgba(38,48,80,.94) 100%);
+  border-top:1px solid rgba(255,255,255,.15);border-left:1px solid rgba(255,255,255,.1);
+  border-right:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);
+  border-radius:20px;padding:24px;
+  box-shadow:0 8px 40px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.12)}
+.bill-title{font-size:10px;font-weight:700;letter-spacing:.38em;text-transform:uppercase;color:var(--steel);margin-bottom:16px}
+.bill-table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text-ter);
+  padding:9px 10px;text-align:left;border-bottom:.5px solid var(--border);white-space:nowrap}
+td{padding:11px 10px;font-size:13px;font-weight:400;color:var(--text-sec);
+  border-bottom:.5px solid var(--border);vertical-align:middle}
+td.num{color:var(--text-ter);font-size:11px;width:30px;text-align:center}
+td.calc{color:var(--steel);font-weight:500}
+td.net{color:var(--gold);font-weight:700}
+.t-inp{padding:9px 11px;
+  background:rgba(20,26,46,.65);
+  border-top:1px solid rgba(255,255,255,.09);border-left:1px solid rgba(255,255,255,.06);
+  border-right:1px solid rgba(0,0,0,.16);border-bottom:1px solid rgba(0,0,0,.2);
+  border-radius:9px;color:var(--text);
+  font-family:'Open Sans',sans-serif;font-size:13px;font-weight:400;
+  outline:none;width:100%;transition:all .2s;box-shadow:inset 0 1px 3px rgba(0,0,0,.15)}
+.t-inp:focus{border-top-color:rgba(91,143,168,.5);border-left-color:rgba(91,143,168,.3);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.15),0 0 0 2px rgba(91,143,168,.1)}
+.t-inp[type=date]{min-width:128px}
+.t-inp[type=number]{min-width:88px}
+.btn-row-save{padding:9px 14px;
+  background:linear-gradient(135deg,#d4a455 0%,#c4974a 55%,#b08038 100%);
+  border-top:1px solid rgba(255,255,255,.2);border-left:1px solid rgba(255,255,255,.12);
+  border-right:1px solid rgba(0,0,0,.08);border-bottom:1px solid rgba(0,0,0,.12);
+  border-radius:9px;color:#fff;
+  font-family:'Open Sans',sans-serif;font-size:9.5px;font-weight:700;
+  letter-spacing:.24em;text-transform:uppercase;cursor:pointer;transition:all .2s;
+  box-shadow:0 2px 8px rgba(196,151,74,.28),inset 0 1px 0 rgba(255,255,255,.16);white-space:nowrap}
+.btn-row-save:hover{background:linear-gradient(135deg,#ddb060 0%,#cca050 100%);transform:translateY(-1px)}
+tr.total-row td{border-top:.5px solid rgba(196,151,74,.2);border-bottom:none;
+  padding-top:13px;font-size:13px;font-weight:700;color:var(--gold-dim)}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+
+<!-- DRIVE STATUS BAR -->
+<div class="drive-bar" id="drive-bar">
+  <div class="drive-status">
+    <div class="dot dot-warn" id="drive-dot"></div>
+    <span id="drive-label" style="color:var(--text-sec)">Google Drive – niezalogowany</span>
+  </div>
+  <div class="drive-btns">
+    <button class="dbtn dbtn-save" id="btn-drive-save" onclick="driveSave()" style="display:none">Zapisz w Drive</button>
+    <button class="dbtn dbtn-login" id="btn-drive-login" onclick="driveLogin()">Zaloguj z Google</button>
+    <button class="dbtn dbtn-logout" id="btn-drive-logout" onclick="driveLogout()" style="display:none">Wyloguj</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="page" id="pg-home">
+  <div class="home-inner">
+    <div class="home-logo">
+      <span class="logo-text">Lavnor</span>
+      <span class="logo-sub">System zarządzania klientami</span>
+    </div>
+    <div class="home-actions">
+      <button class="h-btn" onclick="nav('pg-search')">
+        <div class="glass-icon gi-steel">
+          <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style="position:relative;z-index:1">
+            <defs>
+              <radialGradient id="rg1" cx="33%" cy="27%" r="70%">
+                <stop offset="0%" stop-color="#fff" stop-opacity=".95"/>
+                <stop offset="45%" stop-color="#a8c4d8" stop-opacity=".9"/>
+                <stop offset="100%" stop-color="#5b8fa8" stop-opacity=".75"/>
+              </radialGradient>
+              <filter id="f1"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#5b8fa8" flood-opacity=".5"/></filter>
+            </defs>
+            <circle cx="30" cy="30" r="18" stroke="url(#rg1)" stroke-width="3.4" fill="none" filter="url(#f1)"/>
+            <circle cx="30" cy="30" r="11" stroke="rgba(91,143,168,.3)" stroke-width=".9" fill="none"/>
+            <line x1="43" y1="43" x2="60" y2="60" stroke="url(#rg1)" stroke-width="3.4" stroke-linecap="round" filter="url(#f1)"/>
+            <circle cx="23" cy="22" r="5" fill="rgba(255,255,255,.3)"/>
+          </svg>
+        </div>
+        <span class="h-label">Wyszukaj klienta</span>
+      </button>
+      <div class="h-sep"></div>
+      <button class="h-btn" onclick="nav('pg-add')">
+        <div class="glass-icon gi-gold">
+          <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style="position:relative;z-index:1">
+            <defs>
+              <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+                <stop offset="40%" stop-color="#ffe8c0" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#c4974a" stop-opacity="0.85"/>
+              </linearGradient>
+              <filter id="f2"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#c4974a" flood-opacity=".6"/></filter>
+            </defs>
+            <rect x="16" y="31" width="40" height="10" rx="5" fill="url(#pg)" filter="url(#f2)"/>
+            <rect x="31" y="16" width="10" height="40" rx="5" fill="url(#pg)" filter="url(#f2)"/>
+            <circle cx="25" cy="23" r="4" fill="rgba(255,255,255,.35)"/>
+          </svg>
+        </div>
+        <span class="h-label">Dodaj klienta</span>
+      </button>
+    </div>
+  </div>
+  <div class="footer">
+    <span class="f-brand">Lavnor</span><div class="f-dash"></div><span class="f-name">Michał Haraźny</span>
+  </div>
+</div>
+
+<!-- ADD -->
+<div class="page hidden" id="pg-add">
+  <button class="back-btn" onclick="nav('pg-home')">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><line x1="14" y1="9" x2="4" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><polyline points="7.5,5.5 4,9 7.5,12.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    Powrót
+  </button>
+  <div class="inner">
+    <div class="pg-title">Dodaj klienta</div>
+    <div class="pg-sub">Uzupełnij dane nowego klienta</div>
+    <div class="card" style="width:100%;max-width:640px">
+      <div class="sec-lbl">Dane osobowe</div>
+      <div class="f-grid">
+        <div class="f-wrap"><label class="f-lbl">Imię</label><input class="f-inp" id="a-imie" placeholder="Jan"></div>
+        <div class="f-wrap"><label class="f-lbl">Nazwisko</label><input class="f-inp" id="a-nazwisko" placeholder="Kowalski"></div>
+      </div>
+      <div class="f-grid">
+        <div class="f-wrap"><label class="f-lbl">Fødselsnummer <small style="color:var(--text-ter)">(11 cyfr)</small></label>
+          <input class="f-inp" id="a-fodsel" placeholder="01019912345" maxlength="11" oninput="onlyDigits(this)"></div>
+        <div class="f-wrap"><label class="f-lbl">D-nummer <small style="color:var(--text-ter)">(11 cyfr)</small></label>
+          <input class="f-inp" id="a-dnum" placeholder="41019912345" maxlength="11" oninput="onlyDigits(this)"></div>
+      </div>
+      <div class="f-grid one">
+        <div class="f-wrap"><label class="f-lbl">PESEL <small style="color:var(--text-ter)">(11 cyfr)</small></label>
+          <input class="f-inp" id="a-pesel" placeholder="99010112345" maxlength="11" oninput="onlyDigits(this)"></div>
+      </div>
+      <div class="sep-line"></div>
+      <div class="sec-lbl">Kontakt</div>
+      <div class="f-grid one">
+        <div class="f-wrap"><label class="f-lbl">E-mail</label><input class="f-inp" id="a-email" type="email" placeholder="jan.kowalski@example.com"></div>
+      </div>
+      <div class="f-grid">
+        <div class="f-wrap"><label class="f-lbl">Telefon – Polska</label><input class="f-inp" id="a-tel-pl" placeholder="+48 500 000 000"></div>
+        <div class="f-wrap"><label class="f-lbl">Telefon – Norwegia</label><input class="f-inp" id="a-tel-no" placeholder="+47 900 00 000"></div>
+      </div>
+      <div class="sep-line"></div>
+      <div class="sec-lbl">Dostęp</div>
+      <div class="f-grid one">
+        <div class="f-wrap"><label class="f-lbl">Hasło</label>
+          <input class="f-inp" id="a-haslo" type="text" placeholder="wpisz hasło" autocomplete="off"></div>
+      </div>
+      <button class="btn-cta" onclick="saveClient()">Zapisz klienta</button>
+      <div class="msg" id="add-msg"></div>
+    </div>
+  </div>
+  <div class="footer"><span class="f-brand">Lavnor</span><div class="f-dash"></div><span class="f-name">Michał Haraźny</span></div>
+</div>
+
+<!-- SEARCH -->
+<div class="page hidden" id="pg-search">
+  <button class="back-btn" onclick="nav('pg-home')">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><line x1="14" y1="9" x2="4" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><polyline points="7.5,5.5 4,9 7.5,12.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    Powrót
+  </button>
+  <div class="inner">
+    <div class="pg-title">Wyszukaj klienta</div>
+    <div class="pg-sub">Podaj dane identyfikacyjne</div>
+    <div class="card" style="width:100%;max-width:560px">
+      <div class="f-grid one" style="margin-bottom:16px">
+        <div class="f-wrap"><label class="f-lbl">Nazwisko</label>
+          <input class="f-inp" id="q-naz" placeholder="np. Kowalski" oninput="liveSearch()"></div>
+      </div>
+      <div class="f-grid one">
+        <div class="f-wrap"><label class="f-lbl">Fødselsnummer / PESEL / D-nummer</label>
+          <input class="f-inp" id="q-id" placeholder="numer identyfikacyjny" maxlength="11" oninput="liveSearch()"></div>
+      </div>
+      <button class="btn-search-go" onclick="liveSearch()">Szukaj</button>
+    </div>
+    <div id="search-results" style="width:100%;max-width:560px;margin-top:4px"></div>
+  </div>
+  <div class="footer"><span class="f-brand">Lavnor</span><div class="f-dash"></div><span class="f-name">Michał Haraźny</span></div>
+</div>
+
+<!-- DETAIL -->
+<div class="page hidden" id="pg-detail">
+  <button class="back-btn" onclick="nav('pg-search')">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><line x1="14" y1="9" x2="4" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><polyline points="7.5,5.5 4,9 7.5,12.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    Powrót
+  </button>
+  <div class="inner" id="detail-inner"></div>
+  <div class="footer"><span class="f-brand">Lavnor</span><div class="f-dash"></div><span class="f-name">Michał Haraźny</span></div>
+</div>
+
+<!-- GOOGLE API -->
+<script src="https://accounts.google.com/gsi/client" async></script>
+
+<script>
+// ══════════════════════════════════════════════════
+//  KONFIGURACJA GOOGLE DRIVE
+//  !! Wpisz swój Client ID z Google Cloud Console !!
+// ══════════════════════════════════════════════════
+const GOOGLE_CLIENT_ID = '428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
+const DRIVE_FILE_NAME  = 'lavnor_baza_klientow.json';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+
+let accessToken  = null;
+let driveFileId  = null;
+let syncPending  = false;
+
+// ── LOCAL DB ───────────────────────────────────────
+const DB_KEY = 'lavnor_v6';
+function loadDB(){ return JSON.parse(localStorage.getItem(DB_KEY)||'{"clients":[]}') }
+function saveDB(db){
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  if(accessToken) scheduleDriveSync();
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7) }
+
+// ── UI HELPERS ─────────────────────────────────────
+function onlyDigits(el){ el.value=el.value.replace(/\D/g,'') }
+function nav(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+function showMsg(elId,txt,type){
+  const el=document.getElementById(elId);
+  el.textContent=txt; el.className='msg '+type+' show';
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+function setDriveStatus(state, text){
+  const dot=document.getElementById('drive-dot');
+  const lbl=document.getElementById('drive-label');
+  const btnLogin=document.getElementById('btn-drive-login');
+  const btnSave=document.getElementById('btn-drive-save');
+  const btnOut=document.getElementById('btn-drive-logout');
+  dot.className='dot dot-'+(state==='ok'?'ok':state==='sync'?'warn':'warn');
+  lbl.textContent=text;
+  if(state==='ok'||state==='sync'){
+    btnLogin.style.display='none';
+    btnSave.style.display='inline-block';
+    btnOut.style.display='inline-block';
+  } else {
+    btnLogin.style.display='inline-block';
+    btnSave.style.display='none';
+    btnOut.style.display='none';
+  }
+}
+
+// ── GOOGLE AUTH ────────────────────────────────────
+function driveLogin(){
+  if(GOOGLE_CLIENT_ID==='WPISZ_TUTAJ_SWOJ_CLIENT_ID'){
+    alert('Skonfiguruj Client ID Google.\nPamiętaj o kroku konfiguracyjnym opisanym poniżej aplikacji.');
+    return;
+  }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: SCOPES,
+    callback:(resp)=>{
+      if(resp.error){ setDriveStatus('warn','Błąd logowania'); return; }
+      accessToken=resp.access_token;
+      localStorage.setItem('lavnor_gtoken', accessToken);
+      setDriveStatus('ok','Google Drive – zalogowany');
+      driveLoadOrCreate();
+    }
+  });
+  client.requestAccessToken();
+}
+function driveLogout(){
+  accessToken=null; driveFileId=null;
+  localStorage.removeItem('lavnor_gtoken');
+  setDriveStatus('warn','Google Drive – niezalogowany');
+}
+
+// ── DRIVE: LOAD OR CREATE FILE ─────────────────────
+async function driveLoadOrCreate(){
+  setDriveStatus('sync','Łączenie z Drive…');
+  try{
+    // Search in appDataFolder
+    const r = await fetch(
+      'https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%22'+DRIVE_FILE_NAME+'%22&fields=files(id,name)',
+      {headers:{Authorization:'Bearer '+accessToken}});
+    const data = await r.json();
+    if(data.files && data.files.length>0){
+      driveFileId = data.files[0].id;
+      await driveDownload();
+    } else {
+      await driveUploadNew();
+    }
+    setDriveStatus('ok','Google Drive – zsynchronizowano ✓');
+  } catch(e){
+    setDriveStatus('warn','Drive – błąd połączenia');
+  }
+}
+
+async function driveDownload(){
+  const r = await fetch(
+    'https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media',
+    {headers:{Authorization:'Bearer '+accessToken}});
+  const data = await r.json();
+  // Merge: Drive is source of truth
+  localStorage.setItem(DB_KEY, JSON.stringify(data));
+}
+
+async function driveUploadNew(){
+  const db = loadDB();
+  const meta = {name:DRIVE_FILE_NAME, parents:['appDataFolder']};
+  const body = new FormData();
+  body.append('metadata', new Blob([JSON.stringify(meta)],{type:'application/json'}));
+  body.append('file', new Blob([JSON.stringify(db)],{type:'application/json'}));
+  const r = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+    {method:'POST', headers:{Authorization:'Bearer '+accessToken}, body});
+  const d = await r.json();
+  driveFileId = d.id;
+}
+
+async function driveUpdate(){
+  if(!accessToken||!driveFileId) return;
+  const db = loadDB();
+  await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files/'+driveFileId+'?uploadType=media',
+    {method:'PATCH', headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},
+    body:JSON.stringify(db)});
+}
+
+function scheduleDriveSync(){
+  if(syncPending) return;
+  syncPending=true;
+  setTimeout(async()=>{
+    syncPending=false;
+    setDriveStatus('sync','Zapisywanie w Drive…');
+    await driveUpdate();
+    setDriveStatus('ok','Google Drive – zapisano ✓');
+  },1500);
+}
+
+async function driveSave(){
+  setDriveStatus('sync','Zapisywanie…');
+  await driveUpdate();
+  setDriveStatus('ok','Google Drive – zapisano ✓');
+}
+
+// Try to restore token on load
+window.addEventListener('load',()=>{
+  const t=localStorage.getItem('lavnor_gtoken');
+  if(t){ accessToken=t; setDriveStatus('ok','Google Drive – zalogowany (token)'); driveLoadOrCreate(); }
+});
+
+// ── CLIENT CRUD ────────────────────────────────────
+function saveClient(){
+  const g=id=>document.getElementById(id).value.trim();
+  const imie=g('a-imie'),nazwisko=g('a-nazwisko');
+  if(!imie||!nazwisko){showMsg('add-msg','Imię i nazwisko są wymagane.','err');return;}
+  const db=loadDB();
+  db.clients.push({id:uid(),imie,nazwisko,
+    fodsel:g('a-fodsel'),dnum:g('a-dnum'),pesel:g('a-pesel'),
+    email:g('a-email'),tel_pl:g('a-tel-pl'),tel_no:g('a-tel-no'),
+    haslo:g('a-haslo'),notatka:'',uslugi:[]});
+  saveDB(db);
+  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo']
+    .forEach(id=>document.getElementById(id).value='');
+  showMsg('add-msg','Klient zapisany'+(accessToken?' i zsynchronizowany z Drive.':' lokalnie.'),'ok');
+}
+
+function liveSearch(){
+  const n=(document.getElementById('q-naz').value||'').trim().toLowerCase();
+  const id=(document.getElementById('q-id').value||'').trim();
+  const ra=document.getElementById('search-results');
+  if(!n&&!id){ra.innerHTML='';return;}
+  const db=loadDB();
+  const res=db.clients.filter(c=>{
+    const mn=!n||c.nazwisko.toLowerCase().includes(n);
+    const mi=!id||[c.fodsel,c.pesel,c.dnum].some(x=>x&&x.includes(id));
+    return mn&&mi;
+  });
+  if(!res.length){ra.innerHTML='<div class="no-res">Brak wyników</div>';return;}
+  ra.innerHTML=res.map(c=>`
+    <div class="res-card" onclick="openClient('${c.id}')">
+      <div>
+        <div class="res-name">${c.imie} ${c.nazwisko}</div>
+        <div class="res-meta">${[c.fodsel,c.pesel,c.dnum].filter(Boolean).join(' · ')||'—'}</div>
+      </div>
+      <span style="color:var(--gold);font-size:22px;line-height:1;font-weight:300">›</span>
+    </div>`).join('');
+}
+
+function openClient(id){currentId=id;renderDetail();nav('pg-detail');}
+let currentId=null;
+function fmt(v){return v||'—';}
+
+function saveNote(){
+  const db=loadDB();
+  const c=db.clients.find(x=>x.id===currentId);
+  if(!c)return;
+  c.notatka=document.getElementById('note-area').value;
+  saveDB(db);
+  showMsg('note-msg','Notatka zapisana.','ok');
+}
+
+function renderDetail(){
+  const db=loadDB();
+  const c=db.clients.find(x=>x.id===currentId);
+  if(!c)return;
+  const rows=(c.uslugi||[]).map((u,i)=>{
+    const b=parseFloat(u.kwota)||0;
+    const mv=(b*0.25/1.25).toFixed(2);
+    const tx=(b*0.33).toFixed(2);
+    const nt=(b-b*0.33).toFixed(2);
+    return `<tr>
+      <td class="num">${i+1}</td>
+      <td style="white-space:nowrap">${u.data||'—'}</td>
+      <td style="min-width:200px">${u.czynnosc||'—'}</td>
+      <td style="white-space:nowrap">${b.toFixed(2)} NOK</td>
+      <td class="calc" style="white-space:nowrap">${mv} NOK</td>
+      <td class="calc" style="white-space:nowrap">${tx} NOK</td>
+      <td class="net" style="white-space:nowrap">${nt} NOK</td>
+      <td style="white-space:nowrap;color:var(--text-ter)">${u.data_platnosci||'—'}</td>
+    </tr>`;
+  }).join('');
+  const totB=(c.uslugi||[]).reduce((s,u)=>s+(parseFloat(u.kwota)||0),0);
+  const totN=(c.uslugi||[]).reduce((s,u)=>{const b=parseFloat(u.kwota)||0;return s+(b-b*0.33);},0);
+  const totalRow=totB>0?`<tr class="total-row"><td></td><td></td>
+    <td style="font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--text-ter)">Łącznie</td>
+    <td>${totB.toFixed(2)} NOK</td><td></td><td></td>
+    <td class="net">${totN.toFixed(2)} NOK</td><td></td></tr>`:'';
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('detail-inner').innerHTML=`
+    <div class="pg-title">${c.imie} ${c.nazwisko}</div>
+    <div class="pg-sub">Karta klienta</div>
+    <div class="detail-wrap">
+      <div class="left-col">
+        <div class="card" style="padding:22px">
+          <div class="sec-lbl" style="margin-bottom:14px">Dane osobowe</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="d-item"><span class="d-lbl">Imię i Nazwisko</span><span class="d-val">${fmt(c.imie)} ${fmt(c.nazwisko)}</span></div>
+            <div class="d-item"><span class="d-lbl">Fødselsnummer</span><span class="d-val">${fmt(c.fodsel)}</span></div>
+            <div class="d-item"><span class="d-lbl">D-nummer</span><span class="d-val">${fmt(c.dnum)}</span></div>
+            <div class="d-item"><span class="d-lbl">PESEL</span><span class="d-val">${fmt(c.pesel)}</span></div>
+            <div class="d-item"><span class="d-lbl">E-mail</span><span class="d-val" style="word-break:break-all">${fmt(c.email)}</span></div>
+            <div class="d-item"><span class="d-lbl">Telefon – Polska</span><span class="d-val">${fmt(c.tel_pl)}</span></div>
+            <div class="d-item"><span class="d-lbl">Telefon – Norwegia</span><span class="d-val">${fmt(c.tel_no)}</span></div>
+            <div class="d-item"><span class="d-lbl">Hasło</span>
+              <span class="d-val" style="font-family:monospace;font-size:15px;letter-spacing:.06em;color:var(--gold)">${fmt(c.haslo)}</span></div>
+          </div>
+        </div>
+        <div class="card" style="padding:22px">
+          <div class="sec-lbl" style="margin-bottom:12px">Notatki i uwagi</div>
+          <textarea class="note-area" id="note-area" placeholder="Wpisz uwagi dotyczące klienta…">${c.notatka||''}</textarea>
+          <button class="btn-note-save" onclick="saveNote()">Zapisz notatkę</button>
+          <div class="msg" id="note-msg" style="text-align:left;margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="right-col">
+        <div class="billing-card">
+          <div class="bill-title">Historia usług i rozliczenia</div>
+          <div class="bill-table-wrap">
+            <table>
+              <thead><tr>
+                <th>Lp.</th><th>Data</th><th style="min-width:200px">Wykonana czynność</th>
+                <th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th>
+              </tr></thead>
+              <tbody>
+                ${rows}
+                <tr>
+                  <td class="num" style="color:var(--text-ter)">·</td>
+                  <td><input class="t-inp" id="nr-data" type="date" value="${today}" style="min-width:130px"></td>
+                  <td><input class="t-inp" id="nr-czyn" placeholder="opis czynności…" style="min-width:200px"></td>
+                  <td><input class="t-inp" id="nr-kwota" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcPrev()" style="min-width:88px"></td>
+                  <td class="calc" id="pr-mv">—</td>
+                  <td class="calc" id="pr-tx">—</td>
+                  <td class="net" id="pr-nt">—</td>
+                  <td><input class="t-inp" id="nr-dplat" type="date" style="min-width:130px"></td>
+                </tr>
+                ${totalRow}
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:12px">
+            <button class="btn-row-save" style="padding:11px 24px;font-size:11px" onclick="saveRow()">Zapisz wiersz</button>
+            <div class="msg" id="row-msg" style="margin-top:0;text-align:left"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function calcPrev(){
+  const b=parseFloat(document.getElementById('nr-kwota').value)||0;
+  if(!b){['pr-mv','pr-tx','pr-nt'].forEach(id=>document.getElementById(id).textContent='—');return;}
+  document.getElementById('pr-mv').textContent=(b*0.25/1.25).toFixed(2)+' NOK';
+  document.getElementById('pr-tx').textContent=(b*0.33).toFixed(2)+' NOK';
+  document.getElementById('pr-nt').textContent=(b-b*0.33).toFixed(2)+' NOK';
+}
+function saveRow(){
+  const data=document.getElementById('nr-data').value;
+  const czyn=document.getElementById('nr-czyn').value.trim();
+  const kwota=parseFloat(document.getElementById('nr-kwota').value);
+  const data_platnosci=document.getElementById('nr-dplat').value;
+  if(!czyn||!kwota){showMsg('row-msg','Wypełnij opis i kwotę.','err');return;}
+  const db=loadDB();
+  const c=db.clients.find(x=>x.id===currentId);
+  if(!c)return;
+  if(!c.uslugi)c.uslugi=[];
+  c.uslugi.push({data,czynnosc:czyn,kwota,data_platnosci});
+  saveDB(db);renderDetail();
+  showMsg('row-msg','Wpis zapisany.','ok');
+}
+</script>
+</body>
+</html>
