@@ -690,52 +690,45 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .logo-diamond{width:8px;height:8px;background:rgba(255,255,255,0.9);transform:rotate(45deg);
   box-shadow:0 0 8px rgba(255,255,255,0.5),0 0 14px rgba(212,175,90,0.4)}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* REPORTS */
-.report-card{background:rgba(18,25,38,0.9);border:.5px solid var(--gold-border,rgba(212,175,90,0.35));
-  border-radius:6px;padding:22px;box-shadow:0 8px 40px rgba(0,0,0,.4);margin-bottom:14px}
-.report-table{width:100%;border-collapse:collapse}
-.report-table th{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(238,240,244,0.4);padding:8px 10px;text-align:left;border-bottom:.5px solid rgba(212,175,90,0.2);white-space:nowrap}
-.report-table td{padding:9px 10px;font-size:12px;color:rgba(238,240,244,0.75);
-  border-bottom:.5px solid rgba(212,175,90,0.07);vertical-align:middle}
-.report-table td.gold{color:var(--gold,#d4af5a);font-weight:700}
-.report-table td.dim{color:rgba(238,240,244,0.4)}
-.report-table tr:hover td{background:rgba(212,175,90,0.04)}
-.report-table tfoot td{font-weight:700;color:var(--gold,#d4af5a);
-  border-top:.5px solid rgba(212,175,90,0.25);padding-top:12px;font-size:13px}
-.btn-print{padding:8px 18px;background:transparent;
-  border:.5px solid var(--gold-border,rgba(212,175,90,0.35));border-radius:4px;
-  color:var(--gold,#d4af5a);font-family:'Open Sans',sans-serif;font-size:9px;font-weight:700;
-  letter-spacing:.28em;text-transform:uppercase;cursor:pointer;transition:all .2s}
-.btn-print:hover{background:rgba(212,175,90,0.1)}
-.badge-paid{padding:2px 9px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.15em;
-  text-transform:uppercase;background:rgba(34,197,94,.15);color:#4ade80;border:.5px solid rgba(34,197,94,.3)}
-.badge-unpaid{padding:2px 9px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.15em;
-  text-transform:uppercase;background:rgba(248,113,113,.15);color:#f87171;border:.5px solid rgba(248,113,113,.3)}
+/* RSS NEWS WIDGET */
+.news-widget{
+  position:fixed;top:38px;left:20px;z-index:40;
+  width:272px;
+  background:rgba(24,36,60,0.96);
+  border:.5px solid rgba(212,175,90,0.3);
+  border-radius:6px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.06);
+  overflow:hidden;
+}
+.news-widget.collapsed .news-body{display:none}
+.news-header{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;cursor:pointer;user-select:none;
+  border-bottom:.5px solid rgba(212,175,90,0.15)}
+.news-header:hover{background:rgba(255,255,255,0.03)}
+.news-tabs{display:flex;gap:0;border-bottom:.5px solid rgba(212,175,90,0.15)}
+.news-tab{flex:1;padding:7px 8px;font-size:9px;font-weight:700;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--text-ter);cursor:pointer;text-align:center;
+  transition:all .2s;border:none;background:none;}
+.news-tab.active{color:var(--gold);border-bottom:1.5px solid var(--gold);margin-bottom:-1px}
+.news-tab:hover{color:var(--text-sec)}
+.news-body{max-height:220px;overflow-y:auto;padding:6px 0}
+.news-body::-webkit-scrollbar{width:3px}
+.news-body::-webkit-scrollbar-track{background:transparent}
+.news-body::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.3);border-radius:2px}
+.news-item{padding:7px 12px;border-bottom:.5px solid rgba(255,255,255,0.05);
+  cursor:pointer;transition:background .15s;text-decoration:none;display:block}
+.news-item:hover{background:rgba(212,175,90,0.06)}
+.news-item:last-child{border-bottom:none}
+.news-item-title{font-size:11px;font-weight:500;color:var(--text-sec);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-item-date{font-size:9px;color:var(--text-ter);margin-top:2px;letter-spacing:.08em}
+.news-loading{padding:16px;text-align:center;font-size:10px;color:var(--text-ter);letter-spacing:.15em}
+.news-toggle{background:none;border:none;cursor:pointer;color:var(--text-ter);
+  font-size:11px;padding:2px 4px;transition:color .2s;flex-shrink:0}
+.news-toggle:hover{color:var(--gold)}
+.news-widget-title{font-family:'Cinzel',serif;font-size:10px;font-weight:600;
+  letter-spacing:.3em;color:var(--gold);text-transform:uppercase}
 
 </style>
 </head>
@@ -756,7 +749,20 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 
 
 
-
+<!-- NEWS WIDGET -->
+<div class="news-widget" id="news-widget">
+  <div class="news-header" onclick="toggleNewsWidget()">
+    <span class="news-widget-title">Aktualności</span>
+    <button class="news-toggle" id="news-toggle">▲</button>
+  </div>
+  <div class="news-body" id="news-body">
+    <div class="news-tabs">
+      <button class="news-tab active" id="tab-nav" onclick="switchNewsTab('nav')">NAV</button>
+      <button class="news-tab" id="tab-skatt" onclick="switchNewsTab('skatt')">Skatteetaten</button>
+    </div>
+    <div id="news-content"><div class="news-loading">Ładowanie…</div></div>
+  </div>
+</div>
 
 <!-- DAILY WIDGET -->
 <div class="daily-widget" id="daily-widget">
@@ -867,19 +873,6 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
             <svg class="icon-svg" viewBox="0 0 44 44"><rect x="7" y="4" width="24" height="32" rx="2"/><line x1="13" y1="12" x2="25" y2="12"/><line x1="13" y1="18" x2="25" y2="18"/><line x1="13" y1="24" x2="20" y2="24"/><line x1="27" y1="30" x2="40" y2="17" stroke-width="1.8"/><polyline points="27,30 24,38 32,35 27,30"/></svg>
             <div class="icon-label">Napisz pismo</div>
             <div class="icon-sub">Edytor</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-reports')">
-            <svg class="icon-svg" viewBox="0 0 44 44">
-              <rect x="6" y="4" width="32" height="36" rx="3"/>
-              <line x1="12" y1="14" x2="32" y2="14"/>
-              <line x1="12" y1="20" x2="32" y2="20"/>
-              <line x1="12" y1="26" x2="24" y2="26"/>
-              <rect x="26" y="28" width="4" height="8" rx="1" fill="currentColor" opacity=".7"/>
-              <rect x="32" y="24" width="4" height="12" rx="1" fill="currentColor" opacity=".9"/>
-              <rect x="20" y="31" width="4" height="5" rx="1" fill="currentColor" opacity=".5"/>
-            </svg>
-            <div class="icon-label">Raporty</div>
-            <div class="icon-sub">Analizy</div>
           </button>
         </div>
       </div>
@@ -1163,144 +1156,70 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async>
+/* NEWS RSS WIDGET */
+const RSS_FEEDS = {
+  nav:   'https://www.nav.no/no/nav-og-samfunn/presse/pressemeldinger/_attachment/rss',
+  skatt: 'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/?rss'
+};
+const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+let newsCache = {nav:null, skatt:null};
+let currentTab = 'nav';
+let newsCollapsed = false;
 
+async function loadNews(source){
+  if(newsCache[source]){ renderNews(newsCache[source]); return; }
+  document.getElementById('news-content').innerHTML = '<div class="news-loading">Ładowanie…</div>';
+  try{
+    const url = RSS2JSON + encodeURIComponent(RSS_FEEDS[source]) + '&count=8';
+    const r = await fetch(url);
+    const data = await r.json();
+    if(data.status==='ok' && data.items && data.items.length){
+      newsCache[source] = data.items;
+      renderNews(data.items);
+    } else {
+      // fallback — link to site
+      document.getElementById('news-content').innerHTML =
+        `<a class="news-item" href="${source==='nav'?'https://www.nav.no/no/nav-og-samfunn/presse':'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/'}" target="_blank">
+          <div class="news-item-title">Otwórz aktualności ${source==='nav'?'NAV':'Skatteetaten'} →</div>
+        </a>`;
+    }
+  }catch(e){
+    document.getElementById('news-content').innerHTML =
+      `<a class="news-item" href="${source==='nav'?'https://www.nav.no/no/nav-og-samfunn/presse':'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/'}" target="_blank">
+        <div class="news-item-title">Otwórz stronę ${source==='nav'?'NAV':'Skatteetaten'} →</div>
+      </a>`;
+  }
+}
 
+function renderNews(items){
+  document.getElementById('news-content').innerHTML = items.map(item=>{
+    const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+    const title = item.title || '';
+    const link  = item.link  || '#';
+    return `<a class="news-item" href="${link}" target="_blank">
+      <div class="news-item-title">${title}</div>
+      ${date?`<div class="news-item-date">${date}</div>`:''}
+    </a>`;
+  }).join('');
+}
+
+function switchNewsTab(source){
+  currentTab = source;
+  document.getElementById('tab-nav').classList.toggle('active', source==='nav');
+  document.getElementById('tab-skatt').classList.toggle('active', source==='skatt');
+  loadNews(source);
+}
+
+function toggleNewsWidget(){
+  newsCollapsed = !newsCollapsed;
+  document.getElementById('news-widget').classList.toggle('collapsed', newsCollapsed);
+  document.getElementById('news-toggle').textContent = newsCollapsed ? '▼' : '▲';
+}
+
+// Init news on load
+window.addEventListener('load', ()=>{ loadNews('nav'); });
 // Refresh every 15 min
 setInterval(()=>{ newsCache={nav:null,skatt:null}; loadNews(currentTab); }, 15*60*1000);
-
-
-/* REPORTS & PAID */
-function showReport(type){
-  var db=loadDB(); var clients=db.clients||[];
-  var now=new Date().toLocaleDateString('pl-PL');
-  var sorted=clients.slice().sort(function(a,b){return (a.nazwisko||'').localeCompare(b.nazwisko||'','pl');});
-  var html='';
-
-  if(type==='clients'){
-    html='<div class="report-card">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
-      '<div style="font-family:Cinzel,serif;font-size:16px;font-weight:700;letter-spacing:.2em;color:var(--text,#f5f7fa)">Lista klientów</div>'+
-      '<button class="btn-print" onclick="printReport()">&#128438; Drukuj / PDF</button></div>'+
-      '<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px;letter-spacing:.1em">Wygenerowano: '+now+' &nbsp;&middot;&nbsp; Łącznie: '+sorted.length+' klientów</div>'+
-      '<div style="overflow-x:auto"><table class="report-table" id="report-printable">'+
-      '<thead><tr><th>Lp.</th><th>Nazwisko</th><th>Imię</th><th>Fødselsnummer</th><th>PESEL</th><th>D-nummer</th><th>E-mail</th><th>Tel. NO</th><th>Tel. PL</th></tr></thead><tbody>'+
-      sorted.map(function(cl,i){return '<tr>'+
-        '<td class="dim">'+(i+1)+'</td>'+
-        '<td style="font-weight:600;color:var(--text,#f5f7fa)">'+(cl.nazwisko||'—')+'</td>'+
-        '<td>'+(cl.imie||'—')+'</td>'+
-        '<td>'+(cl.fodsel||'—')+'</td>'+
-        '<td>'+(cl.pesel||'—')+'</td>'+
-        '<td>'+(cl.dnum||'—')+'</td>'+
-        '<td>'+(cl.email||'—')+'</td>'+
-        '<td>'+(cl.tel_no||'—')+'</td>'+
-        '<td>'+(cl.tel_pl||'—')+'</td></tr>';}).join('')+
-      '</tbody></table></div></div>';
-
-  } else if(type==='earnings'){
-    var eRows=[],totB=0,totM=0,totT=0,totN=0;
-    sorted.forEach(function(cl){(cl.uslugi||[]).forEach(function(u){
-      var b=parseFloat(u.kwota)||0;
-      var mv=+(b*0.25/1.25).toFixed(2),tx=+(b*0.33).toFixed(2),nt=+(b-b*0.33).toFixed(2);
-      totB+=b;totM+=mv;totT+=tx;totN+=nt;
-      eRows.push({name:(cl.nazwisko||'')+' '+(cl.imie||''),data:u.data||'—',
-        czyn:u.czynnosc||'—',b:b,mv:mv,tx:tx,nt:nt,paid:u.paid});
-    });});
-    html='<div class="report-card">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
-      '<div style="font-family:Cinzel,serif;font-size:16px;font-weight:700;letter-spacing:.2em;color:var(--text,#f5f7fa)">Raport zarobków</div>'+
-      '<button class="btn-print" onclick="printReport()">&#128438; Drukuj / PDF</button></div>'+
-      '<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px;letter-spacing:.1em">Wygenerowano: '+now+' &nbsp;&middot;&nbsp; Usług: '+eRows.length+'</div>'+
-      '<div style="overflow-x:auto"><table class="report-table" id="report-printable">'+
-      '<thead><tr><th>Klient</th><th>Data</th><th>Czynność</th><th>Brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Netto</th><th>Status</th></tr></thead><tbody>'+
-      eRows.map(function(r){return '<tr>'+
-        '<td style="font-weight:600;color:var(--text,#f5f7fa);white-space:nowrap">'+r.name+'</td>'+
-        '<td class="dim" style="white-space:nowrap">'+r.data+'</td>'+
-        '<td style="min-width:140px">'+r.czyn+'</td>'+
-        '<td class="dim" style="white-space:nowrap">'+r.b.toFixed(2)+' NOK</td>'+
-        '<td class="dim" style="white-space:nowrap">'+r.mv.toFixed(2)+' NOK</td>'+
-        '<td class="dim" style="white-space:nowrap">'+r.tx.toFixed(2)+' NOK</td>'+
-        '<td class="gold" style="white-space:nowrap">'+r.nt.toFixed(2)+' NOK</td>'+
-        '<td>'+(r.paid?'<span class="badge-paid">Zapłacono</span>':'<span class="badge-unpaid">Oczekuje</span>')+'</td></tr>';}).join('')+
-      '</tbody><tfoot><tr><td colspan="3">Suma łączna</td>'+
-      '<td>'+totB.toFixed(2)+' NOK</td>'+
-      '<td>'+totM.toFixed(2)+' NOK</td>'+
-      '<td>'+totT.toFixed(2)+' NOK</td>'+
-      '<td class="gold">'+totN.toFixed(2)+' NOK</td><td></td></tr></tfoot>'+
-      '</table></div></div>';
-
-  } else if(type==='unpaid'){
-    var uRows=[],utotB=0,utotN=0;
-    sorted.forEach(function(cl){(cl.uslugi||[]).forEach(function(u,idx){
-      if(!u.paid){
-        var b=parseFloat(u.kwota)||0,nt=+(b-b*0.33).toFixed(2);
-        utotB+=b;utotN+=nt;
-        uRows.push({cid:cl.id,idx:idx,name:(cl.nazwisko||'')+' '+(cl.imie||''),
-          data:u.data||'—',czyn:u.czynnosc||'—',b:b,nt:nt,dplat:u.data_platnosci||'—'});
-      }
-    });});
-    var uBody = uRows.length ? uRows.map(function(r){return '<tr>'+
-      '<td style="font-weight:600;color:var(--text,#f5f7fa);white-space:nowrap">'+r.name+'</td>'+
-      '<td class="dim" style="white-space:nowrap">'+r.data+'</td>'+
-      '<td style="min-width:140px">'+r.czyn+'</td>'+
-      '<td class="dim" style="white-space:nowrap">'+r.b.toFixed(2)+' NOK</td>'+
-      '<td class="gold" style="white-space:nowrap">'+r.nt.toFixed(2)+' NOK</td>'+
-      '<td class="dim" style="white-space:nowrap">'+r.dplat+'</td>'+
-      '<td><button onclick="markPaidFromReport(''+r.cid+'','+r.idx+')" '+
-        'style="padding:4px 12px;background:rgba(34,197,94,.12);border:.5px solid rgba(34,197,94,.35);'+
-        'border-radius:4px;color:#4ade80;font-size:9px;font-weight:700;letter-spacing:.15em;'+
-        'text-transform:uppercase;cursor:pointer">&#10003; Zapłacono</button></td></tr>';}).join('') :
-      '<tr><td colspan="7" style="text-align:center;padding:22px;color:rgba(238,240,244,0.35);'+
-      'letter-spacing:.2em;text-transform:uppercase">Brak nieopłaconych faktur</td></tr>';
-    html='<div class="report-card">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
-      '<div style="font-family:Cinzel,serif;font-size:16px;font-weight:700;letter-spacing:.2em;color:var(--text,#f5f7fa)">Nieopłacone faktury</div>'+
-      '<button class="btn-print" onclick="printReport()">&#128438; Drukuj / PDF</button></div>'+
-      '<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px;letter-spacing:.1em">'+
-      'Wygenerowano: '+now+' &nbsp;&middot;&nbsp; Nieopłaconych: '+uRows.length+
-      (uRows.length?' &nbsp;&middot;&nbsp; Łączna wartość: '+utotN.toFixed(2)+' NOK netto':'')+
-      '</div>'+
-      '<div style="overflow-x:auto"><table class="report-table" id="report-printable">'+
-      '<thead><tr><th>Klient</th><th>Data usługi</th><th>Czynność</th>'+
-      '<th>Kwota brutto</th><th>Netto</th><th>Data płatności</th><th>Akcja</th></tr></thead>'+
-      '<tbody>'+uBody+'</tbody>'+
-      (uRows.length?'<tfoot><tr><td colspan="3">Suma nieopłaconych</td>'+
-        '<td class="gold">'+utotB.toFixed(2)+' NOK</td>'+
-        '<td class="gold">'+utotN.toFixed(2)+' NOK</td>'+
-        '<td colspan="2"></td></tr></tfoot>':'')+
-      '</table></div></div>';
-  }
-  document.getElementById('report-output').innerHTML=html;
-}
-
-function markPaidFromReport(clientId,rowIdx){
-  var db=loadDB();
-  var cl=db.clients.find(function(x){return x.id===clientId;});
-  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx]) return;
-  cl.uslugi[rowIdx].paid=true;
-  saveDB(db); showReport('unpaid');
-}
-
-function printReport(){
-  var el=document.getElementById('report-printable');
-  if(!el) return;
-  var win=window.open('','_blank');
-  win.document.write('<html><head><title>Raport Lavnor</title>'+
-    '<style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:24px}'+
-    'h2{font-family:Georgia,serif;font-size:20px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:4px}'+
-    'p.meta{color:#888;font-size:10px;margin-bottom:18px}'+
-    'table{width:100%;border-collapse:collapse}'+
-    'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;'+
-       'padding:7px 8px;border-bottom:1.5px solid #333;text-align:left;background:#f5f5f5}'+
-    'td{padding:8px;border-bottom:1px solid #e5e5e5;font-size:11px}'+
-    'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px;background:#fffbe6}'+
-    '@media print{button{display:none}}'+
-    '</style></head><body>'+
-    '<h2>Lavnor &mdash; Raport</h2>'+
-    '<p class="meta">Wygenerowany: '+new Date().toLocaleDateString('pl-PL')+'</p>'+
-    el.outerHTML+
-    '</body></html>');
-  win.document.close(); win.print();
-}
 
 </script>
 <script>
@@ -1471,12 +1390,7 @@ function renderDetail(){
       <td class="calc" style="white-space:nowrap">${mv} NOK</td>
       <td class="calc" style="white-space:nowrap">${tx} NOK</td>
       <td class="net" style="white-space:nowrap">${nt} NOK</td>
-      <td style="white-space:nowrap;color:var(--text-ter)">${u.data_platnosci||'—'}</td>
-      <td style="text-align:center">
-        <button onclick="togglePaid('${c.id}',${i})" style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1" title="Zmień status płatności">
-          ${u.paid ? '<span style="color:#22c55e;filter:drop-shadow(0 0 4px rgba(34,197,94,0.5))">&#10003;</span>' : '<span style="color:rgba(238,240,244,0.18);font-size:16px">&#9675;</span>'}
-        </button>
-      </td></tr>\`;
+      <td style="white-space:nowrap;color:var(--text-ter)">${u.data_platnosci||'—'}</td></tr>`;
   }).join('');
   const totB=(c.uslugi||[]).reduce((s,u)=>s+(parseFloat(u.kwota)||0),0);
   const totN=(c.uslugi||[]).reduce((s,u)=>{const b=parseFloat(u.kwota)||0;return s+(b-b*0.33);},0);
@@ -1527,7 +1441,7 @@ function renderDetail(){
           <div class="bill-table-wrap">
             <table class="bill-tbl">
               <thead><tr><th>Lp.</th><th>Data</th><th style="min-width:155px">Wykonana czynność</th>
-                <th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th><th style="text-align:center;white-space:nowrap">Zapłacono</th></tr></thead>
+                <th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th></tr></thead>
               <tbody>
                 ${rows}
                 <tr>
@@ -1538,7 +1452,6 @@ function renderDetail(){
                   <td class="calc" id="pr-mv">—</td><td class="calc" id="pr-tx">—</td>
                   <td class="net" id="pr-nt">—</td>
                   <td><input class="t-inp" id="nr-dplat" type="date" style="min-width:118px"></td>
-                  <td style="text-align:center;color:rgba(238,240,244,0.3)">—</td>
                 </tr>
                 ${totalRow}
               </tbody>
@@ -1570,15 +1483,6 @@ function calcPrev(){
   document.getElementById('pr-tx').textContent=(b*0.33).toFixed(2)+' NOK';
   document.getElementById('pr-nt').textContent=(b-b*0.33).toFixed(2)+' NOK';
 }
-
-function togglePaid(clientId, rowIdx){
-  var db=loadDB();
-  var cl=db.clients.find(function(x){return x.id===clientId;});
-  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx]) return;
-  cl.uslugi[rowIdx].paid = !cl.uslugi[rowIdx].paid;
-  saveDB(db); renderDetail();
-}
-
 function saveRow(){
   const data=document.getElementById('nr-data').value;
   const czyn=document.getElementById('nr-czyn').value.trim();
@@ -1915,38 +1819,5 @@ window.addEventListener('load',()=>{
   if(t){accessToken=t;setDriveStatus('ok','Google Drive – zalogowany');driveLoadOrCreate();}
 });
 </script>
-
-<!-- ══ REPORTS ══ -->
-<div class="page hidden" id="pg-reports">
-  <button class="back-btn" onclick="nav('pg-home')">
-    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-    Powrót
-  </button>
-  <div class="inner">
-    <div class="pg-title">Raporty</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Wybierz raport</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:720px;margin-top:8px">
-      <div class="form-cat-card" onclick="showReport('clients')" style="cursor:pointer">
-        <div class="form-cat-icon">&#x1F465;</div>
-        <div class="form-cat-title">Lista klientów</div>
-        <div class="form-cat-desc">Sortowanie A–Z wg nazwiska</div>
-      </div>
-      <div class="form-cat-card" onclick="showReport('earnings')" style="cursor:pointer">
-        <div class="form-cat-icon">&#x1F4B0;</div>
-        <div class="form-cat-title">Raport zarobków</div>
-        <div class="form-cat-desc">Kwoty, MVA, podatek, netto</div>
-      </div>
-      <div class="form-cat-card" onclick="showReport('unpaid')" style="cursor:pointer">
-        <div class="form-cat-icon">&#x26A0;&#xFE0F;</div>
-        <div class="form-cat-title">Nieopłacone faktury</div>
-        <div class="form-cat-desc">Usługi bez statusu Zapłacono</div>
-      </div>
-    </div>
-    <div id="report-output" style="width:100%;max-width:960px;margin-top:18px"></div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
 </body>
 </html>
