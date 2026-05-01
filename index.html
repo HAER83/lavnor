@@ -690,536 +690,160 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .logo-diamond{width:8px;height:8px;background:rgba(255,255,255,0.9);transform:rotate(45deg);
   box-shadow:0 0 8px rgba(255,255,255,0.5),0 0 14px rgba(212,175,90,0.4)}
 
-/* RSS NEWS WIDGET */
-.news-widget{
-  position:fixed;top:38px;left:20px;z-index:40;
-  width:272px;
-  background:rgba(24,36,60,0.96);
-  border:.5px solid rgba(212,175,90,0.3);
-  border-radius:6px;
-  backdrop-filter:blur(10px);
-  box-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.06);
-  overflow:hidden;
-}
-.news-widget.collapsed .news-body{display:none}
-.news-header{display:flex;align-items:center;justify-content:space-between;
-  padding:9px 12px;cursor:pointer;user-select:none;
-  border-bottom:.5px solid rgba(212,175,90,0.15)}
-.news-header:hover{background:rgba(255,255,255,0.03)}
-.news-tabs{display:flex;gap:0;border-bottom:.5px solid rgba(212,175,90,0.15)}
-.news-tab{flex:1;padding:7px 8px;font-size:9px;font-weight:700;letter-spacing:.25em;
-  text-transform:uppercase;color:var(--text-ter);cursor:pointer;text-align:center;
-  transition:all .2s;border:none;background:none;}
-.news-tab.active{color:var(--gold);border-bottom:1.5px solid var(--gold);margin-bottom:-1px}
-.news-tab:hover{color:var(--text-sec)}
-.news-body{max-height:220px;overflow-y:auto;padding:6px 0}
-.news-body::-webkit-scrollbar{width:3px}
-.news-body::-webkit-scrollbar-track{background:transparent}
-.news-body::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.3);border-radius:2px}
-.news-item{padding:7px 12px;border-bottom:.5px solid rgba(255,255,255,0.05);
-  cursor:pointer;transition:background .15s;text-decoration:none;display:block}
-.news-item:hover{background:rgba(212,175,90,0.06)}
-.news-item:last-child{border-bottom:none}
-.news-item-title{font-size:11px;font-weight:500;color:var(--text-sec);line-height:1.4;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.news-item-date{font-size:9px;color:var(--text-ter);margin-top:2px;letter-spacing:.08em}
-.news-loading{padding:16px;text-align:center;font-size:10px;color:var(--text-ter);letter-spacing:.15em}
-.news-toggle{background:none;border:none;cursor:pointer;color:var(--text-ter);
-  font-size:11px;padding:2px 4px;transition:color .2s;flex-shrink:0}
-.news-toggle:hover{color:var(--gold)}
-.news-widget-title{font-family:'Cinzel',serif;font-size:10px;font-weight:600;
-  letter-spacing:.3em;color:var(--gold);text-transform:uppercase}
-
-</style>
-</head>
-<body>
-
-<!-- DRIVE BAR -->
-<div class="drive-bar" id="drive-bar">
-  <div class="drive-status">
-    <div class="dot dot-warn" id="drive-dot"></div>
-    <span id="drive-label">Google Drive – niezalogowany</span>
-  </div>
-  <div class="drive-btns">
-    <button class="dbtn dbtn-save" id="btn-drive-save" onclick="driveSave()" style="display:none">Zapisz</button>
-    <button class="dbtn dbtn-login" id="btn-drive-login" onclick="driveLogin()">Zaloguj z Google</button>
-    <button class="dbtn dbtn-logout" id="btn-drive-logout" onclick="driveLogout()" style="display:none">Wyloguj</button>
-  </div>
-</div>
 
 
-
-<!-- NEWS WIDGET -->
-<div class="news-widget" id="news-widget">
-  <div class="news-header" onclick="toggleNewsWidget()">
-    <span class="news-widget-title">Aktualności</span>
-    <button class="news-toggle" id="news-toggle">▲</button>
-  </div>
-  <div class="news-body" id="news-body">
-    <div class="news-tabs">
-      <button class="news-tab active" id="tab-nav" onclick="switchNewsTab('nav')">NAV</button>
-      <button class="news-tab" id="tab-skatt" onclick="switchNewsTab('skatt')">Skatteetaten</button>
-    </div>
-    <div id="news-content"><div class="news-loading">Ładowanie…</div></div>
-  </div>
-</div>
-
-<!-- DAILY WIDGET -->
-<div class="daily-widget" id="daily-widget">
-  <div class="daily-widget-header">
-    <div>
-      <div class="daily-date" id="dw-date">—</div>
-      <div class="daily-day" id="dw-day">—</div>
-    </div>
-    <button class="daily-toggle" onclick="toggleWidget()" id="dw-toggle" title="Zwiń/rozwiń">▲</button>
-  </div>
-  <div class="daily-body" id="dw-body">
-    <div class="daily-divider"></div>
-    <div id="dw-tasks"><div class="daily-empty">Brak zadań na dziś</div></div>
-  </div>
-</div>
-
-<!-- TASK MODAL -->
-<div class="modal-overlay hidden" id="task-modal">
-  <div class="modal">
-    <div class="modal-title">Nowe zlecenie</div>
-    <div class="modal-field"><label class="modal-label">Tytuł</label><input class="modal-input" id="task-title" placeholder="np. Odwołanie do NAV"></div>
-    <div class="modal-field"><label class="modal-label">Godzina</label><input class="modal-input" id="task-time" type="time"></div>
-    <div class="modal-field"><label class="modal-label">Przypomnienie</label>
-      <div class="remind-row">
-        <button class="remind-toggle" id="remind-toggle" onclick="toggleRemind()"></button>
-        <span class="remind-label" id="remind-label">Wyłączone</span>
-      </div>
-    </div>
-    <div class="modal-field" id="remind-time-wrap" style="display:none">
-      <label class="modal-label">Wyprzedzenie (min)</label>
-      <input class="modal-input" id="remind-min" type="number" min="1" value="30">
-    </div>
-    <div class="modal-footer">
-      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Anuluj</button>
-      <button class="modal-btn modal-btn-save" onclick="saveTask()">Zapisz</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ HOME ══ -->
-<div class="page" id="pg-home">
-  <div class="home-inner">
-    <div class="logo-wrap">
-      <div class="logo-text">Lavnor</div>
-      <div class="logo-ornament">
-        <div class="logo-line"></div>
-        <div class="logo-diamond-wrap"><div class="logo-diamond"></div></div>
-        <div class="logo-line r"></div>
-      </div>
-      <div class="logo-sub">System zarządzania klientami</div>
-    </div>
-    <div class="home-sections">
-
-      <!-- SECTION 1: Email -->
-      <div class="home-section">
-        <div class="home-section-title">Poczta e-mail</div>
-        <div class="section-icons">
-          <button class="icon-card sc-email" onclick="window.open('https://mail.proton.me/u/0/inbox','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="26" rx="3"/><polyline points="4,10 22,26 40,10"/></svg>
-            <div class="icon-label">Proton Mail</div>
-            <div class="icon-sub">Szyfrowana poczta</div>
-          </button>
-          <button class="icon-card sc-email" onclick="window.open('https://outlook.live.com/mail/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="26" rx="3"/><polyline points="4,10 22,26 40,10"/></svg>
-            <div class="icon-label">Outlook</div>
-            <div class="icon-sub">Microsoft Mail</div>
-          </button>
-          <button class="icon-card sc-email" onclick="window.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="26" rx="3"/><polyline points="4,10 22,26 40,10"/></svg>
-            <div class="icon-label">Gmail</div>
-            <div class="icon-sub">Google Mail</div>
-          </button>
-        </div>
-      </div>
-
-      <div class="home-section-sep"></div>
-
-      <!-- SECTION 2: System Lavnor -->
-      <div class="home-section">
-        <div class="home-section-title">System Lavnor</div>
-        <div class="section-icons">
-          <button class="icon-card sc-lavnor" onclick="nav('pg-add')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><circle cx="18" cy="14" r="7"/><path d="M4 38c0-7.7 6.3-14 14-14"/><line x1="32" y1="26" x2="32" y2="40"/><line x1="25" y1="33" x2="39" y2="33"/></svg>
-            <div class="icon-label">Dodaj klienta</div>
-            <div class="icon-sub">Nowy klient</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-search')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><circle cx="19" cy="19" r="12"/><line x1="28" y1="28" x2="40" y2="40"/></svg>
-            <div class="icon-label">Wyszukaj klienta</div>
-            <div class="icon-sub">Znajdź klienta</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-forms')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="7" y="4" width="24" height="32" rx="2"/><polyline points="23,4 31,4 31,12 23,4"/><line x1="13" y1="16" x2="24" y2="16"/><line x1="13" y1="22" x2="26" y2="22"/><line x1="13" y1="28" x2="20" y2="28"/><circle cx="34" cy="34" r="7"/><polyline points="30,34 33,37 38,31"/></svg>
-            <div class="icon-label">Wnioski</div>
-            <div class="icon-sub">Formularze</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-calendar')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="9" width="36" height="30" rx="3"/><line x1="4" y1="18" x2="40" y2="18"/><line x1="13" y1="4" x2="13" y2="14"/><line x1="31" y1="4" x2="31" y2="14"/><rect x="10" y="23" width="6" height="5" rx="1"/><rect x="19" y="23" width="6" height="5" rx="1"/><rect x="28" y="23" width="6" height="5" rx="1"/></svg>
-            <div class="icon-label">Stałe zlecenia</div>
-            <div class="icon-sub">Zlecenia</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-decisions')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 4 L38 10 L38 24 C38 33 30 39 22 42 C14 39 6 33 6 24 L6 10 Z"/><line x1="15" y1="21" x2="29" y2="21"/><line x1="15" y1="27" x2="29" y2="27"/><line x1="15" y1="15" x2="22" y2="15"/></svg>
-            <div class="icon-label">Decyzje</div>
-            <div class="icon-sub">Baza wiedzy</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-pismo')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="7" y="4" width="24" height="32" rx="2"/><line x1="13" y1="12" x2="25" y2="12"/><line x1="13" y1="18" x2="25" y2="18"/><line x1="13" y1="24" x2="20" y2="24"/><line x1="27" y1="30" x2="40" y2="17" stroke-width="1.8"/><polyline points="27,30 24,38 32,35 27,30"/></svg>
-            <div class="icon-label">Napisz pismo</div>
-            <div class="icon-sub">Edytor</div>
-          </button>
-        </div>
-      </div>
-
-      <div class="home-section-sep"></div>
-
-      <!-- SECTION 3: Norweskie portale -->
-      <div class="home-section">
-        <div class="home-section-title">Portale urzędowe</div>
-        <div class="section-icons">
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.nav.no/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 4 L38 12 L38 27 C38 35 30 40 22 43 C14 40 6 35 6 27 L6 12 Z" stroke-width="1.4"/><line x1="11" y1="28" x2="15" y2="18" stroke-width="1.8"/><line x1="15" y1="18" x2="22" y2="28" stroke-width="1.8"/><line x1="22" y1="28" x2="29" y2="18" stroke-width="1.8"/><line x1="29" y1="18" x2="33" y2="28" stroke-width="1.8"/></svg>
-            <div class="icon-label">NAV</div>
-            <div class="icon-sub">System informacji</div>
-          </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.helsenorge.no/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="17" y="6" width="10" height="32" rx="3"/><rect x="6" y="17" width="32" height="10" rx="3"/></svg>
-            <div class="icon-label">Helsenorge</div>
-            <div class="icon-sub">Zdrowie</div>
-          </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.skatteetaten.no/person/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><line x1="22" y1="8" x2="22" y2="36" stroke-width="1.6"/><line x1="10" y1="14" x2="34" y2="14" stroke-width="1.4"/><line x1="10" y1="14" x2="10" y2="22" stroke-width="1.4"/><line x1="34" y1="14" x2="34" y2="22" stroke-width="1.4"/><path d="M6 22 Q10 28 14 22" stroke-width="1.4" fill="none"/><path d="M30 22 Q34 28 38 22" stroke-width="1.4" fill="none"/><line x1="16" y1="36" x2="28" y2="36" stroke-width="1.6"/></svg>
-            <div class="icon-label">Skatteetaten</div>
-            <div class="icon-sub">Podatki</div>
-          </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://info.altinn.no/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 5 L40 38 L4 38 Z" stroke-linejoin="round"/><line x1="12" y1="28" x2="32" y2="28"/><path d="M22 15 L30 32 L14 32 Z" opacity=".4"/></svg>
-            <div class="icon-label">Altinn</div>
-            <div class="icon-sub">Platforma</div>
-          </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.udi.no/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="17"/><path d="M15 15 L15 24 C15 28.4 18.1 32 22 32 C25.9 32 29 28.4 29 24 L29 15"/><line x1="12" y1="15" x2="32" y2="15" stroke-width="1.6"/></svg>
-            <div class="icon-label">UDI</div>
-            <div class="icon-sub">Imigracja</div>
-          </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.digipost.no/innlogging/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="26" rx="3"/><polyline points="4,10 22,26 40,10"/><line x1="4" y1="36" x2="15" y2="24"/><line x1="40" y1="36" x2="29" y2="24"/></svg>
-            <div class="icon-label">Digipost</div>
-            <div class="icon-sub">Poczta urzędowa</div>
-          </button>
-        </div>
-      </div>
-
-      <div class="home-section-sep"></div>
-
-      <!-- SECTION 4: AI -->
-      <div class="home-section">
-        <div class="home-section-title">Asystenci AI</div>
-        <div class="section-icons">
-          <button class="icon-card sc-ai" onclick="window.open('https://claude.ai/new','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 5C13.7 5 7 11.7 7 20C7 28.3 13.7 35 22 35C26 35 29.6 33.4 32.2 30.8" stroke-linecap="round"/><path d="M22 12L28 17L30 24L25 32L19 32L14 24L16 17Z" opacity=".7"/><circle cx="22" cy="22" r="4"/></svg>
-            <div class="icon-label">Claude AI</div>
-            <div class="icon-sub">Anthropic</div>
-          </button>
-          <button class="icon-card sc-ai" onclick="window.open('https://gemini.google.com/app','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 4 C22 4 25 18 34 22 C25 26 22 40 22 40 C22 40 19 26 10 22 C19 18 22 4 22 4 Z"/><path d="M4 22 C4 22 18 19 22 10 C26 19 40 22 40 22 C40 22 26 25 22 34 C18 25 4 22 4 22 Z" opacity=".6"/></svg>
-            <div class="icon-label">Gemini</div>
-            <div class="icon-sub">AI Google</div>
-          </button>
-          <button class="icon-card sc-ai" onclick="window.open('https://chatgpt.com/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 7C14.3 7 8 13.3 8 21C8 24.5 9.3 27.7 11.5 30.1L10 37L17.2 35.7C18.7 36.2 20.3 36.5 22 36.5C29.7 36.5 36 30.2 36 22.5C36 14.8 29.7 8 22 7Z"/><circle cx="22" cy="22" r="4"/></svg>
-            <div class="icon-label">ChatGPT</div>
-            <div class="icon-sub">AI OpenAI</div>
-          </button>
-          <button class="icon-card sc-ai" onclick="window.open('https://grok.com/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M10 8 L34 22 L10 36 Z" stroke-linejoin="round"/><path d="M20 22 L40 8" stroke-linecap="round"/><path d="M20 22 L40 36" stroke-linecap="round"/></svg>
-            <div class="icon-label">Grok</div>
-            <div class="icon-sub">AI xAI</div>
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<!-- ══ ADD ══ -->
-<div class="page hidden" id="pg-add">
-  <button class="back-btn" onclick="nav('pg-home')">
-    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-    Powrót
-  </button>
-  <div class="inner">
-    <div class="pg-title">Dodaj klienta</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Uzupełnij dane nowego klienta</div>
-    <div class="card" style="width:100%;max-width:600px">
-      <div class="sec-lbl">Dane osobowe</div>
-      <div class="f-grid"><div class="f-wrap"><label class="f-lbl">Imię</label><input class="f-inp" id="a-imie" placeholder="Jan"></div>
-        <div class="f-wrap"><label class="f-lbl">Nazwisko</label><input class="f-inp" id="a-nazwisko" placeholder="Kowalski"></div></div>
-      <div class="f-grid">
-        <div class="f-wrap"><label class="f-lbl">Fødselsnummer</label><input class="f-inp" id="a-fodsel" placeholder="01019912345" maxlength="11" oninput="onlyDigits(this)"></div>
-        <div class="f-wrap"><label class="f-lbl">D-nummer</label><input class="f-inp" id="a-dnum" placeholder="41019912345" maxlength="11" oninput="onlyDigits(this)"></div></div>
-      <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">PESEL</label><input class="f-inp" id="a-pesel" placeholder="99010112345" maxlength="11" oninput="onlyDigits(this)"></div></div>
-      <div class="sep-line"></div>
-      <div class="sec-lbl">Kontakt</div>
-      <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">E-mail</label><input class="f-inp" id="a-email" type="email" placeholder="jan.kowalski@example.com"></div></div>
-      <div class="f-grid">
-        <div class="f-wrap"><label class="f-lbl">Telefon – Polska</label><input class="f-inp" id="a-tel-pl" placeholder="+48 500 000 000"></div>
-        <div class="f-wrap"><label class="f-lbl">Telefon – Norwegia</label><input class="f-inp" id="a-tel-no" placeholder="+47 900 00 000"></div></div>
-      <div class="sep-line"></div>
-      <div class="sec-lbl">Dostęp</div>
-      <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">Hasło</label><input class="f-inp" id="a-haslo" type="text" placeholder="wpisz hasło" autocomplete="off"></div></div>
-      <button class="btn-cta" onclick="saveClient()">Zapisz klienta</button>
-      <div class="msg" id="add-msg"></div>
-    </div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<!-- ══ SEARCH ══ -->
-<div class="page hidden" id="pg-search">
-  <button class="back-btn" onclick="nav('pg-home')">
-    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-    Powrót
-  </button>
-  <div class="inner">
-    <div class="pg-title">Wyszukaj klienta</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Podaj dane identyfikacyjne</div>
-    <div class="card" style="width:100%;max-width:560px">
-      <div class="f-grid">
-        <div class="f-wrap"><label class="f-lbl">Imię</label><input class="f-inp" id="q-imie" placeholder="Jan" oninput="liveSearch()"></div>
-        <div class="f-wrap"><label class="f-lbl">Nazwisko</label><input class="f-inp" id="q-naz" placeholder="Kowalski" oninput="liveSearch()"></div></div>
-      <div class="f-grid one">
-        <div class="f-wrap"><label class="f-lbl">Fødselsnummer / PESEL / D-nummer</label>
-          <input class="f-inp" id="q-id" placeholder="numer identyfikacyjny" maxlength="11" oninput="liveSearch()"></div></div>
-      <button class="btn-search-go" onclick="liveSearch()">Szukaj</button>
-    </div>
-    <div id="search-results" style="width:100%;max-width:560px;margin-top:6px"></div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<!-- ══ DETAIL ══ -->
-<div class="page hidden" id="pg-detail">
-  <button class="back-btn" onclick="nav('pg-search')">
-    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-    Powrót
-  </button>
-  <div class="inner" id="detail-inner"></div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<!-- ══ CALENDAR ══ -->
-<div class="page hidden" id="pg-calendar">
-  <button class="back-btn" onclick="nav('pg-home')">
-    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-    Powrót
-  </button>
-  <div class="inner">
-    <div id="cal-wrap" style="width:100%;display:flex;flex-direction:column;align-items:center;padding-bottom:20px"></div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<!-- ══ DECISIONS ══ -->
-<div class="page hidden" id="pg-decisions">
-  <button class="back-btn" onclick="nav('pg-home')">
-    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-    Powrót
-  </button>
-  <div class="inner">
-    <div class="pg-title">Decyzje – Baza wiedzy</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Baza decyzji administracyjnych</div>
-    <div class="dec-search-wrap">
-      <div class="card">
-        <div class="f-grid one" style="margin-bottom:12px">
-          <div class="f-wrap"><label class="f-lbl">Szukaj decyzji</label>
-            <input class="f-inp" id="dec-q" placeholder="np. sykepenger, NAV, odwołanie…" oninput="searchDecisions()"></div></div>
-        <div class="f-grid">
-          <div class="f-wrap"><label class="f-lbl">Organ</label><input class="f-inp" id="dec-q-organ" placeholder="np. NAV, Helfo, UDI…" oninput="searchDecisions()"></div>
-          <div class="f-wrap"><label class="f-lbl">Rok</label><input class="f-inp" id="dec-q-rok" placeholder="np. 2024" oninput="searchDecisions()"></div></div>
-        <button class="btn-search-go" onclick="searchDecisions()">Szukaj</button>
-      </div>
-      <div id="dec-results" style="margin-top:6px"></div>
-      <div class="dec-upload-card">
-        <div class="sec-lbl">Dodaj decyzję do bazy</div>
-        <div class="f-grid">
-          <div class="f-wrap"><label class="f-lbl">Nazwa / Tytuł</label><input class="f-inp" id="dec-title" placeholder="Decyzja NAV – sykepenger"></div>
-          <div class="f-wrap"><label class="f-lbl">Organ wydający</label><input class="f-inp" id="dec-organ" placeholder="NAV"></div></div>
-        <div class="f-grid">
-          <div class="f-wrap"><label class="f-lbl">Rok</label><input class="f-inp" id="dec-rok" placeholder="2024" maxlength="4"></div>
-          <div class="f-wrap"><label class="f-lbl">Klient (opcjonalnie)</label><input class="f-inp" id="dec-klient" placeholder="Kowalski Jan"></div></div>
-        <div class="f-grid one" style="margin-bottom:10px">
-          <div class="f-wrap"><label class="f-lbl">Opis / Słowa kluczowe</label>
-            <input class="f-inp" id="dec-opis" placeholder="np. odmowa świadczenia, §8-30"></div></div>
-        <div class="file-upload-area" onclick="document.getElementById('dec-file-input').click()">
-          <input type="file" id="dec-file-input" accept=".pdf,.txt,.docx,.doc" style="display:none" onchange="handleDecisionUpload(this)">
-          <div style="font-size:22px;margin-bottom:7px;opacity:.4;color:var(--gold)">▲</div>
-          <div class="file-upload-text"><strong>Wgraj plik decyzji</strong><br>PDF, DOCX, TXT → Google Drive</div>
-        </div>
-        <div class="uploading-bar" id="dec-upload-bar"><div class="uploading-bar-inner"></div></div>
-        <div class="msg" id="dec-msg" style="text-align:left;margin-top:8px"></div>
-      </div>
-    </div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<!-- ══ FORMS ══ -->
-<div class="page hidden" id="pg-forms">
-  <button class="back-btn" onclick="nav('pg-home')">
-    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-    Powrót
-  </button>
-  <div class="inner" id="forms-inner">
-    <div class="pg-title">Wnioski i formularze</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Wybierz kategorię</div>
-    <div class="form-cats" id="form-cats-grid"></div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<!-- ══ PISMO ══ -->
-<div class="page hidden" id="pg-pismo">
-  <button class="back-btn" onclick="nav('pg-home')">
-    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-    Powrót
-  </button>
-  <div class="inner">
-    <div class="pg-title">Napisz pismo</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Wybierz aplikację i utwórz nowy dokument</div>
-    <div class="pismo-wrap">
-      <div class="pismo-sidebar-card">
-        <div class="sec-lbl">Nowe pismo</div>
-        <button class="btn-new-pismo" onclick="window.open('https://docs.google.com/document/create','_blank')">
-          <span>✍</span> Nowe pismo
-        </button>
-        <div style="margin-top:16px">
-          <div class="sec-lbl">Otwórz w</div>
-          <a class="pismo-app-btn" href="https://docs.proton.me/doc?mode=open&volumeId=s-_LwV5UyQR3TcwoKmuBaeLO9eBcoE48yWDMUQq6mi9kzo4_1E4gLoM1I3yIceDwwRvcwBbSrhYo1P3CqTisgA%3D%3D&linkId=M5Mz_b2MYb9FqifRi2PdgjiAjKoLFZfmgxWc07O5FblOKo820JgvM1YZRk1-LZyuQniwsZEoGXF_CJqBqKP-6g%3D%3D" target="_blank">
-            <span class="pismo-app-icon">📄</span>
-            <div><div style="font-weight:600;font-size:12px">Proton Docs</div><div style="font-size:10px;color:var(--text-ter);margin-top:1px">Szyfrowany edytor</div></div>
-          </a>
-          <a class="pismo-app-btn" href="https://docs.proton.me/sheet?mode=open&volumeId=s-_LwV5UyQR3TcwoKmuBaeLO9eBcoE48yWDMUQq6mi9kzo4_1E4gLoM1I3yIceDwwRvcwBbSrhYo1P3CqTisgA%3D%3D&linkId=lstBRCHbuLAjmlOFzarJTDf27zrKS-CxXYtLiuIyVDJ4VW7TjuLD-I4DXSEFnaZUkzqyWxe0PrNDFEYsoQmT7w%3D%3D" target="_blank" style="margin-top:6px">
-            <span class="pismo-app-icon">📊</span>
-            <div><div style="font-weight:600;font-size:12px">Proton Sheet</div><div style="font-size:10px;color:var(--text-ter);margin-top:1px">Szyfrowany arkusz</div></div>
-          </a>
-          <a class="pismo-app-btn" href="https://docs.google.com/document/create" target="_blank" style="margin-top:6px">
-            <span class="pismo-app-icon">📝</span>
-            <div><div style="font-weight:600;font-size:12px">Google Docs</div><div style="font-size:10px;color:var(--text-ter);margin-top:1px">docs.google.com</div></div>
-          </a>
-          <a class="pismo-app-btn" href="http://drive.proton.me/u/0/tdyqmYFnd1Q-Tgy7lR9j3v3xyEagG-wiUZkpiYuWgpn9ZnvnlNFxxW91S183AZcC65enIvwhxIVsGuGJMiA5Zg==/folder/HkyyrZJCxUmGwwZqOfQ6R7FNyyWQPJxn1boycRs-95F_lRCbwnuCRNu4SOHZ9Kp5K011g_zt5MVQMXvuL6J5Gw==?r=/tdyqmYFnd1Q-Tgy7lR9j3v3xyEagG-wiUZkpiYuWgpn9ZnvnlNFxxW91S183AZcC65enIvwhxIVsGuGJMiA5Zg==/folder/6ePM8DuNKG0840GYYuLNlqjTrqrQPlZz-FlNF29JLra-FHw5NIsKA9mF78foE4jUREuugal9ylEPngmnGC9a0Q==" target="_blank" style="margin-top:6px">
-            <span class="pismo-app-icon">📁</span>
-            <div><div style="font-weight:600;font-size:12px">Moje dokumenty</div><div style="font-size:10px;color:var(--text-ter);margin-top:1px">Proton Drive – folder</div></div>
-          </a>
-        </div>
-      </div>
-      <div class="pismo-main-card">
-        <div class="sec-lbl">Szablony pism</div>
-        <div class="pismo-intro">Kliknij <strong style="color:var(--gold)">„Nowe pismo"</strong> aby otworzyć pusty dokument w Google Docs, lub wybierz szablon poniżej.</div>
-        <div class="pismo-shortcuts" style="margin-top:18px">
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Odwo%C5%82anie+do+NAV" target="_blank">
-            <div class="pismo-shortcut-title">Odwołanie do NAV</div><div class="pismo-shortcut-desc">Pusty dokument z tytułem</div>
-          </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Skarga+do+Statsforvalteren" target="_blank">
-            <div class="pismo-shortcut-title">Skarga administracyjna</div><div class="pismo-shortcut-desc">Statsforvalteren / organ nadrzędny</div>
-          </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Wniosek+o+ponowne+rozpatrzenie" target="_blank">
-            <div class="pismo-shortcut-title">Wniosek o ponowne rozpatrzenie</div><div class="pismo-shortcut-desc">Klage / omgjøringsanmodning</div>
-          </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Pe%C5%82nomocnictwo" target="_blank">
-            <div class="pismo-shortcut-title">Pełnomocnictwo</div><div class="pismo-shortcut-desc">Fullmaktsbrev</div>
-          </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Pismo+do+UDI" target="_blank">
-            <div class="pismo-shortcut-title">Pismo do UDI</div><div class="pismo-shortcut-desc">Sprawa pobytowa</div>
-          </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Opinia+prawna" target="_blank">
-            <div class="pismo-shortcut-title">Opinia prawna</div><div class="pismo-shortcut-desc">Juridisk vurdering</div>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<script src="https://accounts.google.com/gsi/client" async>
-/* NEWS RSS WIDGET */
-const RSS_FEEDS = {
-  nav:   'https://www.nav.no/no/nav-og-samfunn/presse/pressemeldinger/_attachment/rss',
-  skatt: 'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/?rss'
-};
-const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
-let newsCache = {nav:null, skatt:null};
-let currentTab = 'nav';
-let newsCollapsed = false;
-
-async function loadNews(source){
-  if(newsCache[source]){ renderNews(newsCache[source]); return; }
-  document.getElementById('news-content').innerHTML = '<div class="news-loading">Ładowanie…</div>';
-  try{
-    const url = RSS2JSON + encodeURIComponent(RSS_FEEDS[source]) + '&count=8';
-    const r = await fetch(url);
-    const data = await r.json();
-    if(data.status==='ok' && data.items && data.items.length){
-      newsCache[source] = data.items;
-      renderNews(data.items);
-    } else {
-      // fallback — link to site
-      document.getElementById('news-content').innerHTML =
-        `<a class="news-item" href="${source==='nav'?'https://www.nav.no/no/nav-og-samfunn/presse':'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/'}" target="_blank">
-          <div class="news-item-title">Otwórz aktualności ${source==='nav'?'NAV':'Skatteetaten'} →</div>
-        </a>`;
-    }
-  }catch(e){
-    document.getElementById('news-content').innerHTML =
-      `<a class="news-item" href="${source==='nav'?'https://www.nav.no/no/nav-og-samfunn/presse':'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/'}" target="_blank">
-        <div class="news-item-title">Otwórz stronę ${source==='nav'?'NAV':'Skatteetaten'} →</div>
-      </a>`;
-  }
-}
-
-function renderNews(items){
-  document.getElementById('news-content').innerHTML = items.map(item=>{
-    const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
-    const title = item.title || '';
-    const link  = item.link  || '#';
-    return `<a class="news-item" href="${link}" target="_blank">
-      <div class="news-item-title">${title}</div>
-      ${date?`<div class="news-item-date">${date}</div>`:''}
-    </a>`;
-  }).join('');
-}
-
-function switchNewsTab(source){
-  currentTab = source;
-  document.getElementById('tab-nav').classList.toggle('active', source==='nav');
-  document.getElementById('tab-skatt').classList.toggle('active', source==='skatt');
-  loadNews(source);
-}
-
-function toggleNewsWidget(){
-  newsCollapsed = !newsCollapsed;
-  document.getElementById('news-widget').classList.toggle('collapsed', newsCollapsed);
-  document.getElementById('news-toggle').textContent = newsCollapsed ? '▼' : '▲';
-}
-
-// Init news on load
 window.addEventListener('load', ()=>{ loadNews('nav'); });
 // Refresh every 15 min
 setInterval(()=>{ newsCache={nav:null,skatt:null}; loadNews(currentTab); }, 15*60*1000);
+
+
+/* REPORTS */
+function showReport(type){
+  const db = loadDB();
+  const clients = db.clients || [];
+  const now = new Date().toLocaleDateString('pl-PL');
+  let html = '';
+
+  if(type === 'clients'){
+    const sorted = [...clients].sort((a,b)=>(a.nazwisko||'').localeCompare(b.nazwisko||'','pl'));
+    html = `<div class="report-card">
+      <div class="report-header">
+        <div class="report-title">Lista klientów</div>
+        <button class="btn-print" onclick="printReport()">Drukuj / PDF</button>
+      </div>
+      <div class="report-meta">Wygenerowano: ${now} · Łącznie: ${sorted.length} klientów</div>
+      <div style="overflow-x:auto">
+      <table class="report-table" id="report-printable">
+        <thead><tr><th>Lp.</th><th>Nazwisko</th><th>Imię</th><th>Fødselsnummer</th><th>PESEL</th><th>D-nummer</th><th>E-mail</th><th>Tel. NO</th><th>Tel. PL</th></tr></thead>
+        <tbody>${sorted.map((c,i)=>`<tr>
+          <td class="dim">${i+1}</td>
+          <td style="font-weight:600;color:var(--text)">${c.nazwisko||'—'}</td>
+          <td>${c.imie||'—'}</td>
+          <td>${c.fodsel||'—'}</td>
+          <td>${c.pesel||'—'}</td>
+          <td>${c.dnum||'—'}</td>
+          <td>${c.email||'—'}</td>
+          <td>${c.tel_no||'—'}</td>
+          <td>${c.tel_pl||'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table></div></div>`;
+
+  } else if(type === 'earnings'){
+    let rows = [];
+    let totB=0, totM=0, totT=0, totN=0;
+    const sorted = [...clients].sort((a,b)=>(a.nazwisko||'').localeCompare(b.nazwisko||'','pl'));
+    sorted.forEach(c=>{
+      (c.uslugi||[]).forEach(u=>{
+        const b=parseFloat(u.kwota)||0;
+        const mv=parseFloat((b*0.25/1.25).toFixed(2));
+        const tx=parseFloat((b*0.33).toFixed(2));
+        const nt=parseFloat((b-b*0.33).toFixed(2));
+        totB+=b; totM+=mv; totT+=tx; totN+=nt;
+        rows.push({name:`${c.nazwisko||''} ${c.imie||''}`.trim(), data:u.data||'—',
+          czyn:u.czynnosc||'—', b, mv, tx, nt, paid:u.paid});
+      });
+    });
+    html = `<div class="report-card">
+      <div class="report-header">
+        <div class="report-title">Raport zarobków</div>
+        <button class="btn-print" onclick="printReport()">Drukuj / PDF</button>
+      </div>
+      <div class="report-meta">Wygenerowano: ${now} · Łącznie usług: ${rows.length}</div>
+      <div style="overflow-x:auto">
+      <table class="report-table" id="report-printable">
+        <thead><tr><th>Klient</th><th>Data</th><th>Czynność</th><th>Brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Netto</th><th>Status</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr>
+          <td style="font-weight:600;color:var(--text);white-space:nowrap">${r.name}</td>
+          <td class="dim" style="white-space:nowrap">${r.data}</td>
+          <td style="min-width:150px">${r.czyn}</td>
+          <td class="dim" style="white-space:nowrap">${r.b.toFixed(2)} NOK</td>
+          <td class="dim" style="white-space:nowrap">${r.mv.toFixed(2)} NOK</td>
+          <td class="dim" style="white-space:nowrap">${r.tx.toFixed(2)} NOK</td>
+          <td class="gold" style="white-space:nowrap">${r.nt.toFixed(2)} NOK</td>
+          <td>${r.paid?'<span class="badge-paid">Zapłacono</span>':'<span class="badge-unpaid">Oczekuje</span>'}</td>
+        </tr>`).join('')}
+        </tbody>
+        <tfoot><tr>
+          <td colspan="3">Suma łączna</td>
+          <td>${totB.toFixed(2)} NOK</td>
+          <td>${totM.toFixed(2)} NOK</td>
+          <td>${totT.toFixed(2)} NOK</td>
+          <td>${totN.toFixed(2)} NOK</td>
+          <td></td>
+        </tr></tfoot>
+      </table></div></div>`;
+
+  } else if(type === 'unpaid'){
+    let rows = [];
+    let totB=0, totN=0;
+    const sorted = [...clients].sort((a,b)=>(a.nazwisko||'').localeCompare(b.nazwisko||'','pl'));
+    sorted.forEach(c=>{
+      (c.uslugi||[]).forEach((u,idx)=>{
+        if(!u.paid){
+          const b=parseFloat(u.kwota)||0;
+          const nt=parseFloat((b-b*0.33).toFixed(2));
+          totB+=b; totN+=nt;
+          rows.push({cid:c.id, idx, name:`${c.nazwisko||''} ${c.imie||''}`.trim(),
+            data:u.data||'—', czyn:u.czynnosc||'—', b, nt, dplat:u.data_platnosci||'—'});
+        }
+      });
+    });
+    html = `<div class="report-card">
+      <div class="report-header">
+        <div class="report-title">Nieopłacone faktury</div>
+        <button class="btn-print" onclick="printReport()">Drukuj / PDF</button>
+      </div>
+      <div class="report-meta">Wygenerowano: ${now} · Nieopłaconych: ${rows.length} · Łączna wartość: ${totN.toFixed(2)} NOK netto</div>
+      <div style="overflow-x:auto">
+      <table class="report-table" id="report-printable">
+        <thead><tr><th>Klient</th><th>Data usługi</th><th>Czynność</th><th>Kwota brutto</th><th>Netto</th><th>Data płatności</th><th>Akcja</th></tr></thead>
+        <tbody>${rows.length ? rows.map(r=>`<tr>
+          <td style="font-weight:600;color:var(--text);white-space:nowrap">${r.name}</td>
+          <td class="dim" style="white-space:nowrap">${r.data}</td>
+          <td style="min-width:150px">${r.czyn}</td>
+          <td class="dim" style="white-space:nowrap">${r.b.toFixed(2)} NOK</td>
+          <td class="gold" style="white-space:nowrap">${r.nt.toFixed(2)} NOK</td>
+          <td class="dim" style="white-space:nowrap">${r.dplat}</td>
+          <td><button onclick="markPaidFromReport('${r.cid}',${r.idx})" style="padding:4px 10px;background:transparent;border:.5px solid rgba(34,197,94,0.4);border-radius:3px;color:#4ade80;font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;cursor:pointer">Zapłacono ✓</button></td>
+        </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-ter);letter-spacing:.2em">Brak nieopłaconych faktur</td></tr>'}
+        </tbody>
+        ${rows.length?`<tfoot><tr><td colspan="3">Suma nieopłaconych</td><td>${totB.toFixed(2)} NOK</td><td>${totN.toFixed(2)} NOK</td><td colspan="2"></td></tr></tfoot>`:''}
+      </table></div></div>`;
+  }
+
+  document.getElementById('report-output').innerHTML = html;
+}
+
+function markPaidFromReport(clientId, rowIdx){
+  const db=loadDB();
+  const c=db.clients.find(x=>x.id===clientId);
+  if(!c||!c.uslugi||!c.uslugi[rowIdx]) return;
+  c.uslugi[rowIdx].paid=true;
+  saveDB(db);
+  showReport('unpaid'); // refresh
+}
+
+function printReport(){
+  const el = document.getElementById('report-printable');
+  if(!el) return;
+  const win = window.open('','_blank');
+  win.document.write(`<html><head><title>Raport Lavnor</title>
+    <style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:20px}
+    table{width:100%;border-collapse:collapse}
+    th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+      padding:6px 8px;border-bottom:1px solid #ccc;text-align:left}
+    td{padding:8px;border-bottom:1px solid #eee;font-size:11px}
+    tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px}
+    h2{font-family:Georgia,serif;letter-spacing:.3em;text-transform:uppercase;margin-bottom:4px}
+    .meta{color:#888;font-size:10px;margin-bottom:16px}
+    </style></head><body>
+    <h2>Lavnor — Raport</h2>
+    <div class="meta">Wygenerowano: ${new Date().toLocaleDateString('pl-PL')}</div>
+    ${el.outerHTML}
+    </body></html>`);
+  win.document.close();
+  win.print();
+}
 
 </script>
 <script>
@@ -1390,7 +1014,12 @@ function renderDetail(){
       <td class="calc" style="white-space:nowrap">${mv} NOK</td>
       <td class="calc" style="white-space:nowrap">${tx} NOK</td>
       <td class="net" style="white-space:nowrap">${nt} NOK</td>
-      <td style="white-space:nowrap;color:var(--text-ter)">${u.data_platnosci||'—'}</td></tr>`;
+      <td style="white-space:nowrap;color:var(--text-ter)">${u.data_platnosci||'—'}</td>
+      <td style="text-align:center">
+        <button onclick="togglePaid('${currentId}',${i})" style="background:none;border:none;cursor:pointer;font-size:18px;transition:all .2s" title="${u.paid?'Oznacz jako nieopłacone':'Oznacz jako zapłacone'}">
+          ${u.paid ? '<span style="color:#22c55e">✓</span>' : '<span style="color:rgba(238,240,244,0.2);font-size:14px">○</span>'}
+        </button>
+      </td></tr>\`;
   }).join('');
   const totB=(c.uslugi||[]).reduce((s,u)=>s+(parseFloat(u.kwota)||0),0);
   const totN=(c.uslugi||[]).reduce((s,u)=>{const b=parseFloat(u.kwota)||0;return s+(b-b*0.33);},0);
@@ -1441,7 +1070,7 @@ function renderDetail(){
           <div class="bill-table-wrap">
             <table class="bill-tbl">
               <thead><tr><th>Lp.</th><th>Data</th><th style="min-width:155px">Wykonana czynność</th>
-                <th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th></tr></thead>
+                <th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th><th>Zapłacono</th></tr></thead>
               <tbody>
                 ${rows}
                 <tr>
@@ -1483,6 +1112,14 @@ function calcPrev(){
   document.getElementById('pr-tx').textContent=(b*0.33).toFixed(2)+' NOK';
   document.getElementById('pr-nt').textContent=(b-b*0.33).toFixed(2)+' NOK';
 }
+function togglePaid(clientId, rowIdx){
+  const db=loadDB();
+  const c=db.clients.find(x=>x.id===clientId);
+  if(!c||!c.uslugi||!c.uslugi[rowIdx]) return;
+  c.uslugi[rowIdx].paid = !c.uslugi[rowIdx].paid;
+  saveDB(db); renderDetail();
+}
+
 function saveRow(){
   const data=document.getElementById('nr-data').value;
   const czyn=document.getElementById('nr-czyn').value.trim();
