@@ -689,6 +689,47 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .logo-diamond-wrap{padding:0 14px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .logo-diamond{width:8px;height:8px;background:rgba(255,255,255,0.9);transform:rotate(45deg);
   box-shadow:0 0 8px rgba(255,255,255,0.5),0 0 14px rgba(212,175,90,0.4)}
+
+/* RSS NEWS WIDGET */
+.news-widget{
+  position:fixed;top:38px;left:20px;z-index:40;
+  width:272px;
+  background:rgba(24,36,60,0.96);
+  border:.5px solid rgba(212,175,90,0.3);
+  border-radius:6px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.06);
+  overflow:hidden;
+}
+.news-widget.collapsed .news-body{display:none}
+.news-header{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;cursor:pointer;user-select:none;
+  border-bottom:.5px solid rgba(212,175,90,0.15)}
+.news-header:hover{background:rgba(255,255,255,0.03)}
+.news-tabs{display:flex;gap:0;border-bottom:.5px solid rgba(212,175,90,0.15)}
+.news-tab{flex:1;padding:7px 8px;font-size:9px;font-weight:700;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--text-ter);cursor:pointer;text-align:center;
+  transition:all .2s;border:none;background:none;}
+.news-tab.active{color:var(--gold);border-bottom:1.5px solid var(--gold);margin-bottom:-1px}
+.news-tab:hover{color:var(--text-sec)}
+.news-body{max-height:220px;overflow-y:auto;padding:6px 0}
+.news-body::-webkit-scrollbar{width:3px}
+.news-body::-webkit-scrollbar-track{background:transparent}
+.news-body::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.3);border-radius:2px}
+.news-item{padding:7px 12px;border-bottom:.5px solid rgba(255,255,255,0.05);
+  cursor:pointer;transition:background .15s;text-decoration:none;display:block}
+.news-item:hover{background:rgba(212,175,90,0.06)}
+.news-item:last-child{border-bottom:none}
+.news-item-title{font-size:11px;font-weight:500;color:var(--text-sec);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-item-date{font-size:9px;color:var(--text-ter);margin-top:2px;letter-spacing:.08em}
+.news-loading{padding:16px;text-align:center;font-size:10px;color:var(--text-ter);letter-spacing:.15em}
+.news-toggle{background:none;border:none;cursor:pointer;color:var(--text-ter);
+  font-size:11px;padding:2px 4px;transition:color .2s;flex-shrink:0}
+.news-toggle:hover{color:var(--gold)}
+.news-widget-title{font-family:'Cinzel',serif;font-size:10px;font-weight:600;
+  letter-spacing:.3em;color:var(--gold);text-transform:uppercase}
+
 </style>
 </head>
 <body>
@@ -706,6 +747,22 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
   </div>
 </div>
 
+
+
+<!-- NEWS WIDGET -->
+<div class="news-widget" id="news-widget">
+  <div class="news-header" onclick="toggleNewsWidget()">
+    <span class="news-widget-title">Aktualności</span>
+    <button class="news-toggle" id="news-toggle">▲</button>
+  </div>
+  <div class="news-body" id="news-body">
+    <div class="news-tabs">
+      <button class="news-tab active" id="tab-nav" onclick="switchNewsTab('nav')">NAV</button>
+      <button class="news-tab" id="tab-skatt" onclick="switchNewsTab('skatt')">Skatteetaten</button>
+    </div>
+    <div id="news-content"><div class="news-loading">Ładowanie…</div></div>
+  </div>
+</div>
 
 <!-- DAILY WIDGET -->
 <div class="daily-widget" id="daily-widget">
@@ -1098,7 +1155,73 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
   <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
 </div>
 
-<script src="https://accounts.google.com/gsi/client" async></script>
+<script src="https://accounts.google.com/gsi/client" async>
+/* NEWS RSS WIDGET */
+const RSS_FEEDS = {
+  nav:   'https://www.nav.no/no/nav-og-samfunn/presse/pressemeldinger/_attachment/rss',
+  skatt: 'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/?rss'
+};
+const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+let newsCache = {nav:null, skatt:null};
+let currentTab = 'nav';
+let newsCollapsed = false;
+
+async function loadNews(source){
+  if(newsCache[source]){ renderNews(newsCache[source]); return; }
+  document.getElementById('news-content').innerHTML = '<div class="news-loading">Ładowanie…</div>';
+  try{
+    const url = RSS2JSON + encodeURIComponent(RSS_FEEDS[source]) + '&count=8';
+    const r = await fetch(url);
+    const data = await r.json();
+    if(data.status==='ok' && data.items && data.items.length){
+      newsCache[source] = data.items;
+      renderNews(data.items);
+    } else {
+      // fallback — link to site
+      document.getElementById('news-content').innerHTML =
+        `<a class="news-item" href="${source==='nav'?'https://www.nav.no/no/nav-og-samfunn/presse':'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/'}" target="_blank">
+          <div class="news-item-title">Otwórz aktualności ${source==='nav'?'NAV':'Skatteetaten'} →</div>
+        </a>`;
+    }
+  }catch(e){
+    document.getElementById('news-content').innerHTML =
+      `<a class="news-item" href="${source==='nav'?'https://www.nav.no/no/nav-og-samfunn/presse':'https://www.skatteetaten.no/om-skatteetaten/presse/nyheter/'}" target="_blank">
+        <div class="news-item-title">Otwórz stronę ${source==='nav'?'NAV':'Skatteetaten'} →</div>
+      </a>`;
+  }
+}
+
+function renderNews(items){
+  document.getElementById('news-content').innerHTML = items.map(item=>{
+    const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+    const title = item.title || '';
+    const link  = item.link  || '#';
+    return `<a class="news-item" href="${link}" target="_blank">
+      <div class="news-item-title">${title}</div>
+      ${date?`<div class="news-item-date">${date}</div>`:''}
+    </a>`;
+  }).join('');
+}
+
+function switchNewsTab(source){
+  currentTab = source;
+  document.getElementById('tab-nav').classList.toggle('active', source==='nav');
+  document.getElementById('tab-skatt').classList.toggle('active', source==='skatt');
+  loadNews(source);
+}
+
+function toggleNewsWidget(){
+  newsCollapsed = !newsCollapsed;
+  document.getElementById('news-widget').classList.toggle('collapsed', newsCollapsed);
+  document.getElementById('news-toggle').textContent = newsCollapsed ? '▼' : '▲';
+}
+
+// Init news on load
+window.addEventListener('load', ()=>{ loadNews('nav'); });
+// Refresh every 15 min
+setInterval(()=>{ newsCache={nav:null,skatt:null}; loadNews(currentTab); }, 15*60*1000);
+
+</script>
 <script>
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='lavnor_baza_klientow.json';
