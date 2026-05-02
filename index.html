@@ -737,6 +737,35 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .badge-unpaid{padding:2px 9px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.15em;
   text-transform:uppercase;background:rgba(248,113,113,.15);color:#f87171;border:.5px solid rgba(248,113,113,.3)}
 
+
+/* PAID TOGGLE SWITCH */
+.paid-toggle-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.paid-toggle-label{font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+.paid-toggle{position:relative;width:42px;height:22px;cursor:pointer}
+.paid-toggle input{opacity:0;width:0;height:0;position:absolute}
+.paid-slider{position:absolute;inset:0;border-radius:11px;background:rgba(244,63,94,0.6);
+  border:.5px solid rgba(244,63,94,0.8);transition:background .25s,border-color .25s;
+  box-shadow:0 0 8px rgba(244,63,94,0.3)}
+.paid-slider::before{content:'';position:absolute;width:16px;height:16px;border-radius:50%;
+  background:#fff;top:2px;left:2px;transition:transform .25s;
+  box-shadow:0 1px 4px rgba(0,0,0,0.3)}
+.paid-toggle input:checked+.paid-slider{background:rgba(34,197,94,0.7);
+  border-color:rgba(34,197,94,0.9);box-shadow:0 0 8px rgba(34,197,94,0.35)}
+.paid-toggle input:checked+.paid-slider::before{transform:translateX(20px)}
+/* CLIENT REPORT BUTTON */
+.btn-client-report{padding:8px 16px;background:transparent;border:.5px solid var(--gold-border,rgba(212,175,90,0.35));
+  border-radius:3px;color:var(--gold,#d4af5a);font-family:Open Sans,sans-serif;font-size:9px;font-weight:700;
+  letter-spacing:.28em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-client-report:hover{background:rgba(212,175,90,0.1)}
+.btn-edit-client{padding:8px 16px;background:transparent;border:.5px solid rgba(91,143,168,0.5);
+  border-radius:3px;color:#5b8fa8;font-family:Open Sans,sans-serif;font-size:9px;font-weight:700;
+  letter-spacing:.28em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-left:8px}
+.btn-edit-client:hover{background:rgba(91,143,168,0.1)}
+.btn-delete-client{padding:8px 16px;background:transparent;border:.5px solid rgba(244,63,94,0.4);
+  border-radius:3px;color:rgba(244,63,94,0.8);font-family:Open Sans,sans-serif;font-size:9px;font-weight:700;
+  letter-spacing:.28em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-left:8px}
+.btn-delete-client:hover{background:rgba(244,63,94,0.1)}
+
 </style>
 </head>
 <body>
@@ -964,9 +993,9 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
     Powrót
   </button>
   <div class="inner">
-    <div class="pg-title">Dodaj klienta</div>
+    <div class="pg-title" id="add-form-title">Dodaj klienta</div>
     <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Uzupełnij dane nowego klienta</div>
+    <div class="pg-sub" id="add-form-sub">Uzupełnij dane nowego klienta</div>
     <div class="card" style="width:100%;max-width:600px">
       <div class="sec-lbl">Dane osobowe</div>
       <div class="f-grid"><div class="f-wrap"><label class="f-lbl">Imię</label><input class="f-inp" id="a-imie" placeholder="Jan"></div>
@@ -984,7 +1013,8 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
       <div class="sep-line"></div>
       <div class="sec-lbl">Dostęp</div>
       <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">Hasło</label><input class="f-inp" id="a-haslo" type="text" placeholder="wpisz hasło" autocomplete="off"></div></div>
-      <button class="btn-cta" onclick="saveClient()">Zapisz klienta</button>
+      <button class="btn-cta" onclick="saveClient()"><span id="add-btn-label">Zapisz klienta</span></button>
+      <button id="add-cancel-btn" onclick="cancelEdit()" style="display:none;width:100%;margin-top:8px;padding:12px;background:transparent;border:.5px solid rgba(238,240,244,0.3);border-radius:3px;color:var(--text-ter);font-family:Open Sans,sans-serif;font-size:10px;font-weight:700;letter-spacing:.35em;text-transform:uppercase;cursor:pointer">Anuluj edycję</button>
       <div class="msg" id="add-msg"></div>
     </div>
   </div>
@@ -1270,6 +1300,20 @@ function saveClient(){
   const imie=g('a-imie'),nazwisko=g('a-nazwisko');
   if(!imie||!nazwisko){showMsg('add-msg','Imię i nazwisko są wymagane.','err');return;}
   const db=loadDB();
+  if(currentId){
+    // EDIT mode
+    const cl=db.clients.find(x=>x.id===currentId);
+    if(cl){
+      cl.imie=imie;cl.nazwisko=nazwisko;cl.fodsel=g('a-fodsel');cl.dnum=g('a-dnum');
+      cl.pesel=g('a-pesel');cl.email=g('a-email');cl.tel_pl=g('a-tel-pl');
+      cl.tel_no=g('a-tel-no');cl.haslo=g('a-haslo');
+    }
+    saveDB(db);
+    showMsg('add-msg','Dane zaktualizowane.','ok');
+    setTimeout(()=>{cancelEdit();renderDetail();nav('pg-detail');},800);
+    return;
+  }
+  // ADD mode
   db.clients.push({id:uid(),imie,nazwisko,fodsel:g('a-fodsel'),dnum:g('a-dnum'),pesel:g('a-pesel'),
     email:g('a-email'),tel_pl:g('a-tel-pl'),tel_no:g('a-tel-no'),haslo:g('a-haslo'),notatki:[],uslugi:[],pliki:[]});
   saveDB(db);
@@ -1309,9 +1353,11 @@ function saveNote(){
 async function handleFileUpload(input){
   const file=input.files[0];if(!file)return;
   const ext=(file.name.split('.').pop()||'').toLowerCase();
-  if(!['pdf','txt','docx','doc'].includes(ext)){alert('Dozwolone: PDF, TXT, DOCX');return;}
+  if(!['pdf','txt','docx','doc','xlsx','xls','png','jpg','jpeg'].includes(ext)){
+    alert('Dozwolone: PDF, TXT, DOCX, XLSX, PNG, JPG');return;
+  }
   document.getElementById('upload-bar').style.display='block';
-  const result=await uploadFileToDrive(file);
+  const result=await uploadClientFile(file,currentId);
   document.getElementById('upload-bar').style.display='none';
   if(!result)return;
   const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
@@ -1364,17 +1410,27 @@ function renderDetail(){
   });
   let fileList='';
   (cl.pliki||[]).forEach(f=>{
-    fileList+=[
-      '<div class="file-item"><div class="file-item-left">',
-      '<span style="font-size:17px">',fileIcon(f.name),'</span>',
-      '<div><div class="file-name">',f.name,'</div><div class="file-meta">',f.date,' · ',f.size,'</div></div></div>',
-      '<a class="file-link" href="',f.link,'" target="_blank">Otwórz</a></div>'
-    ].join('');
+    fileList+='<div class="file-item"><div class="file-item-left">'
+      +'<span style="font-size:17px">'+fileIcon(f.name)+'</span>'
+      +'<div><div class="file-name">'+f.name+'</div>'
+      +'<div class="file-meta">'+f.date+' · '+f.size+'</div></div></div>'
+      +'<div style="display:flex;gap:6px;align-items:center">'
+      +'<a class="file-link" href="'+f.link+'" target="_blank">Otwórz</a>'
+      +(f.folderLink?'<a class="file-link" href="'+f.folderLink+'" target="_blank" style="font-size:8px">📁 Folder</a>':'')
+      +'</div></div>';
   });
   document.getElementById('detail-inner').innerHTML=[
-    '<div class="pg-title">',cl.imie,' ',cl.nazwisko,'</div>',
-    '<div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>',
-    '<div class="pg-sub">Karta klienta</div>',
+    '<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px">',
+    '<div>',
+    '<div class="pg-title" style="text-align:left">',cl.imie,' ',cl.nazwisko,'</div>',
+    '<div class="pg-ornament" style="justify-content:flex-start"><div class="pg-line" style="max-width:80px"></div><div class="pg-diamond"></div><div class="pg-line r" style="max-width:80px"></div></div>',
+    '<div class="pg-sub" style="text-align:left">Karta klienta</div>',
+    '</div>',
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:8px">',
+    '<button class="btn-client-report" data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)">🖨 Raport</button>',
+    '<button class="btn-edit-client" data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)">✏️ Edytuj</button>',
+    '<button class="btn-delete-client" data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)">🗑 Usuń</button>',
+    '</div></div>',
     '<div class="detail-wrap">',
     '<div class="left-col">',
     '<div class="card" style="padding:18px">',
@@ -1858,6 +1914,163 @@ window.addEventListener('load',()=>{
   if(t){accessToken=t;setDriveStatus('ok','Google Drive – zalogowany');driveLoadOrCreate();}
 });
 
+
+/* ── EDIT CLIENT ─────────────────────────────────────────── */
+function openEditClient(clientId){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl)return;
+  currentId=clientId;
+  // populate add form with existing data
+  document.getElementById('a-imie').value=cl.imie||'';
+  document.getElementById('a-nazwisko').value=cl.nazwisko||'';
+  document.getElementById('a-fodsel').value=cl.fodsel||'';
+  document.getElementById('a-dnum').value=cl.dnum||'';
+  document.getElementById('a-pesel').value=cl.pesel||'';
+  document.getElementById('a-email').value=cl.email||'';
+  document.getElementById('a-tel-pl').value=cl.tel_pl||'';
+  document.getElementById('a-tel-no').value=cl.tel_no||'';
+  document.getElementById('a-haslo').value=cl.haslo||'';
+  // Switch form to edit mode
+  document.getElementById('add-form-title').textContent='Edytuj klienta';
+  document.getElementById('add-form-sub').textContent='Zaktualizuj dane klienta';
+  document.getElementById('add-btn-label').textContent='Zapisz zmiany';
+  document.getElementById('add-cancel-btn').style.display='inline-block';
+  nav('pg-add');
+}
+
+function cancelEdit(){
+  currentId=null;
+  document.getElementById('add-form-title').textContent='Dodaj klienta';
+  document.getElementById('add-form-sub').textContent='Uzupełnij dane nowego klienta';
+  document.getElementById('add-btn-label').textContent='Zapisz klienta';
+  document.getElementById('add-cancel-btn').style.display='none';
+  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo']
+    .forEach(id=>document.getElementById(id).value='');
+  nav('pg-home');
+}
+
+function deleteClient(clientId){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl)return;
+  if(!confirm('Usunąć klienta '+cl.imie+' '+cl.nazwisko+'? Tej operacji nie można cofnąć.'))return;
+  db.clients=db.clients.filter(x=>x.id!==clientId);
+  saveDB(db);
+  nav('pg-search');
+}
+
+/* ── CLIENT REPORT ───────────────────────────────────────── */
+function printClientReport(clientId){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl)return;
+  const now=new Date().toLocaleDateString('pl-PL');
+  let rows='';
+  let totB=0;
+  (cl.uslugi||[]).forEach((u,i)=>{
+    const b=parseFloat(u.kwota)||0;
+    totB+=b;
+    rows+='<tr>'
+      +'<td>'+(i+1)+'</td>'
+      +'<td>'+(u.data||'—')+'</td>'
+      +'<td>'+(u.czynnosc||'—')+'</td>'
+      +'<td style="text-align:right;font-weight:600">'+b.toFixed(2)+' NOK</td>'
+      +'<td style="text-align:center">'+(u.paid?'✓':'○')+'</td>'
+      +'</tr>';
+  });
+  const win=window.open('','_blank');
+  win.document.write(
+    '<html><head><title>Raport – '+cl.imie+' '+cl.nazwisko+'</title>'
+    +'<style>'
+    +'body{font-family:Georgia,serif;font-size:13px;color:#111;padding:32px;max-width:700px;margin:0 auto}'
+    +'h1{font-size:22px;letter-spacing:.1em;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:4px}'
+    +'p.sub{color:#666;font-size:11px;margin-bottom:24px}'
+    +'table{width:100%;border-collapse:collapse;margin-top:8px}'
+    +'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;'
+       +'padding:7px 8px;border-bottom:2px solid #333;text-align:left;background:#f5f5f5}'
+    +'td{padding:8px;border-bottom:1px solid #e5e5e5;font-size:12px}'
+    +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px;font-size:13px}'
+    +'@media print{button{display:none}}'
+    +'</style></head><body>'
+    +'<h1>'+cl.imie+' '+cl.nazwisko+'</h1>'
+    +'<p class="sub">Raport czynności · Wygenerowano: '+now
+      +' · Fødselsnummer: '+(cl.fodsel||'—')+' · PESEL: '+(cl.pesel||'—')+'</p>'
+    +'<button onclick="window.print()" style="margin-bottom:16px;padding:8px 20px;'
+      +'background:#333;color:#fff;border:none;cursor:pointer;font-size:12px">🖨 Drukuj / PDF</button>'
+    +'<table>'
+    +'<thead><tr><th>Lp.</th><th>Data</th><th>Czynność</th><th style="text-align:right">Kwota (NOK)</th><th style="text-align:center">Zapłacono</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr><td colspan="3">Suma łączna</td>'
+      +'<td style="text-align:right">'+totB.toFixed(2)+' NOK</td><td></td></tr></tfoot>'
+    +'</table>'
+    +'</body></html>'
+  );
+  win.document.close();
+}
+
+/* ── DRIVE FOLDER UPLOAD ─────────────────────────────────── */
+const CLIENT_DRIVE_FOLDER='16_wIAhxbZlkikHsGiIP0NUpOBCY316am';
+
+async function getOrCreateClientFolder(clientName){
+  // Search for existing folder with client name inside the main folder
+  const search=await fetch(
+    'https://www.googleapis.com/drive/v3/files?q='
+    +encodeURIComponent(
+      'name="'+clientName+'" and mimeType="application/vnd.google-apps.folder"'
+      +' and "'+CLIENT_DRIVE_FOLDER+'" in parents and trashed=false'
+    )+'&fields=files(id,name)',
+    {headers:{Authorization:'Bearer '+accessToken}}
+  );
+  const data=await search.json();
+  if(data.files&&data.files.length>0) return data.files[0].id;
+  // Create new folder
+  const create=await fetch('https://www.googleapis.com/drive/v3/files',{
+    method:'POST',
+    headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},
+    body:JSON.stringify({
+      name:clientName,
+      mimeType:'application/vnd.google-apps.folder',
+      parents:[CLIENT_DRIVE_FOLDER]
+    })
+  });
+  const folder=await create.json();
+  return folder.id;
+}
+
+async function uploadClientFile(file, clientId){
+  if(!accessToken){alert('Zaloguj się do Google Drive.');return null;}
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl)return null;
+  const clientName=cl.nazwisko+' '+cl.imie;
+  setDriveStatus('sync','Tworzenie folderu…');
+  try{
+    const folderId=await getOrCreateClientFolder(clientName);
+    setDriveStatus('sync','Wgrywanie pliku…');
+    const meta={name:file.name,parents:[folderId]};
+    const body=new FormData();
+    body.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+    body.append('file',file);
+    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',
+      {method:'POST',headers:{Authorization:'Bearer '+accessToken},body});
+    const d=await r.json();
+    // Make file readable by link
+    await fetch('https://www.googleapis.com/drive/v3/files/'+d.id+'/permissions',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},
+      body:JSON.stringify({role:'reader',type:'anyone'})
+    });
+    setDriveStatus('ok','Plik wgrany ✓');
+    return{
+      id:d.id,name:file.name,
+      link:'https://drive.google.com/file/d/'+d.id+'/view',
+      folderLink:'https://drive.google.com/drive/folders/'+folderId,
+      date:new Date().toLocaleDateString('pl-PL'),
+      size:Math.round(file.size/1024)+'KB'
+    };
+  }catch(e){setDriveStatus('warn','Błąd wgrywania');console.error(e);return null;}
+}
 </script>
 
 <!-- ══ REPORTS ══ -->
