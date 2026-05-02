@@ -1163,160 +1163,22 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async></script>
+
 <script>
 
-
-
-
-
-/* REPORTS & PAID */
-function showReport(type){
-  var db=loadDB(); var clients=db.clients||[];
-  var now=new Date().toLocaleDateString('pl-PL');
-  var sorted=clients.slice().sort(function(a,b){return (a.nazwisko||'').localeCompare(b.nazwisko||'','pl');});
-  var html='';
-
-  if(type==='clients'){
-    html='<div class="report-card">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
-      '<div style="font-family:Cinzel,serif;font-size:16px;font-weight:700;letter-spacing:.2em;color:var(--text,#f5f7fa)">Lista klientów</div>'+
-      '<button class="btn-print" onclick="printReport()">&#128438; Drukuj / PDF</button></div>'+
-      '<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px;letter-spacing:.1em">Wygenerowano: '+now+' &nbsp;&middot;&nbsp; Łącznie: '+sorted.length+' klientów</div>'+
-      '<div style="overflow-x:auto"><table class="report-table" id="report-printable">'+
-      '<thead><tr><th>Lp.</th><th>Nazwisko</th><th>Imię</th><th>Fødselsnummer</th><th>PESEL</th><th>D-nummer</th><th>E-mail</th><th>Tel. NO</th><th>Tel. PL</th></tr></thead><tbody>'+
-      sorted.map(function(cl,i){return '<tr>'+
-        '<td class="dim">'+(i+1)+'</td>'+
-        '<td style="font-weight:600;color:var(--text,#f5f7fa)">'+(cl.nazwisko||'—')+'</td>'+
-        '<td>'+(cl.imie||'—')+'</td>'+
-        '<td>'+(cl.fodsel||'—')+'</td>'+
-        '<td>'+(cl.pesel||'—')+'</td>'+
-        '<td>'+(cl.dnum||'—')+'</td>'+
-        '<td>'+(cl.email||'—')+'</td>'+
-        '<td>'+(cl.tel_no||'—')+'</td>'+
-        '<td>'+(cl.tel_pl||'—')+'</td></tr>';}).join('')+
-      '</tbody></table></div></div>';
-
-  } else if(type==='earnings'){
-    var eRows=[],totB=0,totM=0,totT=0,totN=0;
-    sorted.forEach(function(cl){(cl.uslugi||[]).forEach(function(u){
-      var b=parseFloat(u.kwota)||0;
-      var mv=+(b*0.25/1.25).toFixed(2),tx=+(b*0.33).toFixed(2),nt=+(b-b*0.33).toFixed(2);
-      totB+=b;totM+=mv;totT+=tx;totN+=nt;
-      eRows.push({name:(cl.nazwisko||'')+' '+(cl.imie||''),data:u.data||'—',
-        czyn:u.czynnosc||'—',b:b,mv:mv,tx:tx,nt:nt,paid:u.paid});
-    });});
-    html='<div class="report-card">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
-      '<div style="font-family:Cinzel,serif;font-size:16px;font-weight:700;letter-spacing:.2em;color:var(--text,#f5f7fa)">Raport zarobków</div>'+
-      '<button class="btn-print" onclick="printReport()">&#128438; Drukuj / PDF</button></div>'+
-      '<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px;letter-spacing:.1em">Wygenerowano: '+now+' &nbsp;&middot;&nbsp; Usług: '+eRows.length+'</div>'+
-      '<div style="overflow-x:auto"><table class="report-table" id="report-printable">'+
-      '<thead><tr><th>Klient</th><th>Data</th><th>Czynność</th><th>Brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Netto</th><th>Status</th></tr></thead><tbody>'+
-      eRows.map(function(r){return '<tr>'+
-        '<td style="font-weight:600;color:var(--text,#f5f7fa);white-space:nowrap">'+r.name+'</td>'+
-        '<td class="dim" style="white-space:nowrap">'+r.data+'</td>'+
-        '<td style="min-width:140px">'+r.czyn+'</td>'+
-        '<td class="dim" style="white-space:nowrap">'+r.b.toFixed(2)+' NOK</td>'+
-        '<td class="dim" style="white-space:nowrap">'+r.mv.toFixed(2)+' NOK</td>'+
-        '<td class="dim" style="white-space:nowrap">'+r.tx.toFixed(2)+' NOK</td>'+
-        '<td class="gold" style="white-space:nowrap">'+r.nt.toFixed(2)+' NOK</td>'+
-        '<td>'+(r.paid?'<span class="badge-paid">Zapłacono</span>':'<span class="badge-unpaid">Oczekuje</span>')+'</td></tr>';}).join('')+
-      '</tbody><tfoot><tr><td colspan="3">Suma łączna</td>'+
-      '<td>'+totB.toFixed(2)+' NOK</td>'+
-      '<td>'+totM.toFixed(2)+' NOK</td>'+
-      '<td>'+totT.toFixed(2)+' NOK</td>'+
-      '<td class="gold">'+totN.toFixed(2)+' NOK</td><td></td></tr></tfoot>'+
-      '</table></div></div>';
-
-  } else if(type==='unpaid'){
-    var uRows=[],utotB=0,utotN=0;
-    sorted.forEach(function(cl){(cl.uslugi||[]).forEach(function(u,idx){
-      if(!u.paid){
-        var b=parseFloat(u.kwota)||0,nt=+(b-b*0.33).toFixed(2);
-        utotB+=b;utotN+=nt;
-        uRows.push({cid:cl.id,idx:idx,name:(cl.nazwisko||'')+' '+(cl.imie||''),
-          data:u.data||'—',czyn:u.czynnosc||'—',b:b,nt:nt,dplat:u.data_platnosci||'—'});
-      }
-    });});
-    var uBody = uRows.length ? uRows.map(function(r){return '<tr>'+
-      '<td style="font-weight:600;color:var(--text,#f5f7fa);white-space:nowrap">'+r.name+'</td>'+
-      '<td class="dim" style="white-space:nowrap">'+r.data+'</td>'+
-      '<td style="min-width:140px">'+r.czyn+'</td>'+
-      '<td class="dim" style="white-space:nowrap">'+r.b.toFixed(2)+' NOK</td>'+
-      '<td class="gold" style="white-space:nowrap">'+r.nt.toFixed(2)+' NOK</td>'+
-      '<td class="dim" style="white-space:nowrap">'+r.dplat+'</td>'+
-      '<td><button onclick="markPaidFromReport(''+r.cid+'','+r.idx+')" '+
-        'style="padding:4px 12px;background:rgba(34,197,94,.12);border:.5px solid rgba(34,197,94,.35);'+
-        'border-radius:4px;color:#4ade80;font-size:9px;font-weight:700;letter-spacing:.15em;'+
-        'text-transform:uppercase;cursor:pointer">&#10003; Zapłacono</button></td></tr>';}).join('') :
-      '<tr><td colspan="7" style="text-align:center;padding:22px;color:rgba(238,240,244,0.35);'+
-      'letter-spacing:.2em;text-transform:uppercase">Brak nieopłaconych faktur</td></tr>';
-    html='<div class="report-card">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
-      '<div style="font-family:Cinzel,serif;font-size:16px;font-weight:700;letter-spacing:.2em;color:var(--text,#f5f7fa)">Nieopłacone faktury</div>'+
-      '<button class="btn-print" onclick="printReport()">&#128438; Drukuj / PDF</button></div>'+
-      '<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px;letter-spacing:.1em">'+
-      'Wygenerowano: '+now+' &nbsp;&middot;&nbsp; Nieopłaconych: '+uRows.length+
-      (uRows.length?' &nbsp;&middot;&nbsp; Łączna wartość: '+utotN.toFixed(2)+' NOK netto':'')+
-      '</div>'+
-      '<div style="overflow-x:auto"><table class="report-table" id="report-printable">'+
-      '<thead><tr><th>Klient</th><th>Data usługi</th><th>Czynność</th>'+
-      '<th>Kwota brutto</th><th>Netto</th><th>Data płatności</th><th>Akcja</th></tr></thead>'+
-      '<tbody>'+uBody+'</tbody>'+
-      (uRows.length?'<tfoot><tr><td colspan="3">Suma nieopłaconych</td>'+
-        '<td class="gold">'+utotB.toFixed(2)+' NOK</td>'+
-        '<td class="gold">'+utotN.toFixed(2)+' NOK</td>'+
-        '<td colspan="2"></td></tr></tfoot>':'')+
-      '</table></div></div>';
-  }
-  document.getElementById('report-output').innerHTML=html;
-}
-
-function markPaidFromReport(clientId,rowIdx){
-  var db=loadDB();
-  var cl=db.clients.find(function(x){return x.id===clientId;});
-  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx]) return;
-  cl.uslugi[rowIdx].paid=true;
-  saveDB(db); showReport('unpaid');
-}
-
-function printReport(){
-  var el=document.getElementById('report-printable');
-  if(!el) return;
-  var win=window.open('','_blank');
-  win.document.write('<html><head><title>Raport Lavnor</title>'+
-    '<style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:24px}'+
-    'h2{font-family:Georgia,serif;font-size:20px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:4px}'+
-    'p.meta{color:#888;font-size:10px;margin-bottom:18px}'+
-    'table{width:100%;border-collapse:collapse}'+
-    'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;'+
-       'padding:7px 8px;border-bottom:1.5px solid #333;text-align:left;background:#f5f5f5}'+
-    'td{padding:8px;border-bottom:1px solid #e5e5e5;font-size:11px}'+
-    'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px;background:#fffbe6}'+
-    '@media print{button{display:none}}'+
-    '</style></head><body>'+
-    '<h2>Lavnor &mdash; Raport</h2>'+
-    '<p class="meta">Wygenerowany: '+new Date().toLocaleDateString('pl-PL')+'</p>'+
-    el.outerHTML+
-    '</body></html>');
-  win.document.close(); win.print();
-}
-
-</script>
-<script>
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='lavnor_baza_klientow.json';
 const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar';
 let accessToken=null,driveFileId=null,syncPending=false,currentId=null;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
-let modalDate=null,remindOn=false,currentFormCat=null;
-
+let modalDate=null,remindOn=false;
 const DB_KEY='lavnor_v11';
 function loadDB(){return JSON.parse(localStorage.getItem(DB_KEY)||'{"clients":[],"tasks":{},"decisions":[],"forms":{"praca":[],"zdrowie":[],"rodzina":[],"emerytura":[],"socjalne":[]}}');}
 function saveDB(db){localStorage.setItem(DB_KEY,JSON.stringify(db));if(accessToken)scheduleDriveSync();}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function onlyDigits(el){el.value=el.value.replace(/\D/g,'')}
 function fmt(v){return v||'—'}
+function q(s){return s.replace(/'/g,"\\x27")}
 
 function nav(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
@@ -1331,8 +1193,6 @@ function showMsg(id,txt,type){
   el.textContent=txt;el.className='msg '+type+' show';
   setTimeout(()=>el.classList.remove('show'),3500);
 }
-
-/* DRIVE */
 function setDriveStatus(state,text){
   document.getElementById('drive-dot').className='dot dot-'+(state==='ok'?'ok':state==='sync'?'sync':'warn');
   document.getElementById('drive-label').textContent=text;
@@ -1343,9 +1203,14 @@ function setDriveStatus(state,text){
 }
 function driveLogin(){
   const client=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:SCOPES,
-    callback:(resp)=>{if(resp.error){setDriveStatus('warn','Błąd logowania');return;}
-      accessToken=resp.access_token;localStorage.setItem('lavnor_gtoken',accessToken);
-      setDriveStatus('ok','Google Drive – zalogowany');driveLoadOrCreate();setTimeout(renderDailyTasks,1000);}});
+    callback:(resp)=>{
+      if(resp.error){setDriveStatus('warn','Błąd logowania');return;}
+      accessToken=resp.access_token;
+      localStorage.setItem('lavnor_gtoken',accessToken);
+      setDriveStatus('ok','Google Drive – zalogowany');
+      driveLoadOrCreate();
+      setTimeout(renderDailyTasks,1000);
+    }});
   client.requestAccessToken();
 }
 function driveLogout(){accessToken=null;driveFileId=null;localStorage.removeItem('lavnor_gtoken');setDriveStatus('warn','Niezalogowany');}
@@ -1381,7 +1246,6 @@ function scheduleDriveSync(){
   setTimeout(async()=>{syncPending=false;setDriveStatus('sync','Zapisywanie…');await driveUpdate();setDriveStatus('ok','Drive – zapisano ✓');},1500);
 }
 async function driveSave(){setDriveStatus('sync','Zapisywanie…');await driveUpdate();setDriveStatus('ok','Drive – zapisano ✓');}
-
 async function uploadFileToDrive(file){
   if(!accessToken){alert('Zaloguj się do Google Drive.');return null;}
   setDriveStatus('sync','Wgrywanie…');
@@ -1400,8 +1264,7 @@ async function uploadFileToDrive(file){
       date:new Date().toLocaleDateString('pl-PL'),size:Math.round(file.size/1024)+'KB'};
   }catch(e){setDriveStatus('warn','Błąd wgrywania');return null;}
 }
-function fileIcon(n){const e=(n.split('.').pop()||'').toLowerCase();return e==='pdf'?'PDF':e==='docx'||e==='doc'?'DOC':'TXT'}
-
+function fileIcon(n){const e=(n.split('.').pop()||'').toLowerCase();return e==='pdf'?'📄':e==='docx'||e==='doc'?'📝':'📃'}
 function saveClient(){
   const g=id=>document.getElementById(id).value.trim();
   const imie=g('a-imie'),nazwisko=g('a-nazwisko');
@@ -1413,40 +1276,36 @@ function saveClient(){
   ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo'].forEach(id=>document.getElementById(id).value='');
   showMsg('add-msg','Klient zapisany.','ok');
 }
-
 function liveSearch(){
   const imie=(document.getElementById('q-imie').value||'').trim().toLowerCase();
   const naz=(document.getElementById('q-naz').value||'').trim().toLowerCase();
-  const id=(document.getElementById('q-id').value||'').trim();
+  const qid=(document.getElementById('q-id').value||'').trim();
   const ra=document.getElementById('search-results');
-  if(!imie&&!naz&&!id){ra.innerHTML='';return;}
+  if(!imie&&!naz&&!qid){ra.innerHTML='';return;}
   const db=loadDB();
-  const res=db.clients.filter(c=>{
-    const mi=!imie||c.imie.toLowerCase().includes(imie);
-    const mn=!naz||c.nazwisko.toLowerCase().includes(naz);
-    const mid=!id||[c.fodsel,c.pesel,c.dnum].some(x=>x&&x.includes(id));
-    return mi&&mn&&mid;
+  const res=db.clients.filter(cl=>{
+    return (!imie||cl.imie.toLowerCase().includes(imie))
+        &&(!naz||cl.nazwisko.toLowerCase().includes(naz))
+        &&(!qid||[cl.fodsel,cl.pesel,cl.dnum].some(x=>x&&x.includes(qid)));
   });
   if(!res.length){ra.innerHTML='<div class="no-res">Brak wyników</div>';return;}
-  ra.innerHTML=res.map(c=>`
-    <div class="res-card" onclick="openClient('${c.id}')">
-      <div><div class="res-name">${c.imie} ${c.nazwisko}</div>
-        <div class="res-meta">${[c.fodsel,c.pesel,c.dnum].filter(Boolean).join(' · ')||'—'}</div></div>
-      <span style="color:var(--gold);font-size:20px;font-weight:300">›</span>
-    </div>`).join('');
+  ra.innerHTML=res.map(cl=>[
+    '<div class="res-card" onclick="openClient(\'',q(cl.id),'\')" >',
+    '<div><div class="res-name">',cl.imie,' ',cl.nazwisko,'</div>',
+    '<div class="res-meta">',([cl.fodsel,cl.pesel,cl.dnum].filter(Boolean).join(' · '))||'—','</div></div>',
+    '<span style="color:var(--gold);font-size:20px;font-weight:300">›</span></div>'
+  ].join('')).join('');
 }
 function openClient(id){currentId=id;renderDetail();nav('pg-detail');}
-
 function saveNote(){
   const txt=document.getElementById('note-area').value.trim();
   if(!txt){showMsg('note-msg','Wpisz treść notatki.','err');return;}
-  const db=loadDB();const c=db.clients.find(x=>x.id===currentId);
-  if(!c)return;if(!c.notatki)c.notatki=[];
-  c.notatki.unshift({tekst:txt,data:new Date().toLocaleString('pl-PL')});
+  const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
+  if(!cl)return;if(!cl.notatki)cl.notatki=[];
+  cl.notatki.unshift({tekst:txt,data:new Date().toLocaleString('pl-PL')});
   saveDB(db);document.getElementById('note-area').value='';
   renderDetail();showMsg('note-msg','Notatka zapisana.','ok');
 }
-
 async function handleFileUpload(input){
   const file=input.files[0];if(!file)return;
   const ext=(file.name.split('.').pop()||'').toLowerCase();
@@ -1455,114 +1314,119 @@ async function handleFileUpload(input){
   const result=await uploadFileToDrive(file);
   document.getElementById('upload-bar').style.display='none';
   if(!result)return;
-  const db=loadDB();const c=db.clients.find(x=>x.id===currentId);
-  if(!c)return;if(!c.pliki)c.pliki=[];
-  c.pliki.unshift(result);saveDB(db);renderDetail();
+  const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
+  if(!cl)return;if(!cl.pliki)cl.pliki=[];
+  cl.pliki.unshift(result);saveDB(db);renderDetail();
 }
-
+function togglePaid(clientId,rowIdx){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx])return;
+  cl.uslugi[rowIdx].paid=!cl.uslugi[rowIdx].paid;
+  saveDB(db);renderDetail();
+}
 function renderDetail(){
-  const db=loadDB();const c=db.clients.find(x=>x.id===currentId);if(!c)return;
-  const rows=(c.uslugi||[]).map((u,i)=>{
-    const b=parseFloat(u.kwota)||0;
-    const mv=(b*0.25/1.25).toFixed(2);const tx=(b*0.33).toFixed(2);const nt=(b-b*0.33).toFixed(2);
-    return `<tr><td class="num">${i+1}</td><td style="white-space:nowrap">${u.data||'—'}</td>
-      <td style="min-width:155px">${u.czynnosc||'—'}</td>
-      <td style="white-space:nowrap">${b.toFixed(2)} NOK</td>
-      <td class="calc" style="white-space:nowrap">${mv} NOK</td>
-      <td class="calc" style="white-space:nowrap">${tx} NOK</td>
-      <td class="net" style="white-space:nowrap">${nt} NOK</td>
-      <td style="white-space:nowrap;color:var(--text-ter)">${u.data_platnosci||'—'}</td>
-      <td style="text-align:center">
-        <button onclick="togglePaid('${c.id}',${i})" style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1" title="Zmień status płatności">
-          ${u.paid ? '<span style="color:#22c55e;filter:drop-shadow(0 0 4px rgba(34,197,94,0.5))">&#10003;</span>' : '<span style="color:rgba(238,240,244,0.18);font-size:16px">&#9675;</span>'}
-        </button>
-      </td></tr>\`;
-  }).join('');
-  const totB=(c.uslugi||[]).reduce((s,u)=>s+(parseFloat(u.kwota)||0),0);
-  const totN=(c.uslugi||[]).reduce((s,u)=>{const b=parseFloat(u.kwota)||0;return s+(b-b*0.33);},0);
-  const totalRow=totB>0?`<tr class="total-row"><td></td><td></td>
-    <td style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--text-ter)">Łącznie</td>
-    <td>${totB.toFixed(2)} NOK</td><td></td><td></td>
-    <td class="net">${totN.toFixed(2)} NOK</td><td></td></tr>`:'';
-  const noteHistory=(c.notatki||[]).map(n=>`
-    <div class="note-entry"><div class="note-entry-date">${n.data}</div>
-      <div class="note-entry-text">${n.tekst}</div></div>`).join('');
-  const fileList=(c.pliki||[]).map(f=>`
-    <div class="file-item"><div class="file-item-left">
-      <span style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.1em">${fileIcon(f.name)}</span>
-      <div><div class="file-name">${f.name}</div><div class="file-meta">${f.date} · ${f.size}</div></div></div>
-      <a class="file-link" href="${f.link}" target="_blank">Otwórz</a></div>`).join('');
+  const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);if(!cl)return;
   const today=new Date().toISOString().slice(0,10);
-  document.getElementById('detail-inner').innerHTML=`
-    <div class="pg-title">${c.imie} ${c.nazwisko}</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Karta klienta</div>
-    <div class="detail-wrap">
-      <div class="left-col">
-        <div class="card" style="padding:18px">
-          <div class="sec-lbl">Dane osobowe</div>
-          <div style="display:flex;flex-direction:column;gap:7px">
-            <div class="d-item"><span class="d-lbl">Imię i Nazwisko</span><span class="d-val">${fmt(c.imie)} ${fmt(c.nazwisko)}</span></div>
-            <div class="d-item"><span class="d-lbl">Fødselsnummer</span><span class="d-val">${fmt(c.fodsel)}</span></div>
-            <div class="d-item"><span class="d-lbl">D-nummer</span><span class="d-val">${fmt(c.dnum)}</span></div>
-            <div class="d-item"><span class="d-lbl">PESEL</span><span class="d-val">${fmt(c.pesel)}</span></div>
-            <div class="d-item"><span class="d-lbl">E-mail</span><span class="d-val">${fmt(c.email)}</span></div>
-            <div class="d-item"><span class="d-lbl">Tel. Polska</span><span class="d-val">${fmt(c.tel_pl)}</span></div>
-            <div class="d-item"><span class="d-lbl">Tel. Norwegia</span><span class="d-val">${fmt(c.tel_no)}</span></div>
-            <div class="d-item"><span class="d-lbl">Hasło</span>
-              <span class="d-val" style="font-family:monospace;color:var(--gold)">${fmt(c.haslo)}</span></div>
-          </div>
-        </div>
-        <div class="card" style="padding:18px">
-          <div class="sec-lbl">Notatki</div>
-          <textarea class="note-area" id="note-area" placeholder="Wpisz uwagi…"></textarea>
-          <button class="btn-note-save" onclick="saveNote()">Dodaj notatkę</button>
-          <div class="msg" id="note-msg" style="text-align:left;margin-top:5px"></div>
-          ${noteHistory?`<div style="margin-top:12px"><div class="sec-lbl" style="margin-bottom:7px">Historia notatek</div>${noteHistory}</div>`:''}
-        </div>
-      </div>
-      <div class="right-col">
-        <div class="billing-card">
-          <div class="bill-title">Historia usług i rozliczenia</div>
-          <div class="bill-table-wrap">
-            <table class="bill-tbl">
-              <thead><tr><th>Lp.</th><th>Data</th><th style="min-width:155px">Wykonana czynność</th>
-                <th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th><th style="text-align:center;white-space:nowrap">Zapłacono</th></tr></thead>
-              <tbody>
-                ${rows}
-                <tr>
-                  <td class="num" style="color:var(--text-ter)">·</td>
-                  <td><input class="t-inp" id="nr-data" type="date" value="${today}" style="min-width:118px"></td>
-                  <td><input class="t-inp" id="nr-czyn" placeholder="opis czynności…" style="min-width:155px"></td>
-                  <td><input class="t-inp" id="nr-kwota" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcPrev()" style="min-width:80px"></td>
-                  <td class="calc" id="pr-mv">—</td><td class="calc" id="pr-tx">—</td>
-                  <td class="net" id="pr-nt">—</td>
-                  <td><input class="t-inp" id="nr-dplat" type="date" style="min-width:118px"></td>
-                  <td style="text-align:center;color:rgba(238,240,244,0.3)">—</td>
-                </tr>
-                ${totalRow}
-              </tbody>
-            </table>
-          </div>
-          <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
-            <button class="btn-row-save" style="padding:10px 20px;font-size:10px;letter-spacing:.3em" onclick="saveRow()">Zapisz wiersz</button>
-            <div class="msg" id="row-msg" style="margin-top:0;text-align:left"></div>
-          </div>
-        </div>
-        <div class="files-card">
-          <div class="bill-title">Pliki klienta</div>
-          <div class="file-upload-area" onclick="document.getElementById('file-input').click()">
-            <input type="file" id="file-input" accept=".pdf,.txt,.docx,.doc" style="display:none" onchange="handleFileUpload(this)">
-            <div style="font-size:20px;margin-bottom:6px;color:var(--gold);opacity:.5">↑</div>
-            <div class="file-upload-text"><strong>Kliknij aby wgrać plik</strong><br>PDF, DOCX, TXT → Google Drive</div>
-          </div>
-          <div class="uploading-bar" id="upload-bar"><div class="uploading-bar-inner"></div></div>
-          ${fileList||'<div style="font-size:10px;color:var(--text-ter);text-align:center;padding:14px 0;letter-spacing:.2em;text-transform:uppercase">Brak plików</div>'}
-        </div>
-      </div>
-    </div>`;
+  let rows='';
+  (cl.uslugi||[]).forEach((u,i)=>{
+    const b=parseFloat(u.kwota)||0;
+    const mv=(b*0.25/1.25).toFixed(2),tx=(b*0.33).toFixed(2),nt=(b-b*0.33).toFixed(2);
+    const paidBtn=[
+      '<button onclick="togglePaid(\'',q(cl.id),'\',',i,')" ',
+      'style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1">',
+      u.paid?'<span style="color:#22c55e">✓</span>':'<span style="color:rgba(238,240,244,0.2);font-size:16px">○</span>',
+      '</button>'
+    ].join('');
+    rows+=[
+      '<tr><td class="num">',(i+1),'</td>',
+      '<td style="white-space:nowrap">',(u.data||'—'),'</td>',
+      '<td style="min-width:155px">',(u.czynnosc||'—'),'</td>',
+      '<td style="white-space:nowrap">',b.toFixed(2),' NOK</td>',
+      '<td class="calc" style="white-space:nowrap">',mv,' NOK</td>',
+      '<td class="calc" style="white-space:nowrap">',tx,' NOK</td>',
+      '<td class="net" style="white-space:nowrap">',nt,' NOK</td>',
+      '<td style="white-space:nowrap;color:var(--text-ter)">',(u.data_platnosci||'—'),'</td>',
+      '<td style="text-align:center">',paidBtn,'</td></tr>'
+    ].join('');
+  });
+  const totB=(cl.uslugi||[]).reduce((s,u)=>s+(parseFloat(u.kwota)||0),0);
+  const totN=(cl.uslugi||[]).reduce((s,u)=>{const b=parseFloat(u.kwota)||0;return s+(b-b*0.33);},0);
+  const totalRow=totB>0?[
+    '<tr class="total-row"><td></td><td></td>',
+    '<td style="font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--text-ter)">Łącznie</td>',
+    '<td>',totB.toFixed(2),' NOK</td><td></td><td></td>',
+    '<td class="net">',totN.toFixed(2),' NOK</td><td></td><td></td></tr>'
+  ].join(''):'';
+  let noteHistory='';
+  (cl.notatki||[]).forEach(n=>{
+    noteHistory+='<div class="note-entry"><div class="note-entry-date">'+n.data+'</div><div class="note-entry-text">'+n.tekst+'</div></div>';
+  });
+  let fileList='';
+  (cl.pliki||[]).forEach(f=>{
+    fileList+=[
+      '<div class="file-item"><div class="file-item-left">',
+      '<span style="font-size:17px">',fileIcon(f.name),'</span>',
+      '<div><div class="file-name">',f.name,'</div><div class="file-meta">',f.date,' · ',f.size,'</div></div></div>',
+      '<a class="file-link" href="',f.link,'" target="_blank">Otwórz</a></div>'
+    ].join('');
+  });
+  document.getElementById('detail-inner').innerHTML=[
+    '<div class="pg-title">',cl.imie,' ',cl.nazwisko,'</div>',
+    '<div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>',
+    '<div class="pg-sub">Karta klienta</div>',
+    '<div class="detail-wrap">',
+    '<div class="left-col">',
+    '<div class="card" style="padding:18px">',
+    '<div class="sec-lbl">Dane osobowe</div>',
+    '<div style="display:flex;flex-direction:column;gap:7px">',
+    '<div class="d-item"><span class="d-lbl">Imię i Nazwisko</span><span class="d-val">',fmt(cl.imie),' ',fmt(cl.nazwisko),'</span></div>',
+    '<div class="d-item"><span class="d-lbl">Fødselsnummer</span><span class="d-val">',fmt(cl.fodsel),'</span></div>',
+    '<div class="d-item"><span class="d-lbl">D-nummer</span><span class="d-val">',fmt(cl.dnum),'</span></div>',
+    '<div class="d-item"><span class="d-lbl">PESEL</span><span class="d-val">',fmt(cl.pesel),'</span></div>',
+    '<div class="d-item"><span class="d-lbl">E-mail</span><span class="d-val">',fmt(cl.email),'</span></div>',
+    '<div class="d-item"><span class="d-lbl">Tel. Polska</span><span class="d-val">',fmt(cl.tel_pl),'</span></div>',
+    '<div class="d-item"><span class="d-lbl">Tel. Norwegia</span><span class="d-val">',fmt(cl.tel_no),'</span></div>',
+    '<div class="d-item"><span class="d-lbl">Hasło</span><span class="d-val" style="font-family:monospace;color:var(--gold)">',fmt(cl.haslo),'</span></div>',
+    '</div></div>',
+    '<div class="card" style="padding:18px">',
+    '<div class="sec-lbl">Notatki</div>',
+    '<textarea class="note-area" id="note-area" placeholder="Wpisz uwagi…"></textarea>',
+    '<button class="btn-note-save" onclick="saveNote()">Dodaj notatkę</button>',
+    '<div class="msg" id="note-msg" style="text-align:left;margin-top:5px"></div>',
+    noteHistory?'<div style="margin-top:12px"><div class="sec-lbl" style="margin-bottom:7px">Historia notatek</div>'+noteHistory+'</div>':'',
+    '</div></div>',
+    '<div class="right-col">',
+    '<div class="billing-card"><div class="bill-title">Historia usług i rozliczenia</div>',
+    '<div class="bill-table-wrap"><table class="bill-tbl">',
+    '<thead><tr><th>Lp.</th><th>Data</th><th style="min-width:155px">Wykonana czynność</th>',
+    '<th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th>',
+    '<th style="text-align:center">Zapłacono</th></tr></thead>',
+    '<tbody>',rows,
+    '<tr><td class="num" style="color:var(--text-ter)">·</td>',
+    '<td><input class="t-inp" id="nr-data" type="date" value="',today,'" style="min-width:118px"></td>',
+    '<td><input class="t-inp" id="nr-czyn" placeholder="opis czynności…" style="min-width:155px"></td>',
+    '<td><input class="t-inp" id="nr-kwota" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcPrev()" style="min-width:80px"></td>',
+    '<td class="calc" id="pr-mv">—</td><td class="calc" id="pr-tx">—</td><td class="net" id="pr-nt">—</td>',
+    '<td><input class="t-inp" id="nr-dplat" type="date" style="min-width:118px"></td>',
+    '<td style="text-align:center;color:rgba(238,240,244,0.3)">—</td></tr>',
+    totalRow,
+    '</tbody></table></div>',
+    '<div style="margin-top:12px;display:flex;align-items:center;gap:12px">',
+    '<button class="btn-row-save" style="padding:10px 20px;font-size:10px;letter-spacing:.3em" onclick="saveRow()">Zapisz wiersz</button>',
+    '<div class="msg" id="row-msg" style="margin-top:0;text-align:left"></div>',
+    '</div></div>',
+    '<div class="files-card"><div class="bill-title">Pliki klienta</div>',
+    '<div class="file-upload-area" onclick="document.getElementById(\'file-input\').click()">',
+    '<input type="file" id="file-input" accept=".pdf,.txt,.docx,.doc" style="display:none" onchange="handleFileUpload(this)">',
+    '<div style="font-size:20px;margin-bottom:6px;color:var(--gold);opacity:.5">↑</div>',
+    '<div class="file-upload-text"><strong>Kliknij aby wgrać plik</strong><br>PDF, DOCX, TXT → Google Drive</div>',
+    '</div>',
+    '<div class="uploading-bar" id="upload-bar"><div class="uploading-bar-inner"></div></div>',
+    fileList||'<div style="font-size:10px;color:var(--text-ter);text-align:center;padding:14px 0;letter-spacing:.2em;text-transform:uppercase">Brak plików</div>',
+    '</div></div></div>'
+  ].join('');
 }
-
 function calcPrev(){
   const b=parseFloat(document.getElementById('nr-kwota').value)||0;
   if(!b){['pr-mv','pr-tx','pr-nt'].forEach(id=>document.getElementById(id).textContent='—');return;}
@@ -1570,28 +1434,17 @@ function calcPrev(){
   document.getElementById('pr-tx').textContent=(b*0.33).toFixed(2)+' NOK';
   document.getElementById('pr-nt').textContent=(b-b*0.33).toFixed(2)+' NOK';
 }
-
-function togglePaid(clientId, rowIdx){
-  var db=loadDB();
-  var cl=db.clients.find(function(x){return x.id===clientId;});
-  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx]) return;
-  cl.uslugi[rowIdx].paid = !cl.uslugi[rowIdx].paid;
-  saveDB(db); renderDetail();
-}
-
 function saveRow(){
   const data=document.getElementById('nr-data').value;
   const czyn=document.getElementById('nr-czyn').value.trim();
   const kwota=parseFloat(document.getElementById('nr-kwota').value);
   const data_platnosci=document.getElementById('nr-dplat').value;
   if(!czyn||!kwota){showMsg('row-msg','Wypełnij opis i kwotę.','err');return;}
-  const db=loadDB();const c=db.clients.find(x=>x.id===currentId);
-  if(!c)return;if(!c.uslugi)c.uslugi=[];
-  c.uslugi.push({data,czynnosc:czyn,kwota,data_platnosci});
+  const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
+  if(!cl)return;if(!cl.uslugi)cl.uslugi=[];
+  cl.uslugi.push({data,czynnosc:czyn,kwota,data_platnosci,paid:false});
   saveDB(db);renderDetail();showMsg('row-msg','Wpis zapisany.','ok');
 }
-
-/* CALENDAR */
 const MONTHS_PL=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
 const DAYS_PL=['Pon','Wt','Śr','Czw','Pt','Sob','Nd'];
 function getWeekNum(d){
@@ -1611,37 +1464,47 @@ function renderCalendar(){
   for(let d=1;d<=lastDay.getDate();d++) cells.push({date:new Date(calYear,calMonth,d),cur:true});
   const rem=(7-cells.length%7)%7;
   for(let d=1;d<=rem;d++) cells.push({date:new Date(calYear,calMonth+1,d),cur:false});
-  const cellsHTML=cells.map(({date,cur})=>{
+  let cellsHTML='';
+  cells.forEach(function({date,cur}){
     const key=date.toISOString().slice(0,10);
     const tasks=db.tasks[key]||[];
     const isToday=date.toDateString()===today.toDateString();
-    return `<div class="cal-cell${!cur?' other-month':''}${isToday?' today':''}">
-      <div class="cal-cell-top">
-        <div><div class="cal-day-num">${date.getDate()}</div>
-          <div class="cal-week-num">Tydz. ${getWeekNum(date)}</div></div>
-        <button class="cal-add-btn" onclick="openTaskModal('${key}')">+</button>
-      </div>
-      ${tasks.map((t,i)=>`<div class="cal-task">
-        <span class="task-dot ${t.done?'yellow':'green'}"></span>
-        <div class="cal-task-title">${t.title}</div>
-        ${t.time?`<div class="cal-task-time">⏰ ${t.time}</div>`:''}
-        <button class="task-done-btn ${t.done?'done':''}" onclick="toggleTaskDone('${key}',${i})" title="${t.done?'Cofnij':'Wykonane'}">${t.done?'✓':''}</button>
-      </div>`).join('')}
-    </div>`;
-  }).join('');
-  document.getElementById('cal-wrap').innerHTML=`
-    <div class="pg-title" style="margin-bottom:0">${MONTHS_PL[calMonth]}</div>
-    <div class="pg-ornament" style="margin-bottom:20px"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="cal-header">
-      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-        <span style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:.4em;color:var(--gold-dim)">${calYear}</span>
-        ${accessToken?`<button class="cal-sync-btn" onclick="syncAllToGCal()">↻ Sync Google Calendar</button>`:''}
-      </div>
-      <button class="cal-nav-btn" onclick="calNext()">›</button>
-    </div>
-    <div class="cal-weekdays">${DAYS_PL.map(d=>`<div class="cal-wd">${d}</div>`).join('')}</div>
-    <div class="cal-grid">${cellsHTML}</div>`;
+    let taskHTML='';
+    tasks.forEach(function(t,i){
+      taskHTML+=[
+        '<div class="cal-task">',
+        '<span class="task-dot ',(t.done?'yellow':'green'),'"></span>',
+        '<div class="cal-task-title">',t.title,'</div>',
+        t.time?('<div class="cal-task-time">⏰ '+t.time+'</div>'):'',
+        '<button class="task-done-btn ',(t.done?'done':''),'" ',
+        'onclick="toggleTaskDone(\'',q(key),'\',',i,')">',(t.done?'✓':''),'</button>',
+        '</div>'
+      ].join('');
+    });
+    cellsHTML+=[
+      '<div class="cal-cell',(cur?'':' other-month'),(isToday?' today':''),'">',
+      '<div class="cal-cell-top">',
+      '<div><div class="cal-day-num">',date.getDate(),'</div>',
+      '<div class="cal-week-num">Tydz. ',getWeekNum(date),'</div></div>',
+      '<button class="cal-add-btn" onclick="openTaskModal(\'',q(key),'\')">+</button>',
+      '</div>',taskHTML,'</div>'
+    ].join('');
+  });
+  let syncBtn=accessToken?'<button class="cal-sync-btn" onclick="syncAllToGCal()">↻ Sync Google Calendar</button>':'';
+  let wdHTML='';DAYS_PL.forEach(d=>{wdHTML+='<div class="cal-wd">'+d+'</div>';});
+  document.getElementById('cal-wrap').innerHTML=[
+    '<div class="pg-title" style="margin-bottom:0">',MONTHS_PL[calMonth],'</div>',
+    '<div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>',
+    '<div class="cal-header">',
+    '<button class="cal-nav-btn" onclick="calPrev()">‹</button>',
+    '<div style="display:flex;flex-direction:column;align-items:center;gap:8px">',
+    '<span style="font-size:14px;letter-spacing:.4em;color:var(--gold-dim)">',calYear,'</span>',
+    syncBtn,'</div>',
+    '<button class="cal-nav-btn" onclick="calNext()">›</button>',
+    '</div>',
+    '<div class="cal-weekdays">',wdHTML,'</div>',
+    '<div class="cal-grid">',cellsHTML,'</div>'
+  ].join('');
 }
 function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
 function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
@@ -1669,14 +1532,14 @@ async function saveTask(){
   const db=loadDB();if(!db.tasks)db.tasks={};
   if(!db.tasks[modalDate])db.tasks[modalDate]=[];
   db.tasks[modalDate].push(task);saveDB(db);closeModal();renderDailyTasks();
-  if(accessToken) await syncToGoogleCalendar(task,modalDate);
+  if(accessToken)await syncToGoogleCalendar(task,modalDate);
   if(remindOn&&'Notification' in window){
     Notification.requestPermission().then(p=>{
       if(p!=='granted')return;
       const[y,m,d]=modalDate.split('-');
       const dt=new Date(y,m-1,d,...(time?time.split(':').map(Number):[9,0]));
       const ms=dt.getTime()-remindMin*60000-Date.now();
-      if(ms>0) setTimeout(()=>new Notification('Lavnor',{body:title}),ms);
+      if(ms>0)setTimeout(()=>new Notification('Lavnor',{body:title}),ms);
     });
   }
   renderCalendar();
@@ -1684,17 +1547,19 @@ async function saveTask(){
 function toggleTaskDone(dateKey,idx){
   const db=loadDB();if(!db.tasks||!db.tasks[dateKey])return;
   db.tasks[dateKey][idx].done=!db.tasks[dateKey][idx].done;
-  saveDB(db);renderCalendar();
+  saveDB(db);renderCalendar();renderDailyTasks();
 }
 async function syncToGoogleCalendar(task,dateStr){
   if(!accessToken)return;
   try{
     const[y,m,d]=dateStr.split('-');
-    const dt=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const start=task.time?`${dt}T${task.time}:00`:`${dt}T09:00:00`;
-    const end=task.time?`${dt}T${String(parseInt(task.time)+1).padStart(2,'0')}:${task.time.split(':')[1]||'00'}:00`:`${dt}T10:00:00`;
+    const dt=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const start=task.time?(dt+'T'+task.time+':00'):(dt+'T09:00:00');
+    const endH=task.time?String(parseInt(task.time)+1).padStart(2,'0'):'10';
+    const endMin=task.time?(task.time.split(':')[1]||'00'):'00';
+    const end=dt+'T'+endH+':'+endMin+':00';
     const event={summary:task.title,start:{dateTime:start,timeZone:'Europe/Warsaw'},end:{dateTime:end,timeZone:'Europe/Warsaw'}};
-    if(task.remind) event.reminders={useDefault:false,overrides:[{method:'popup',minutes:task.remindMin||30}]};
+    if(task.remind)event.reminders={useDefault:false,overrides:[{method:'popup',minutes:task.remindMin||30}]};
     await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',
       {method:'POST',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(event)});
   }catch(e){}
@@ -1706,8 +1571,6 @@ async function syncAllToGCal(){
     for(const t of tasks){await syncToGoogleCalendar(t,dateKey);count++;}
   alert('Zsynchronizowano '+count+' zleceń.');
 }
-
-/* DECISIONS */
 async function handleDecisionUpload(input){
   const file=input.files[0];if(!file)return;
   const title=document.getElementById('dec-title').value.trim();
@@ -1717,97 +1580,94 @@ async function handleDecisionUpload(input){
   document.getElementById('dec-upload-bar').style.display='none';
   if(!result)return;
   const db=loadDB();if(!db.decisions)db.decisions=[];
-  db.decisions.unshift({id:uid(),title,organ:document.getElementById('dec-organ').value.trim(),
-    rok:document.getElementById('dec-rok').value.trim(),klient:document.getElementById('dec-klient').value.trim(),
-    opis:document.getElementById('dec-opis').value.trim(),link:result.link,name:result.name,date:result.date,size:result.size});
+  db.decisions.unshift({id:uid(),title,
+    organ:document.getElementById('dec-organ').value.trim(),
+    rok:document.getElementById('dec-rok').value.trim(),
+    klient:document.getElementById('dec-klient').value.trim(),
+    opis:document.getElementById('dec-opis').value.trim(),
+    link:result.link,name:result.name,date:result.date,size:result.size});
   saveDB(db);
   ['dec-title','dec-organ','dec-rok','dec-klient','dec-opis'].forEach(id=>document.getElementById(id).value='');
   showMsg('dec-msg','Decyzja zapisana w bazie.','ok');searchDecisions();
 }
 function searchDecisions(){
-  const q=(document.getElementById('dec-q')||{value:''}).value.trim().toLowerCase();
+  const qv=(document.getElementById('dec-q')||{value:''}).value.trim().toLowerCase();
   const qo=(document.getElementById('dec-q-organ')||{value:''}).value.trim().toLowerCase();
   const qr=(document.getElementById('dec-q-rok')||{value:''}).value.trim();
   const db=loadDB();
   const res=(db.decisions||[]).filter(d=>{
-    const mq=!q||[d.title,d.opis,d.klient,d.organ].join(' ').toLowerCase().includes(q);
-    const mo=!qo||d.organ.toLowerCase().includes(qo);
-    const mr=!qr||d.rok===qr;
-    return mq&&mo&&mr;
+    return (!qv||[d.title,d.opis,d.klient,d.organ].join(' ').toLowerCase().includes(qv))
+        &&(!qo||d.organ.toLowerCase().includes(qo))
+        &&(!qr||d.rok===qr);
   });
   const ra=document.getElementById('dec-results');if(!ra)return;
-  if(!res.length&&(q||qo||qr)){ra.innerHTML='<div class="no-res">Brak wyników</div>';return;}
-  ra.innerHTML=res.map(d=>`
-    <div class="dec-item">
-      <div class="dec-item-left"><span style="font-size:18px;color:var(--gold);opacity:.5">▲</span>
-        <div><div class="dec-title">${d.title}</div>
-          <div class="dec-meta">${[d.organ,d.rok,d.klient,d.date].filter(Boolean).join(' · ')}</div>
-          ${d.opis?`<div class="dec-meta" style="font-style:italic;margin-top:2px">${d.opis}</div>`:''}</div></div>
-      <div style="display:flex;align-items:center;gap:8px">
-        ${d.organ?`<span class="dec-tag">${d.organ}</span>`:''}
-        <a class="file-link" href="${d.link}" target="_blank">Otwórz</a>
-      </div>
-    </div>`).join('');
+  if(!res.length&&(qv||qo||qr)){ra.innerHTML='<div class="no-res">Brak wyników</div>';return;}
+  let html='';
+  res.forEach(d=>{
+    html+=[
+      '<div class="dec-item">',
+      '<div class="dec-item-left"><span style="font-size:18px;color:var(--gold);opacity:.5">▲</span>',
+      '<div><div class="dec-title">',d.title,'</div>',
+      '<div class="dec-meta">',([d.organ,d.rok,d.klient,d.date].filter(Boolean).join(' · ')),'</div>',
+      d.opis?('<div class="dec-meta" style="font-style:italic;margin-top:2px">'+d.opis+'</div>'):'',
+      '</div></div>',
+      '<div style="display:flex;align-items:center;gap:8px">',
+      d.organ?('<span class="dec-tag">'+d.organ+'</span>'):'',
+      '<a class="file-link" href="',d.link,'" target="_blank">Otwórz</a>',
+      '</div></div>'
+    ].join('');
+  });
+  ra.innerHTML=html;
 }
-
-/* FORMS */
 const FORM_CAT_LABELS={praca:'Praca',zdrowie:'Zdrowie i choroba',rodzina:'Rodzina i dzieci',emerytura:'Emerytura',socjalne:'Usługi socjalne i doradztwo'};
 const FORM_CAT_ICONS={praca:'💼',zdrowie:'🏥',rodzina:'👨‍👩‍👧',emerytura:'🏛️',socjalne:'🤝'};
-const FORM_CAT_DESC={praca:'Dagpenger, AAP, sykepenger, wnioski pracownicze',zdrowie:'Helfo, refundacje, zwolnienia lekarskie',rodzina:'Barnetrygd, kontantstøtte, łączenie rodzin',emerytura:'Alderspensjon, uføretrygd, pensjonsopptjening',socjalne:'Sosialhjelp, gjeldsrådgivning, bostøtte'};
+const FORM_CAT_DESC={praca:'Dagpenger, AAP, sykepenger',zdrowie:'Helfo, refundacje, zwolnienia',rodzina:'Barnetrygd, łączenie rodzin',emerytura:'Alderspensjon, uføretrygd',socjalne:'Sosialhjelp, gjeldsrådgivning'};
 function renderFormCats(){
-  document.getElementById('forms-inner').innerHTML=`
-    <div class="pg-title">Wnioski i formularze</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Wybierz kategorię</div>
-    <div class="form-cats">
-      ${['praca','zdrowie','rodzina','emerytura'].map(cat=>`
-        <div class="form-cat-card" onclick="openFormCat('${cat}')">
-          <div class="form-cat-icon">${FORM_CAT_ICONS[cat]}</div>
-          <div class="form-cat-title">${FORM_CAT_LABELS[cat]}</div>
-          <div class="form-cat-desc">${FORM_CAT_DESC[cat]}</div>
-        </div>`).join('')}
-      <div class="form-cat-card full-width" onclick="openFormCat('socjalne')">
-        <div class="form-cat-icon">${FORM_CAT_ICONS['socjalne']}</div>
-        <div class="form-cat-title">${FORM_CAT_LABELS['socjalne']}</div>
-        <div class="form-cat-desc">${FORM_CAT_DESC['socjalne']}</div>
-      </div>
-    </div>`;
+  let html='<div class="pg-title">Wnioski i formularze</div>'
+    +'<div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>'
+    +'<div class="pg-sub">Wybierz kategorię</div>'
+    +'<div class="form-cats">';
+  ['praca','zdrowie','rodzina','emerytura'].forEach(function(cat){
+    html+='<div class="form-cat-card" onclick="openFormCat(this.dataset.cat)" data-cat="'+cat+'">'
+      +'<div class="form-cat-icon">'+FORM_CAT_ICONS[cat]+'</div>'
+      +'<div class="form-cat-title">'+FORM_CAT_LABELS[cat]+'</div>'
+      +'<div class="form-cat-desc">'+FORM_CAT_DESC[cat]+'</div></div>';
+  });
+  html+='<div class="form-cat-card full-width" onclick="openFormCat(this.dataset.cat)" data-cat="socjalne">'
+    +'<div class="form-cat-icon">'+FORM_CAT_ICONS['socjalne']+'</div>'
+    +'<div class="form-cat-title">'+FORM_CAT_LABELS['socjalne']+'</div>'
+    +'<div class="form-cat-desc">'+FORM_CAT_DESC['socjalne']+'</div></div>'
+    +'</div>';
+  document.getElementById('forms-inner').innerHTML=html;
 }
 function openFormCat(cat){
   const db=loadDB();if(!db.forms)db.forms={};if(!db.forms[cat])db.forms[cat]=[];
   const links=db.forms[cat];
-  document.getElementById('forms-inner').innerHTML=`
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
-      <button class="back-btn" style="position:relative;top:auto;left:auto" onclick="renderFormCats()">
-        <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
-        Kategorie
-      </button>
-    </div>
-    <div class="pg-title" style="font-size:22px">${FORM_CAT_ICONS[cat]} ${FORM_CAT_LABELS[cat]}</div>
-    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
-    <div class="pg-sub">Linki do wniosków i formularzy</div>
-    <div style="width:100%;max-width:720px">
-      <div class="card" style="margin-bottom:14px">
-        <div class="sec-lbl">Dodaj nowy link</div>
-        <div class="add-link-form">
-          <input id="lnk-title" placeholder="Nazwa wniosku / formularza">
-          <input id="lnk-url" placeholder="https://nav.no/...">
-          <button class="btn-add-link" onclick="addFormLink('${cat}')">Dodaj</button>
-        </div>
-        <div class="msg" id="lnk-msg" style="text-align:left;margin-top:6px"></div>
-      </div>
-      <div id="form-links-list">
-        ${links.length===0?'<div class="no-res">Brak zapisanych linków. Dodaj pierwszy powyżej.</div>':''}
-        ${links.map((l,i)=>`
-          <div class="form-link-item">
-            <div><div class="form-link-title">${l.title}</div><div class="form-link-url">${l.url}</div></div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <a class="form-link-btn" href="${l.url}" target="_blank">Otwórz</a>
-              <button class="btn-del-link" onclick="deleteFormLink('${cat}',${i})">✕</button>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`;
+  let linksHTML=links.length?'':'<div class="no-res">Brak linków. Dodaj pierwszy powyżej.</div>';
+  links.forEach(function(l,i){
+    linksHTML+='<div class="form-link-item">'
+      +'<div><div class="form-link-title">'+l.title+'</div><div class="form-link-url">'+l.url+'</div></div>'
+      +'<div style="display:flex;gap:8px;align-items:center">'
+      +'<a class="form-link-btn" href="'+l.url+'" target="_blank">Otwórz</a>'
+      +'<button class="btn-del-link" data-cat="'+cat+'" data-idx="'+i+'" onclick="deleteFormLink(this.dataset.cat,this.dataset.idx)">✕</button>'
+      +'</div></div>';
+  });
+  document.getElementById('forms-inner').innerHTML=
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">'
+    +'<button class="back-btn" style="position:relative;top:auto;left:auto" onclick="renderFormCats()">'
+    +'<svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>'
+    +' Kategorie</button></div>'
+    +'<div class="pg-title" style="font-size:22px">'+FORM_CAT_ICONS[cat]+' '+FORM_CAT_LABELS[cat]+'</div>'
+    +'<div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>'
+    +'<div class="pg-sub">Linki do wniosków i formularzy</div>'
+    +'<div style="width:100%;max-width:720px">'
+    +'<div class="card" style="margin-bottom:14px"><div class="sec-lbl">Dodaj nowy link</div>'
+    +'<div class="add-link-form">'
+    +'<input id="lnk-title" placeholder="Nazwa wniosku / formularza">'
+    +'<input id="lnk-url" placeholder="https://nav.no/...">'
+    +'<button class="btn-add-link" data-cat="'+cat+'" onclick="addFormLink(this.dataset.cat)">Dodaj</button>'
+    +'</div><div class="msg" id="lnk-msg" style="text-align:left;margin-top:6px"></div></div>'
+    +'<div id="form-links-list">'+linksHTML+'</div></div>';
 }
 function addFormLink(cat){
   const title=document.getElementById('lnk-title').value.trim();
@@ -1821,99 +1681,183 @@ function deleteFormLink(cat,idx){
   const db=loadDB();if(!db.forms||!db.forms[cat])return;
   db.forms[cat].splice(idx,1);saveDB(db);openFormCat(cat);
 }
-
-
-/* DAILY WIDGET */
 function initDailyWidget(){
-  const now = new Date();
-  const days = ['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
-  const months = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
-  document.getElementById('dw-date').textContent = now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
-  document.getElementById('dw-day').textContent = days[now.getDay()];
+  const now=new Date();
+  const days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
+  const months=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+  document.getElementById('dw-date').textContent=now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+  document.getElementById('dw-day').textContent=days[now.getDay()];
   renderDailyTasks();
 }
-
-async function fetchGoogleCalendarToday(){
-  if(!accessToken) return [];
-  try{
-    const now = new Date();
-    const start = new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0).toISOString();
-    const end   = new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59).toISOString();
-    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(start)}&timeMax=${encodeURIComponent(end)}&singleEvents=true&orderBy=startTime&maxResults=20`;
-    const r = await fetch(url,{headers:{Authorization:'Bearer '+accessToken}});
-    const data = await r.json();
-    return (data.items||[]).map(e=>({
-      title: e.summary||'(bez tytułu)',
-      time: e.start&&e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}) : '',
-      done: false,
-      fromGCal: true
-    }));
-  }catch(e){ return []; }
-}
-
 async function renderDailyTasks(){
-  const db = loadDB();
-  const today = new Date().toISOString().slice(0,10);
-  const localTasks = (db.tasks && db.tasks[today]) ? db.tasks[today] : [];
-
-  // Pull Google Calendar events for today if logged in
-  let gcalTasks = [];
+  const db=loadDB();
+  const today=new Date().toISOString().slice(0,10);
+  const localTasks=(db.tasks&&db.tasks[today])?db.tasks[today]:[];
+  let gcalTasks=[];
   if(accessToken){
     try{
-      const d1 = today+'T00:00:00Z';
-      const d2 = today+'T23:59:59Z';
-      const resp = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(d1)}&timeMax=${encodeURIComponent(d2)}&singleEvents=true&orderBy=startTime&maxResults=30`,
-        {headers:{Authorization:'Bearer '+accessToken}}
-      );
-      const data = await resp.json();
-      gcalTasks = (data.items||[]).map(e=>({
-        title: e.summary||'(bez tytułu)',
-        time: e.start&&e.start.dateTime
-          ? new Date(e.start.dateTime).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})
-          : '',
-        done: false, fromGCal: true
+      const d1=encodeURIComponent(today+'T00:00:00Z');
+      const d2=encodeURIComponent(today+'T23:59:59Z');
+      const resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin='+d1+'&timeMax='+d2+'&singleEvents=true&orderBy=startTime&maxResults=30',
+        {headers:{Authorization:'Bearer '+accessToken}});
+      const data=await resp.json();
+      gcalTasks=(data.items||[]).map(e=>({
+        title:e.summary||'(bez tytułu)',
+        time:(e.start&&e.start.dateTime)?new Date(e.start.dateTime).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}):'',
+        done:false,fromGCal:true
       }));
     }catch(err){}
   }
-
-  // Merge: local + gcal (avoid title duplicates)
-  const gcalTitles = new Set(gcalTasks.map(t=>t.title));
-  const merged = [...gcalTasks, ...localTasks.filter(t=>!gcalTitles.has(t.title))];
-
-  const container = document.getElementById('dw-tasks');
-  if(!merged.length){
-    container.innerHTML='<div class="daily-empty">Brak zadań na dziś</div>';
-    return;
-  }
-  const isUrgent = t => t.title&&t.title.toLowerCase().includes('meldunek');
-  const sorted = [...merged.filter(isUrgent), ...merged.filter(t=>!isUrgent(t))];
-  container.innerHTML = sorted.map(t=>`
-    <div class="daily-task ${isUrgent(t)?'urgent':''}">
-      <div class="daily-task-dot ${t.done?'done':''}"></div>
-      <div>
-        <div class="daily-task-title">${t.title}${t.fromGCal?' <span style="font-size:8px;opacity:.55;letter-spacing:.08em">● GCal</span>':''}</div>
-        ${t.time?`<div class="daily-task-time">⏰ ${t.time}</div>`:''}
-        ${t.done&&!t.fromGCal?'<div class="daily-task-time" style="color:var(--yellow)">✓ Wykonane</div>':''}
-      </div>
-    </div>`).join('');
+  const gcalTitles=new Set(gcalTasks.map(t=>t.title));
+  const merged=gcalTasks.concat(localTasks.filter(t=>!gcalTitles.has(t.title)));
+  const container=document.getElementById('dw-tasks');
+  if(!merged.length){container.innerHTML='<div class="daily-empty">Brak zadań na dziś</div>';return;}
+  const isUrgent=t=>t.title&&t.title.toLowerCase().indexOf('meldunek')>=0;
+  const sorted=merged.filter(isUrgent).concat(merged.filter(t=>!isUrgent(t)));
+  let html='';
+  sorted.forEach(t=>{
+    html+='<div class="daily-task '+(isUrgent(t)?'urgent':'')+'">'
+      +'<div class="daily-task-dot '+(t.done?'done':'')+'"></div>'
+      +'<div><div class="daily-task-title">'+t.title+(t.fromGCal?' <span style="font-size:8px;opacity:.5">GCal</span>':'')+'</div>'
+      +(t.time?'<div class="daily-task-time">⏰ '+t.time+'</div>':'')
+      +(t.done&&!t.fromGCal?'<div class="daily-task-time" style="color:var(--yellow)">✓ Wykonane</div>':'')
+      +'</div></div>';
+  });
+  container.innerHTML=html;
 }
-
-let widgetCollapsed = false;
+let widgetCollapsed=false;
 function toggleWidget(){
-  widgetCollapsed = !widgetCollapsed;
-  document.getElementById('daily-widget').classList.toggle('collapsed', widgetCollapsed);
-  document.getElementById('dw-toggle').textContent = widgetCollapsed ? '▼' : '▲';
+  widgetCollapsed=!widgetCollapsed;
+  document.getElementById('daily-widget').classList.toggle('collapsed',widgetCollapsed);
+  document.getElementById('dw-toggle').textContent=widgetCollapsed?'▼':'▲';
 }
-
-// Refresh widget every 2 min
-setInterval(()=>renderDailyTasks(), 120000);
-
+setInterval(()=>renderDailyTasks(),120000);
+function showReport(type){
+  const db=loadDB();const clients=db.clients||[];
+  const now=new Date().toLocaleDateString('pl-PL');
+  const sorted=clients.slice().sort((a,b)=>(a.nazwisko||'').localeCompare(b.nazwisko||'','pl'));
+  let html='';
+  if(type==='clients'){
+    let rows='';
+    sorted.forEach((cl,i)=>{
+      rows+='<tr><td class="dim">'+(i+1)+'</td>'
+        +'<td style="font-weight:600;color:var(--text,#f5f7fa)">'+(cl.nazwisko||'—')+'</td>'
+        +'<td>'+(cl.imie||'—')+'</td><td>'+(cl.fodsel||'—')+'</td>'
+        +'<td>'+(cl.pesel||'—')+'</td><td>'+(cl.dnum||'—')+'</td>'
+        +'<td>'+(cl.email||'—')+'</td><td>'+(cl.tel_no||'—')+'</td>'
+        +'<td>'+(cl.tel_pl||'—')+'</td></tr>';
+    });
+    html='<div class="report-card">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+      +'<div style="font-size:18px;font-weight:700;color:var(--text,#f5f7fa)">Lista klientów</div>'
+      +'<button class="btn-print" onclick="printReport()">🖨 Drukuj / PDF</button></div>'
+      +'<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px">Wygenerowano: '+now+' · Łącznie: '+sorted.length+' klientów</div>'
+      +'<div style="overflow-x:auto"><table class="report-table" id="report-printable">'
+      +'<thead><tr><th>Lp.</th><th>Nazwisko</th><th>Imię</th><th>Fødselsnummer</th><th>PESEL</th><th>D-nummer</th><th>E-mail</th><th>Tel. NO</th><th>Tel. PL</th></tr></thead>'
+      +'<tbody>'+rows+'</tbody></table></div></div>';
+  } else if(type==='earnings'){
+    let rows='';let totB=0,totM=0,totT=0,totN=0;
+    sorted.forEach(cl=>{
+      (cl.uslugi||[]).forEach(u=>{
+        const b=parseFloat(u.kwota)||0;
+        const mv=+(b*0.25/1.25).toFixed(2),tx=+(b*0.33).toFixed(2),nt=+(b-b*0.33).toFixed(2);
+        totB+=b;totM+=mv;totT+=tx;totN+=nt;
+        rows+='<tr><td style="font-weight:600;white-space:nowrap">'+(cl.nazwisko||'')+' '+(cl.imie||'')+'</td>'
+          +'<td style="white-space:nowrap">'+(u.data||'—')+'</td>'
+          +'<td style="min-width:140px">'+(u.czynnosc||'—')+'</td>'
+          +'<td style="white-space:nowrap">'+b.toFixed(2)+' NOK</td>'
+          +'<td style="white-space:nowrap">'+mv.toFixed(2)+' NOK</td>'
+          +'<td style="white-space:nowrap">'+tx.toFixed(2)+' NOK</td>'
+          +'<td style="font-weight:700;white-space:nowrap">'+nt.toFixed(2)+' NOK</td>'
+          +'<td>'+(u.paid?'<span class="badge-paid">Zapłacono</span>':'<span class="badge-unpaid">Oczekuje</span>')+'</td></tr>';
+      });
+    });
+    html='<div class="report-card">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+      +'<div style="font-size:18px;font-weight:700;color:var(--text,#f5f7fa)">Raport zarobków</div>'
+      +'<button class="btn-print" onclick="printReport()">🖨 Drukuj / PDF</button></div>'
+      +'<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px">Wygenerowano: '+now+'</div>'
+      +'<div style="overflow-x:auto"><table class="report-table" id="report-printable">'
+      +'<thead><tr><th>Klient</th><th>Data</th><th>Czynność</th><th>Brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Netto</th><th>Status</th></tr></thead>'
+      +'<tbody>'+rows+'</tbody>'
+      +'<tfoot><tr><td colspan="3">Suma łączna</td>'
+      +'<td>'+totB.toFixed(2)+' NOK</td><td>'+totM.toFixed(2)+' NOK</td>'
+      +'<td>'+totT.toFixed(2)+' NOK</td><td style="font-weight:700">'+totN.toFixed(2)+' NOK</td><td></td></tr></tfoot>'
+      +'</table></div></div>';
+  } else if(type==='unpaid'){
+    let rows='';let utotB=0,utotN=0;const uRows=[];
+    sorted.forEach(cl=>{
+      (cl.uslugi||[]).forEach((u,idx)=>{
+        if(!u.paid){
+          const b=parseFloat(u.kwota)||0,nt=+(b-b*0.33).toFixed(2);
+          utotB+=b;utotN+=nt;
+          uRows.push({cid:cl.id,idx,name:(cl.nazwisko||'')+' '+(cl.imie||''),
+            data:u.data||'—',czyn:u.czynnosc||'—',b,nt,dplat:u.data_platnosci||'—'});
+        }
+      });
+    });
+    if(uRows.length){
+      uRows.forEach(r=>{
+        rows+='<tr><td style="font-weight:600;white-space:nowrap">'+r.name+'</td>'
+          +'<td style="white-space:nowrap">'+r.data+'</td>'
+          +'<td style="min-width:140px">'+r.czyn+'</td>'
+          +'<td style="white-space:nowrap">'+r.b.toFixed(2)+' NOK</td>'
+          +'<td style="font-weight:700;white-space:nowrap">'+r.nt.toFixed(2)+' NOK</td>'
+          +'<td style="white-space:nowrap">'+r.dplat+'</td>'
+          +'<td><button data-cid="'+r.cid+'" data-idx="'+r.idx+'" onclick="markPaidFromReport(this.dataset.cid,this.dataset.idx)" '
+          +'style="padding:4px 12px;background:rgba(34,197,94,.12);border:.5px solid rgba(34,197,94,.35);'
+          +'border-radius:4px;color:#4ade80;font-size:9px;font-weight:700;letter-spacing:.15em;'
+          +'text-transform:uppercase;cursor:pointer">✓ Zapłacono</button></td></tr>';
+      });
+    } else {
+      rows='<tr><td colspan="7" style="text-align:center;padding:22px;color:rgba(238,240,244,0.35);letter-spacing:.2em;text-transform:uppercase">Brak nieopłaconych faktur</td></tr>';
+    }
+    html='<div class="report-card">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+      +'<div style="font-size:18px;font-weight:700;color:var(--text,#f5f7fa)">Nieopłacone faktury</div>'
+      +'<button class="btn-print" onclick="printReport()">🖨 Drukuj / PDF</button></div>'
+      +'<div style="font-size:10px;color:rgba(238,240,244,0.4);margin-bottom:14px">Wygenerowano: '+now+' · Nieopłaconych: '+uRows.length+(uRows.length?' · Wartość: '+utotN.toFixed(2)+' NOK netto':'')+'</div>'
+      +'<div style="overflow-x:auto"><table class="report-table" id="report-printable">'
+      +'<thead><tr><th>Klient</th><th>Data usługi</th><th>Czynność</th><th>Kwota brutto</th><th>Netto</th><th>Data płatności</th><th>Akcja</th></tr></thead>'
+      +'<tbody>'+rows+'</tbody>'
+      +(uRows.length?'<tfoot><tr><td colspan="3">Suma nieopłaconych</td>'
+        +'<td style="font-weight:700">'+utotB.toFixed(2)+' NOK</td>'
+        +'<td style="font-weight:700">'+utotN.toFixed(2)+' NOK</td>'
+        +'<td colspan="2"></td></tr></tfoot>':'')
+      +'</table></div></div>';
+  }
+  document.getElementById('report-output').innerHTML=html;
+}
+function markPaidFromReport(clientId,rowIdx){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx])return;
+  cl.uslugi[rowIdx].paid=true;
+  saveDB(db);showReport('unpaid');
+}
+function printReport(){
+  const el=document.getElementById('report-printable');if(!el)return;
+  const win=window.open('','_blank');
+  win.document.write('<html><head><title>Raport Lavnor</title>'
+    +'<style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:24px}'
+    +'h2{font-family:Georgia,serif;font-size:20px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:4px}'
+    +'p{color:#888;font-size:10px;margin-bottom:18px}'
+    +'table{width:100%;border-collapse:collapse}'
+    +'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 8px;border-bottom:1.5px solid #333;text-align:left;background:#f5f5f5}'
+    +'td{padding:8px;border-bottom:1px solid #e5e5e5;font-size:11px}'
+    +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px}'
+    +'</style></head><body>'
+    +'<h2>Lavnor — Raport</h2>'
+    +'<p>Wygenerowany: '+new Date().toLocaleDateString('pl-PL')+'</p>'
+    +el.outerHTML+'</body></html>');
+  win.document.close();win.print();
+}
 window.addEventListener('load',()=>{
   initDailyWidget();
   const t=localStorage.getItem('lavnor_gtoken');
   if(t){accessToken=t;setDriveStatus('ok','Google Drive – zalogowany');driveLoadOrCreate();}
 });
+
 </script>
 
 <!-- ══ REPORTS ══ -->
