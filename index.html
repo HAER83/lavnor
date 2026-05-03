@@ -1163,12 +1163,13 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
           <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Skarga+do+Statsforvalteren" target="_blank">
             <div class="pismo-shortcut-title">Skarga administracyjna</div><div class="pismo-shortcut-desc">Statsforvalteren / organ nadrzędny</div>
           </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Wniosek+o+ponowne+rozpatrzenie" target=
+          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Wniosek+o+ponowne+rozpatrzenie"_blank">Nowe pismo (Google Docs)</a>
 
-
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='lavnor_baza_klientow.json';
-const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar';
+const SCOPES='https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar';
 let accessToken=null,driveFileId=null,syncPending=false,currentId=null;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 let modalDate=null,remindOn=false;
@@ -1212,7 +1213,7 @@ function driveLogin(){
       driveLoadOrCreate();
       setTimeout(renderDailyTasks,1000);
     }});
-  client.requestAccessToken();
+  client.requestAccessToken({prompt:'select_account'});
 }
 function driveLogout(){accessToken=null;driveFileId=null;localStorage.removeItem('lavnor_gtoken');setDriveStatus('warn','Niezalogowany');}
 async function driveLoadOrCreate(){
@@ -1890,8 +1891,8 @@ function printReport(){
 }
 window.addEventListener('load',()=>{
   initDailyWidget();
-  const t=localStorage.getItem('lavnor_gtoken');
-  if(t){accessToken=t;setDriveStatus('ok','Google Drive – zalogowany');driveLoadOrCreate();}
+  // Tokens expire after 1 hour - don't restore stale token
+  localStorage.removeItem('lavnor_gtoken');
 });
 
 
@@ -2178,11 +2179,8 @@ function deleteLovdata(id){
   const db=loadDB();db.lovdata=(db.lovdata||[]).filter(e=>e.id!==id);
   saveDB(db);searchLovdata();
 }
-
-b);searchLovdata();
-}
-
 </script>
+
 
 <!-- ══ REPORTS ══ -->
 <div class="page hidden" id="pg-reports">
