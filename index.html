@@ -151,7 +151,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .pg-title{font-family:'Cinzel',serif;font-size:28px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;
   color:var(--text);text-align:center;
   text-shadow:0 0 40px rgba(201,168,76,0.3)}
-.pg-ornament{display:flex;align-items:center;gap:10px;margin:8px 0 6px}
+.pg-ornament{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0 6px}
 .pg-line{width:60px;height:.5px;background:linear-gradient(to right,transparent,var(--gold))}
 .pg-line.r{background:linear-gradient(to left,transparent,var(--gold))}
 .pg-diamond{width:5px;height:5px;background:var(--gold);transform:rotate(45deg);flex-shrink:0}
@@ -1163,10 +1163,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
           <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Skarga+do+Statsforvalteren" target="_blank">
             <div class="pismo-shortcut-title">Skarga administracyjna</div><div class="pismo-shortcut-desc">Statsforvalteren / organ nadrzędny</div>
           </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Wniosek+o+ponowne+rozpatrzenie" target="_blank">
-   
-
-<script>
+          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Wniosek+o+ponowne+rozpatrzenie" target=
 
 
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
@@ -1402,12 +1399,12 @@ function renderDetail(){
       +'</div>';
   });
   document.getElementById('detail-inner').innerHTML=[
-    '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">',
-    '<div>',
-    '<div class="pg-title" style="text-align:left;font-size:26px;margin-bottom:6px">',cl.imie,' ',cl.nazwisko,'</div>',
-    '<div class="pg-ornament" style="justify-content:flex-start;margin:0 0 5px"><div class="pg-line" style="max-width:80px"></div><div class="pg-diamond"></div><div class="pg-line r" style="max-width:80px"></div></div>',
-    '<div class="pg-sub" style="text-align:left;margin-bottom:0">Karta klienta</div>',
+    '<div style="width:100%;text-align:center;margin-bottom:24px">',
+    '<div class="pg-title" style="font-size:28px;margin-bottom:8px;display:block;width:100%">',cl.imie,' ',cl.nazwisko,'</div>',
+    '<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:6px auto 6px;width:100%">',
+    '<div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div>',
     '</div>',
+    '<div class="pg-sub" style="margin-bottom:0;display:block;width:100%;text-align:center">Karta klienta</div>',
     '</div>',
     '<div class="detail-wrap">',
     '<div class="left-col">',
@@ -1429,10 +1426,10 @@ function renderDetail(){
     '<button class="btn-note-save" onclick="saveNote()">Dodaj notatkę</button>',
     '<div class="msg" id="note-msg" style="text-align:left;margin-top:5px"></div>',
     noteHistory?'<div style="margin-top:12px"><div class="sec-lbl" style="margin-bottom:7px">Historia notatek</div>'+noteHistory+'</div>':'',
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:.5px solid var(--border)">',
-    '<button class="btn-client-report" data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)">🖨 Raport</button>',
-    '<button class="btn-edit-client" data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)">✏️ Edytuj</button>',
-    '<button class="btn-delete-client" data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)">🗑 Usuń</button>',
+    '<div style="display:flex;gap:4px;flex-wrap:nowrap;margin-top:14px;padding-top:10px;border-top:.5px solid var(--border)">',
+    '<button data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)" style="flex:1;min-width:0;padding:6px 2px;background:transparent;border:.5px solid var(--gold-border);border-radius:3px;color:var(--gold);font-family:Open Sans,sans-serif;font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🖨 Raport</button>',
+    '<button data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)" style="flex:1;min-width:0;padding:6px 2px;background:transparent;border:.5px solid rgba(91,143,168,0.5);border-radius:3px;color:#5b8fa8;font-family:Open Sans,sans-serif;font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✏️ Edytuj</button>',
+    '<button data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)" style="flex:1;min-width:0;padding:6px 2px;background:transparent;border:.5px solid rgba(244,63,94,0.4);border-radius:3px;color:rgba(244,63,94,0.8);font-family:Open Sans,sans-serif;font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🗑 Usuń</button>',
     '</div>',
     '</div></div>',
     '<div class="right-col">',
@@ -2180,6 +2177,9 @@ function deleteLovdata(id){
   if(!confirm('Usun\u0105\u0107 z bazy? Plik na Drive pozostanie.'))return;
   const db=loadDB();db.lovdata=(db.lovdata||[]).filter(e=>e.id!==id);
   saveDB(db);searchLovdata();
+}
+
+b);searchLovdata();
 }
 
 </script>
