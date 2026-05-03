@@ -1330,10 +1330,8 @@ async function handleFileUpload(input){
   if(!['pdf','txt','docx','doc','xlsx','xls','png','jpg','jpeg'].includes(ext)){
     alert('Dozwolone: PDF, TXT, DOCX, XLSX, PNG, JPG');return;
   }
-  const source=document.getElementById('file-source-select')
-    ?document.getElementById('file-source-select').value:'';
   document.getElementById('upload-bar').style.display='block';
-  const result=await uploadClientFile(file,currentId,source);
+  const result=await uploadClientFile(file,currentId,'');
   document.getElementById('upload-bar').style.display='none';
   if(!result)return;
   const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
@@ -1390,31 +1388,30 @@ function renderDetail(){
     noteHistory+='<div class="note-entry"><div class="note-entry-date">'+n.data+'</div><div class="note-entry-text">'+n.tekst+'</div></div>';
   });
   let fileList='';
-  (cl.pliki||[]).forEach(f=>{
-    const srcBadge=f.source?'<span style="padding:1px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:rgba(212,175,90,0.15);color:var(--gold);border:.5px solid rgba(212,175,90,0.3)">'+f.source+'</span>':'';
-    fileList+='<div class="file-item"><div class="file-item-left">'
-      +'<span style="font-size:17px">'+fileIcon(f.name)+'</span>'
+  (cl.pliki||[]).forEach((f,fi)=>{
+    fileList+='<div class="file-item">'
+      +'<div class="file-item-left">'
+      +'<span style="font-size:10px;font-weight:700;color:var(--text-ter);min-width:22px;text-align:right">'+(fi+1)+'.</span>'
+      +'<span style="font-size:16px;margin:0 4px">'+fileIcon(f.name)+'</span>'
       +'<div>'
-      +'<div class="file-name" style="display:flex;align-items:center;gap:6px">'+f.name+' '+srcBadge+'</div>'
-      +'<div class="file-meta">'+f.date+' · '+f.size+'</div>'
-      +'</div></div>'
-      +'<div style="display:flex;gap:6px;align-items:center">'
+      +'<div class="file-name">'+f.name+'</div>'
+      +'<div class="file-meta">'+f.date+(f.size?' · '+f.size:'')+'</div>'
+      +'</div>'
+      +'</div>'
       +'<a class="file-link" href="'+f.link+'" target="_blank">Otwórz</a>'
-      +(f.folderLink?'<a class="file-link" href="'+f.folderLink+'" target="_blank" style="font-size:8px;padding:3px 8px">📁</a>':'')
-      +'</div></div>';
+      +'</div>';
   });
   document.getElementById('detail-inner').innerHTML=[
+    '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">',
+    '<div>',
+    '<div class="pg-title" style="text-align:left;font-size:26px;margin-bottom:6px">',cl.imie,' ',cl.nazwisko,'</div>',
+    '<div class="pg-ornament" style="justify-content:flex-start;margin:0 0 5px"><div class="pg-line" style="max-width:80px"></div><div class="pg-diamond"></div><div class="pg-line r" style="max-width:80px"></div></div>',
+    '<div class="pg-sub" style="text-align:left;margin-bottom:0">Karta klienta</div>',
+    '</div>',
+    '</div>',
     '<div class="detail-wrap">',
     '<div class="left-col">',
     '<div class="card" style="padding:18px">',
-    '<div class="pg-title" style="text-align:left;font-size:22px;margin-bottom:4px">',cl.imie,' ',cl.nazwisko,'</div>',
-    '<div class="pg-ornament" style="justify-content:flex-start;margin:4px 0 4px"><div class="pg-line" style="max-width:60px"></div><div class="pg-diamond"></div><div class="pg-line r" style="max-width:60px"></div></div>',
-    '<div class="pg-sub" style="text-align:left;margin-bottom:12px">Karta klienta</div>',
-    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">',
-    '<button class="btn-client-report" data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)">🖨 Raport</button>',
-    '<button class="btn-edit-client" data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)">✏️ Edytuj</button>',
-    '<button class="btn-delete-client" data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)">🗑 Usuń</button>',
-    '</div>',
     '<div class="sec-lbl">Dane osobowe</div>',
     '<div style="display:flex;flex-direction:column;gap:7px">',
     '<div class="d-item"><span class="d-lbl">Imię i Nazwisko</span><span class="d-val">',fmt(cl.imie),' ',fmt(cl.nazwisko),'</span></div>',
@@ -1432,6 +1429,11 @@ function renderDetail(){
     '<button class="btn-note-save" onclick="saveNote()">Dodaj notatkę</button>',
     '<div class="msg" id="note-msg" style="text-align:left;margin-top:5px"></div>',
     noteHistory?'<div style="margin-top:12px"><div class="sec-lbl" style="margin-bottom:7px">Historia notatek</div>'+noteHistory+'</div>':'',
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:.5px solid var(--border)">',
+    '<button class="btn-client-report" data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)">🖨 Raport</button>',
+    '<button class="btn-edit-client" data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)">✏️ Edytuj</button>',
+    '<button class="btn-delete-client" data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)">🗑 Usuń</button>',
+    '</div>',
     '</div></div>',
     '<div class="right-col">',
     '<div class="billing-card"><div class="bill-title">Historia usług i rozliczenia</div>',
@@ -1991,7 +1993,7 @@ function printClientReport(clientId){
 }
 
 /* ── DRIVE FOLDER UPLOAD ─────────────────────────────────── */
-const CLIENT_DRIVE_FOLDER='16_wIAhxbZlkikHsGiIP0NUpOBCY316am';
+const CLIENT_DRIVE_FOLDER='1OXKTHSd71RXDfcPlSqGB3WRT1U_H2Tbl';
 
 async function getOrCreateClientFolder(clientName){
   // Search for existing folder with client name inside the main folder
