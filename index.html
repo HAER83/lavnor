@@ -737,7 +737,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .hg-col{display:flex;flex-direction:column;gap:10px;padding:0 8px;align-items:center;width:100%}
 .hg-col-title{font-family:'Open Sans',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.38em;text-transform:uppercase;color:var(--gold-dim);padding-bottom:8px;width:100%;text-align:center;border-bottom:.5px solid rgba(198,166,103,0.22);margin-bottom:6px;white-space:nowrap}
 .hg-row{display:flex;flex-direction:row;gap:8px;justify-content:center;flex-wrap:nowrap}
-.hg-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px 12px;width:118px;height:118px;flex-shrink:0;flex-grow:0;background:linear-gradient(145deg,rgba(16,47,94,0.85) 0%,rgba(10,26,47,0.92) 100%);border:.5px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.07)}
+.hg-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px 12px;width:118px;height:118px;flex-shrink:0;flex-grow:0;background:linear-gradient(145deg,rgba(16,47,94,0.85) 0%,rgba(10,26,47,0.92) 100%);border:.5px solid rgba(47,79,79,0.35);border-radius:8px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.07)}
 .hg-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1)}
 .hg-svg{width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px rgba(198,166,103,0.3));transition:filter .25s;position:relative;z-index:2}
 .hg-label{font-family:'Open Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text);text-align:center;line-height:1.35;position:relative;z-index:2}
@@ -745,8 +745,8 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 /* Color themes for buttons */
 .sc-email .hg-svg, .sc-email svg{color:rgba(138,163,194,0.85)}
 .sc-email:hover{border-color:rgba(138,163,194,0.4);background:linear-gradient(145deg,rgba(16,47,94,0.95) 0%,rgba(10,26,47,0.98) 100%)}
-.sc-lavnor .hg-svg, .sc-lavnor svg{color:var(--gold)}
-.sc-lavnor:hover{border-color:rgba(198,166,103,0.45);background:linear-gradient(145deg,rgba(25,55,100,0.95) 0%,rgba(16,40,75,0.98) 100%)}
+.sc-lavnor .hg-svg, .sc-lavnor svg{color:#2F4F4F}
+.sc-lavnor:hover{border-color:rgba(47,79,79,0.6);background:linear-gradient(145deg,rgba(15,40,40,0.95) 0%,rgba(10,30,30,0.98) 100%)}
 .sc-norsk .hg-svg, .sc-norsk svg{color:rgba(100,200,160,0.85)}
 .sc-norsk:hover{border-color:rgba(100,200,160,0.4);background:linear-gradient(145deg,rgba(10,60,50,0.9) 0%,rgba(8,40,35,0.95) 100%)}
 .sc-ai .hg-svg, .sc-ai svg{color:rgba(167,130,210,0.85)}
@@ -868,18 +868,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
             <div class="hg-sub">Baza wiedzy</div>
           </button>
         </div>
-        <div class="hg-row">
-          <button class="hg-btn sc-lavnor" onclick="nav('pg-reports')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="6" y="4" width="32" height="36" rx="3"/><line x1="12" y1="14" x2="32" y2="14"/><line x1="12" y1="20" x2="32" y2="20"/><line x1="12" y1="26" x2="24" y2="26"/><rect x="26" y="28" width="4" height="8" rx="1"/><rect x="32" y="24" width="4" height="12" rx="1"/></svg>
-            <div class="hg-label">Raporty</div>
-            <div class="hg-sub">Analizy</div>
-          </button>
-          <button class="hg-btn sc-lavnor" onclick="nav('pg-lovdata')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="5" y="3" width="26" height="34" rx="2" fill="none"/><line x1="11" y1="11" x2="25" y2="11"/><line x1="11" y1="17" x2="25" y2="17"/><line x1="11" y1="23" x2="19" y2="23"/><circle cx="32" cy="33" r="7" fill="none"/><line x1="37" y1="38" x2="41" y2="42"/><line x1="29" y1="33" x2="35" y2="33"/><line x1="32" y1="30" x2="32" y2="36"/></svg>
-            <div class="hg-label">Orzeczenia Lovdata</div>
-            <div class="hg-sub">Baza wiedzy</div>
-          </button>
-        </div>
+        
       </div>
     </div><!-- end home-grid-main -->
   </div>
