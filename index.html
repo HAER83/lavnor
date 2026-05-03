@@ -1374,6 +1374,18 @@ function togglePaid(clientId,rowIdx){
   cl.uslugi[idx].paid=!cl.uslugi[idx].paid;
   saveDB(db);renderDetail();
 }
+function setPaid(clientId,rowIdx,val){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  const idx=parseInt(rowIdx);
+  if(!cl||!cl.uslugi||!cl.uslugi[idx])return;
+  // val=true means paid, val=false means explicitly not paid
+  // If unchecking the already-set value, set to null (unknown)
+  const current=cl.uslugi[idx].paid;
+  const newVal=(val===true)?true:false;
+  cl.uslugi[idx].paid=(current===newVal)?null:newVal;
+  saveDB(db);renderDetail();
+}
 function renderDetail(){
   const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);if(!cl)return;
   const today=new Date().toISOString().slice(0,10);
@@ -1381,16 +1393,22 @@ function renderDetail(){
   (cl.uslugi||[]).forEach((u,i)=>{
     const b=parseFloat(u.kwota)||0;
     const mv=(b*0.25/1.25).toFixed(2),tx=(b*0.33).toFixed(2),nt=(b-b*0.33).toFixed(2);
-    const paidBtn='<div class="paid-toggle-wrap">'
-      +'<label class="paid-toggle">'
-      +'<input type="checkbox" data-id="'+cl.id+'" data-idx="'+i+'" '
-      +(u.paid?'checked ':' ')
-      +'onchange="togglePaid(this.dataset.id,this.dataset.idx)">'
-      +'<span class="paid-slider"></span>'
+    const paidBtn='<div style="display:flex;flex-direction:column;gap:5px;align-items:center">'
+      +'<label style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap">'
+      +'<input type="checkbox" data-id="'+cl.id+'" data-idx="'+i+'" data-val="true" '
+      +(u.paid===true?'checked ':'')
+      +'onchange="setPaid(this.dataset.id,this.dataset.idx,true)" '
+      +'style="accent-color:#22c55e;width:14px;height:14px;cursor:pointer">'
+      +'<span style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#22c55e">Zapłacono</span>'
       +'</label>'
-      +'<span class="paid-toggle-label" style="color:'+(u.paid?'#22c55e':'rgba(244,63,94,0.8)')+';">'
-      +(u.paid?'Tak':'Nie')
-      +'</span></div>';
+      +'<label style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap">'
+      +'<input type="checkbox" data-id="'+cl.id+'" data-idx="'+i+'" data-val="false" '
+      +(u.paid===false?'checked ':'')
+      +'onchange="setPaid(this.dataset.id,this.dataset.idx,false)" '
+      +'style="accent-color:#f43f5e;width:14px;height:14px;cursor:pointer">'
+      +'<span style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(244,63,94,0.8)">Nie zapłacono</span>'
+      +'</label>'
+      +'</div>';
     rows+=[
       '<tr><td class="num">',(i+1),'</td>',
       '<td style="white-space:nowrap">',(u.data||'—'),'</td>',
@@ -1476,7 +1494,7 @@ function renderDetail(){
     '<div class="bill-table-wrap"><table class="bill-tbl">',
     '<thead><tr><th>Lp.</th><th>Data</th><th style="min-width:155px">Wykonana czynność</th>',
     '<th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th>',
-    '<th style="text-align:center">Zapłacono</th></tr></thead>',
+    '<th style="text-align:center;min-width:130px">Status płatności</th></tr></thead>',
     '<tbody>',rows,
     '<tr><td class="num" style="color:var(--text-ter)">·</td>',
     '<td><input class="t-inp" id="nr-data" type="date" value="',today,'" style="min-width:118px"></td>',
@@ -1484,7 +1502,7 @@ function renderDetail(){
     '<td><input class="t-inp" id="nr-kwota" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcPrev()" style="min-width:80px"></td>',
     '<td class="calc" id="pr-mv">—</td><td class="calc" id="pr-tx">—</td><td class="net" id="pr-nt">—</td>',
     '<td><input class="t-inp" id="nr-dplat" type="date" style="min-width:118px"></td>',
-    '<td style="text-align:center;color:rgba(238,240,244,0.3)">—</td></tr>',
+    '<td style="text-align:center;color:rgba(238,240,244,0.2);font-size:10px">—</td></tr>',
     totalRow,
     '</tbody></table></div>',
     '<div style="margin-top:12px;display:flex;align-items:center;gap:12px">',
@@ -1863,7 +1881,7 @@ function showReport(type){
     let rows='';let utotB=0,utotN=0;const uRows=[];
     sorted.forEach(cl=>{
       (cl.uslugi||[]).forEach((u,idx)=>{
-        if(!u.paid){
+        if(u.paid!==true){
           const b=parseFloat(u.kwota)||0,nt=+(b-b*0.33).toFixed(2);
           utotB+=b;utotN+=nt;
           uRows.push({cid:cl.id,idx,name:(cl.nazwisko||'')+' '+(cl.imie||''),
@@ -1980,48 +1998,64 @@ function deleteClient(clientId){
 }
 
 /* ── CLIENT REPORT ───────────────────────────────────────── */
+function extractDOB(numStr){
+  // Fødselsnummer: DDMMYY + 5 digits — extract DD.MM.YYYY
+  if(!numStr||numStr.length<6) return null;
+  const d=numStr.slice(0,2);
+  const m=numStr.slice(2,4);
+  const y2=numStr.slice(4,6);
+  const y=parseInt(y2)<30?'20'+y2:'19'+y2;
+  return d+'.'+m+'.'+y;
+}
 function printClientReport(clientId){
   const db=loadDB();
   const cl=db.clients.find(x=>x.id===clientId);
   if(!cl)return;
   const now=new Date().toLocaleDateString('pl-PL');
-  let rows='';
-  let totB=0;
+  // Extract DOB — prefer fodsel, fallback pesel
+  const dob=extractDOB(cl.fodsel)||extractDOB(cl.pesel)||'—';
+  let rowsPaid='', rowsUnpaid='', totPaid=0, totUnpaid=0, totAll=0;
   (cl.uslugi||[]).forEach((u,i)=>{
     const b=parseFloat(u.kwota)||0;
-    totB+=b;
-    rows+='<tr>'
+    totAll+=b;
+    const row='<tr>'
       +'<td>'+(i+1)+'</td>'
       +'<td>'+(u.data||'—')+'</td>'
       +'<td>'+(u.czynnosc||'—')+'</td>'
       +'<td style="text-align:right;font-weight:600">'+b.toFixed(2)+' NOK</td>'
-      +'<td style="text-align:center">'+(u.paid?'✓':'○')+'</td>'
-      +'</tr>';
+      +'<td style="text-align:center;color:'+(u.paid===true?'green':u.paid===false?'red':'#999')+'">'
+      +(u.paid===true?'✓ Zapłacono':u.paid===false?'✗ Nie zapłacono':'—')
+      +'</td></tr>';
+    if(u.paid===true){rowsPaid+=row;totPaid+=b;}
+    else{rowsUnpaid+=row;totUnpaid+=b;}
   });
+  const allRows=rowsPaid+rowsUnpaid||'<tr><td colspan="5" style="text-align:center;color:#999">Brak czynności</td></tr>';
   const win=window.open('','_blank');
   win.document.write(
     '<html><head><title>Raport – '+cl.imie+' '+cl.nazwisko+'</title>'
     +'<style>'
-    +'body{font-family:Georgia,serif;font-size:13px;color:#111;padding:32px;max-width:700px;margin:0 auto}'
-    +'h1{font-size:22px;letter-spacing:.1em;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:4px}'
-    +'p.sub{color:#666;font-size:11px;margin-bottom:24px}'
+    +'body{font-family:Georgia,serif;font-size:13px;color:#111;padding:32px;max-width:760px;margin:0 auto}'
+    +'h1{font-size:22px;letter-spacing:.08em;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:4px}'
+    +'p.sub{color:#666;font-size:11px;margin-bottom:8px}'
+    +'.summary{display:flex;gap:24px;margin-bottom:20px;padding:12px;background:#f9f9f9;border-left:4px solid #333}'
+    +'.s-box{text-align:center} .s-box .val{font-size:18px;font-weight:700} .s-box .lbl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.1em}'
     +'table{width:100%;border-collapse:collapse;margin-top:8px}'
-    +'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;'
-       +'padding:7px 8px;border-bottom:2px solid #333;text-align:left;background:#f5f5f5}'
+    +'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 8px;border-bottom:2px solid #333;text-align:left;background:#f5f5f5}'
     +'td{padding:8px;border-bottom:1px solid #e5e5e5;font-size:12px}'
-    +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px;font-size:13px}'
+    +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px}'
     +'@media print{button{display:none}}'
     +'</style></head><body>'
     +'<h1>'+cl.imie+' '+cl.nazwisko+'</h1>'
-    +'<p class="sub">Raport czynności · Wygenerowano: '+now
-      +' · Fødselsnummer: '+(cl.fodsel||'—')+' · PESEL: '+(cl.pesel||'—')+'</p>'
-    +'<button onclick="window.print()" style="margin-bottom:16px;padding:8px 20px;'
-      +'background:#333;color:#fff;border:none;cursor:pointer;font-size:12px">🖨 Drukuj / PDF</button>'
-    +'<table>'
-    +'<thead><tr><th>Lp.</th><th>Data</th><th>Czynność</th><th style="text-align:right">Kwota (NOK)</th><th style="text-align:center">Zapłacono</th></tr></thead>'
-    +'<tbody>'+rows+'</tbody>'
-    +'<tfoot><tr><td colspan="3">Suma łączna</td>'
-      +'<td style="text-align:right">'+totB.toFixed(2)+' NOK</td><td></td></tr></tfoot>'
+    +'<p class="sub">Data urodzenia: '+dob+' &nbsp;·&nbsp; Wygenerowano: '+now+'</p>'
+    +'<div class="summary">'
+    +'<div class="s-box"><div class="val" style="color:green">'+totPaid.toFixed(2)+' NOK</div><div class="lbl">Zapłacono</div></div>'
+    +'<div class="s-box"><div class="val" style="color:#c00">'+totUnpaid.toFixed(2)+' NOK</div><div class="lbl">Nie zapłacono</div></div>'
+    +'<div class="s-box"><div class="val">'+totAll.toFixed(2)+' NOK</div><div class="lbl">Łącznie</div></div>'
+    +'</div>'
+    +'<button onclick="window.print()" style="margin-bottom:16px;padding:8px 20px;background:#333;color:#fff;border:none;cursor:pointer;font-size:12px">🖨 Drukuj / PDF</button>'
+    +'<table><thead><tr><th>Lp.</th><th>Data</th><th>Czynność</th><th style="text-align:right">Kwota (NOK)</th><th style="text-align:center">Status</th></tr></thead>'
+    +'<tbody>'+allRows+'</tbody>'
+    +'<tfoot><tr><td colspan="3">Suma łączna</td><td style="text-align:right">'+totAll.toFixed(2)+' NOK</td><td></td></tr></tfoot>'
     +'</table>'
     +'</body></html>'
   );
