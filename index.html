@@ -1430,11 +1430,13 @@ function renderDetail(){
       +'</div></div>';
   });
   document.getElementById('detail-inner').innerHTML=[
-    '<div style="margin-bottom:16px">',
-    '<div style="font-family:Cinzel,serif;font-size:28px;font-weight:700;letter-spacing:.15em;color:var(--text)">',cl.imie,' ',cl.nazwisko,'</div>',
-    '<div class="pg-ornament" style="margin:6px 0 4px;justify-content:flex-start"><div class="pg-line" style="max-width:100px"></div><div class="pg-diamond"></div><div class="pg-line r" style="max-width:100px"></div></div>',
-    '<div style="font-size:10px;font-weight:300;letter-spacing:.45em;text-transform:uppercase;color:var(--text-ter);margin-bottom:10px">Karta klienta</div>',
-    '<div style="display:flex;gap:8px;flex-wrap:wrap">',
+    '<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">',
+    '<div>',
+    '<div style="font-family:Cinzel,serif;font-size:28px;font-weight:700;letter-spacing:.15em;color:var(--text);text-shadow:0 0 30px rgba(212,175,90,0.2)">',cl.imie,' ',cl.nazwisko,'</div>',
+    '<div style="display:flex;align-items:center;gap:0;margin:6px 0 5px"><div style="width:60px;height:.5px;background:linear-gradient(to right,transparent,rgba(255,255,255,0.5))"></div><div style="width:7px;height:7px;background:rgba(255,255,255,0.85);transform:rotate(45deg);flex-shrink:0;margin:0 10px;box-shadow:0 0 6px rgba(255,255,255,0.4)"></div><div style="width:60px;height:.5px;background:linear-gradient(to left,transparent,rgba(255,255,255,0.5))"></div></div>',
+    '<div style="font-size:10px;font-weight:300;letter-spacing:.45em;text-transform:uppercase;color:var(--text-ter)">Karta klienta</div>',
+    '</div>',
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:4px">',
     '<button class="btn-client-report" data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)">🖨 Raport</button>',
     '<button class="btn-edit-client" data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)">✏️ Edytuj</button>',
     '<button class="btn-delete-client" data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)">🗑 Usuń</button>',
