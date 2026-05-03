@@ -733,10 +733,10 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 
 
 /* HOME GRID */
-.home-grid-main{display:grid;grid-template-columns:repeat(4,1fr);gap:0;width:100%;max-width:1560px;margin:16px auto 0;align-items:start}
-.hg-col{display:flex;flex-direction:column;gap:10px;padding:0 8px}
+.home-grid-main{display:grid;grid-template-columns:1fr;gap:0;width:100%;max-width:520px;margin:16px auto 0;align-items:start;justify-items:center}
+.hg-col{display:flex;flex-direction:column;gap:10px;padding:0 8px;align-items:center;width:100%}
 .hg-col-title{font-family:'Open Sans',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.38em;text-transform:uppercase;color:var(--gold-dim);padding-bottom:8px;width:100%;text-align:center;border-bottom:.5px solid rgba(198,166,103,0.22);margin-bottom:6px;white-space:nowrap}
-.hg-row{display:flex;flex-direction:row;gap:8px;justify-content:flex-start;flex-wrap:nowrap}
+.hg-row{display:flex;flex-direction:row;gap:8px;justify-content:center;flex-wrap:nowrap}
 .hg-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px 12px;width:118px;height:118px;flex-shrink:0;flex-grow:0;background:linear-gradient(145deg,rgba(16,47,94,0.85) 0%,rgba(10,26,47,0.92) 100%);border:.5px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.07)}
 .hg-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1)}
 .hg-svg{width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px rgba(198,166,103,0.3));transition:filter .25s;position:relative;z-index:2}
@@ -818,7 +818,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
   <div class="home-inner">
 
     <!-- LOGO -->
-    <div class="logo-wrap">
+<div class="logo-wrap">
       <div class="logo-text">Lavnor</div>
       <div class="logo-ornament">
         <div class="logo-line"></div>
@@ -829,32 +829,10 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
     </div>
 
     <!-- MAIN GRID: 4 columns -->
-    <div class="home-grid-main">
-
-      <!-- COL 1: POCZTA E-MAIL -->
-      <div class="hg-col">
-        <div class="hg-col-title">Poczta e-mail</div>
-        <div class="hg-row">
-          <button class="hg-btn sc-email" onclick="window.open('https://mail.proton.me/u/0/inbox','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="4" y="9" width="36" height="26" rx="3"/><polyline points="4,9 22,26 40,9"/></svg>
-            <div class="hg-label">Proton Mail</div>
-            <div class="hg-sub">Szyfrowana poczta</div>
-          </button>
-          <button class="hg-btn sc-email" onclick="window.open('https://outlook.live.com/mail/','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="3" y="6" width="24" height="32" rx="2"/><rect x="17" y="12" width="24" height="24" rx="2"/><line x1="17" y1="20" x2="41" y2="20"/><line x1="17" y1="28" x2="41" y2="28"/></svg>
-            <div class="hg-label">Outlook</div>
-            <div class="hg-sub">Microsoft Mail</div>
-          </button>
-          <button class="hg-btn sc-email" onclick="window.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="4" y="9" width="36" height="26" rx="3"/><polyline points="4,9 22,24 40,9"/><line x1="4" y1="35" x2="16" y2="22"/><line x1="40" y1="35" x2="28" y2="22"/></svg>
-            <div class="hg-label">Gmail</div>
-            <div class="hg-sub">Google Mail</div>
-          </button>
-        </div>
-      </div>
-
-      <!-- COL 2: SYSTEM LAVNOR -->
-      <div class="hg-col">
+    
+    <!-- MAIN GRID: System Lavnor only -->
+    <div class="home-grid-main" style="grid-template-columns:1fr;justify-items:center">
+<div class="hg-col">
         <div class="hg-col-title">System Lavnor</div>
         <div class="hg-row">
           <button class="hg-btn sc-lavnor" onclick="nav('pg-add')">
@@ -903,78 +881,12 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
           </button>
         </div>
       </div>
-
-      <!-- COL 3: PORTALE URZĘDOWE -->
-      <div class="hg-col">
-        <div class="hg-col-title">Portale urzędowe</div>
-        <div class="hg-row">
-          <button class="hg-btn sc-norsk" onclick="window.open('https://www.nav.no','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="14" r="8"/><path d="M6 38c0-8.8 7.2-16 16-16s16 7.2 16 16"/><line x1="22" y1="28" x2="22" y2="38"/></svg>
-            <div class="hg-label">NAV</div>
-            <div class="hg-sub">System informacji</div>
-          </button>
-          <button class="hg-btn sc-norsk" onclick="window.open('https://www.skatteetaten.no','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="6" y="10" width="32" height="24" rx="3"/><line x1="6" y1="18" x2="38" y2="18"/><circle cx="14" cy="28" r="3"/><line x1="20" y1="28" x2="32" y2="28"/></svg>
-            <div class="hg-label">Skatteetaten</div>
-            <div class="hg-sub">Podatki</div>
-          </button>
-          <button class="hg-btn sc-norsk" onclick="window.open('https://www.altinn.no','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><polygon points="22,4 40,34 4,34"/><line x1="22" y1="16" x2="22" y2="26"/><circle cx="22" cy="30" r="1.5" fill="currentColor"/></svg>
-            <div class="hg-label">Altinn</div>
-            <div class="hg-sub">Platforma</div>
-          </button>
-        </div>
-        <div class="hg-row">
-          <button class="hg-btn sc-norsk" onclick="window.open('https://www.helsenorge.no','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="6" y="6" width="32" height="32" rx="4"/><line x1="22" y1="14" x2="22" y2="30"/><line x1="14" y1="22" x2="30" y2="22"/></svg>
-            <div class="hg-label">Helsenorge</div>
-            <div class="hg-sub">Zdrowie</div>
-          </button>
-          <button class="hg-btn sc-norsk" onclick="window.open('https://www.udi.no','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="16"/><line x1="22" y1="6" x2="22" y2="38"/><line x1="6" y1="22" x2="38" y2="22"/><ellipse cx="22" cy="22" rx="8" ry="16"/></svg>
-            <div class="hg-label">UDI</div>
-            <div class="hg-sub">Imigracja</div>
-          </button>
-          <button class="hg-btn sc-norsk" onclick="window.open('https://www.digipost.no','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="4" y="9" width="36" height="26" rx="3"/><polyline points="4,9 22,26 40,9"/></svg>
-            <div class="hg-label">DigiPost</div>
-            <div class="hg-sub">Poczta urzędowa</div>
-          </button>
-        </div>
-      </div>
-
-      <!-- COL 4: ASYSTENCI AI -->
-      <div class="hg-col">
-        <div class="hg-col-title">Asystenci AI</div>
-        <div class="hg-row">
-          <button class="hg-btn sc-ai" onclick="window.open('https://claude.ai','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="14"/><path d="M15 28 Q22 10 29 28"/><path d="M17 23 Q22 18 27 23"/></svg>
-            <div class="hg-label">Claude AI</div>
-            <div class="hg-sub">Anthropic</div>
-          </button>
-          <button class="hg-btn sc-ai" onclick="window.open('https://gemini.google.com','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><path d="M22 4 C22 4 36 22 22 40 C8 22 22 4 22 4z"/><path d="M4 22 C4 22 22 8 40 22 C22 36 4 22 4 22z"/></svg>
-            <div class="hg-label">Gemini</div>
-            <div class="hg-sub">AI Google</div>
-          </button>
-          <button class="hg-btn sc-ai" onclick="window.open('https://chat.openai.com','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="14"/><path d="M14 18 Q22 8 30 18 Q36 26 28 32 Q22 36 16 32 Q8 26 14 18z"/></svg>
-            <div class="hg-label">ChatGPT</div>
-            <div class="hg-sub">AI OpenAI</div>
-          </button>
-        </div>
-        <div class="hg-row">
-          <button class="hg-btn sc-ai" onclick="window.open('https://grok.com','_blank')">
-            <svg class="hg-svg" viewBox="0 0 44 44"><line x1="10" y1="10" x2="34" y2="34"/><line x1="34" y1="10" x2="10" y2="34"/><circle cx="22" cy="22" r="6"/></svg>
-            <div class="hg-label">Grok</div>
-            <div class="hg-sub">AI xAI</div>
-          </button>
-        </div>
-      </div>
-
     </div><!-- end home-grid-main -->
   </div>
   <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
+</div>
+
+
 </div>
 
 <div class="page hidden" id="pg-add">
