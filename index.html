@@ -910,21 +910,15 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
             <div class="icon-label">Raporty</div>
             <div class="icon-sub">Analizy</div>
           </button>
-        </div>
-      </div>
-
-      <div class="home-section-sep"></div>
-
-      <!-- LOVDATA -->
-      <div class="home-col">
-        <div class="home-col-title">Orzeczenia</div>
-        <div class="home-sub-grid">
           <button class="icon-card sc-lavnor" onclick="nav('pg-lovdata')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="5" y="3" width="26" height="34" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="11" y1="11" x2="25" y2="11" stroke="currentColor" stroke-width="1.2"/><line x1="11" y1="17" x2="25" y2="17" stroke="currentColor" stroke-width="1.2"/><line x1="11" y1="23" x2="19" y2="23" stroke="currentColor" stroke-width="1.2"/><circle cx="32" cy="33" r="7" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="37" y1="38" x2="41" y2="42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="29" y1="33" x2="35" y2="33" stroke="currentColor" stroke-width="1.1"/><line x1="32" y1="30" x2="32" y2="36" stroke="currentColor" stroke-width="1.1"/></svg>
+            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="5" y="3" width="26" height="34" rx="2"/><line x1="11" y1="11" x2="25" y2="11"/><line x1="11" y1="17" x2="25" y2="17"/><line x1="11" y1="23" x2="19" y2="23"/><circle cx="33" cy="34" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="37" y1="38" x2="41" y2="42" stroke-width="2" stroke-linecap="round"/><line x1="30" y1="34" x2="36" y2="34"/><line x1="33" y1="31" x2="33" y2="37"/></svg>
             <div class="icon-label">Orzeczenia Lovdata</div>
             <div class="icon-sub">Baza wiedzy</div>
           </button>
+          
         </div>
+      </div>
+
       </div>
 
       <div class="home-section-sep"></div>
@@ -1190,6 +1184,9 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
           <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Wniosek+o+ponowne+rozpatrzenie" target="_blank">
    
 
+<script>
+
+
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='lavnor_baza_klientow.json';
 const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar';
@@ -1369,16 +1366,6 @@ function togglePaid(clientId,rowIdx){
   cl.uslugi[idx].paid=!cl.uslugi[idx].paid;
   saveDB(db);renderDetail();
 }
-function setPaid(clientId,rowIdx,val){
-  const db=loadDB();
-  const cl=db.clients.find(x=>x.id===clientId);
-  const idx=parseInt(rowIdx);
-  if(!cl||!cl.uslugi||!cl.uslugi[idx])return;
-  if(val==='true') cl.uslugi[idx].paid=true;
-  else if(val==='false') cl.uslugi[idx].paid=false;
-  else cl.uslugi[idx].paid=null;
-  saveDB(db);renderDetail();
-}
 function renderDetail(){
   const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);if(!cl)return;
   const today=new Date().toISOString().slice(0,10);
@@ -1386,15 +1373,16 @@ function renderDetail(){
   (cl.uslugi||[]).forEach((u,i)=>{
     const b=parseFloat(u.kwota)||0;
     const mv=(b*0.25/1.25).toFixed(2),tx=(b*0.33).toFixed(2),nt=(b-b*0.33).toFixed(2);
-    const paidColor=u.paid===true?'#22c55e':u.paid===false?'#f43f5e':'rgba(238,240,244,0.4)';
-    const paidBtn='<select data-id="'+cl.id+'" data-idx="'+i+'" onchange="setPaid(this.dataset.id,this.dataset.idx,this.value)" '
-      +'style="background:rgba(18,25,42,0.9);border:.5px solid '+paidColor+';border-radius:4px;'
-      +'color:'+paidColor+';font-family:Open Sans,sans-serif;font-size:9px;font-weight:700;'
-      +'letter-spacing:.18em;text-transform:uppercase;padding:5px 7px;cursor:pointer;width:120px">'
-      +'<option value="null"'+(u.paid===null||u.paid===undefined?' selected':'')+'">— status —</option>'
-      +'<option value="true"'+(u.paid===true?' selected':'')+'>✓ Zapłacono</option>'
-      +'<option value="false"'+(u.paid===false?' selected':'')+'>✗ Nie zapłacono</option>'
-      +'</select>';
+    const paidBtn='<div class="paid-toggle-wrap">'
+      +'<label class="paid-toggle">'
+      +'<input type="checkbox" data-id="'+cl.id+'" data-idx="'+i+'" '
+      +(u.paid?'checked ':' ')
+      +'onchange="togglePaid(this.dataset.id,this.dataset.idx)">'
+      +'<span class="paid-slider"></span>'
+      +'</label>'
+      +'<span class="paid-toggle-label" style="color:'+(u.paid?'#22c55e':'rgba(244,63,94,0.8)')+';">'
+      +(u.paid?'Tak':'Nie')
+      +'</span></div>';
     rows+=[
       '<tr><td class="num">',(i+1),'</td>',
       '<td style="white-space:nowrap">',(u.data||'—'),'</td>',
@@ -1434,29 +1422,17 @@ function renderDetail(){
       +'</div></div>';
   });
   document.getElementById('detail-inner').innerHTML=[
-    '<div style="width:100%;max-width:1200px;display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;">',
-    '<div>',
-    '<div style="font-family:Cinzel,serif;font-size:28px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;',
-    'background:linear-gradient(160deg,#fff 0%,#edf0f5 30%,#c8dff0 65%,#d4af5a 100%);',
-    '-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;',
-    'filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5));margin-bottom:8px">',cl.imie,' ',cl.nazwisko,'</div>',
-    '<div style="display:flex;align-items:center;gap:0;margin-bottom:6px;width:200px">',
-    '<div style="flex:1;height:.5px;background:linear-gradient(to right,rgba(255,255,255,0.6),rgba(255,255,255,0.2))"></div>',
-    '<div style="width:7px;height:7px;background:#fff;transform:rotate(45deg);flex-shrink:0;margin:0 10px;',
-    'box-shadow:0 0 6px rgba(255,255,255,0.6),0 0 12px rgba(212,175,90,0.4)"></div>',
-    '<div style="flex:1;height:.5px;background:linear-gradient(to left,rgba(255,255,255,0.6),rgba(255,255,255,0.2))"></div>',
-    '</div>',
-    '<div style="font-size:9px;font-weight:300;letter-spacing:.5em;text-transform:uppercase;color:var(--text-ter)">Karta klienta</div>',
-    '</div>',
-    '<div style="display:flex;gap:8px;align-items:center;padding-bottom:2px">',
+    '<div class="detail-wrap">',
+    '<div class="left-col">',
+    '<div class="card" style="padding:18px">',
+    '<div class="pg-title" style="text-align:left;font-size:22px;margin-bottom:4px">',cl.imie,' ',cl.nazwisko,'</div>',
+    '<div class="pg-ornament" style="justify-content:flex-start;margin:4px 0 4px"><div class="pg-line" style="max-width:60px"></div><div class="pg-diamond"></div><div class="pg-line r" style="max-width:60px"></div></div>',
+    '<div class="pg-sub" style="text-align:left;margin-bottom:12px">Karta klienta</div>',
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">',
     '<button class="btn-client-report" data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)">🖨 Raport</button>',
     '<button class="btn-edit-client" data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)">✏️ Edytuj</button>',
     '<button class="btn-delete-client" data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)">🗑 Usuń</button>',
     '</div>',
-    '</div>',
-    '<div class="detail-wrap">',
-    '<div class="left-col">',
-    '<div class="card" style="padding:18px">',
     '<div class="sec-lbl">Dane osobowe</div>',
     '<div style="display:flex;flex-direction:column;gap:7px">',
     '<div class="d-item"><span class="d-lbl">Imię i Nazwisko</span><span class="d-val">',fmt(cl.imie),' ',fmt(cl.nazwisko),'</span></div>',
@@ -1480,7 +1456,7 @@ function renderDetail(){
     '<div class="bill-table-wrap"><table class="bill-tbl">',
     '<thead><tr><th>Lp.</th><th>Data</th><th style="min-width:155px">Wykonana czynność</th>',
     '<th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th>',
-    '<th style="text-align:center;min-width:130px">Status płatności</th></tr></thead>',
+    '<th style="text-align:center">Zapłacono</th></tr></thead>',
     '<tbody>',rows,
     '<tr><td class="num" style="color:var(--text-ter)">·</td>',
     '<td><input class="t-inp" id="nr-data" type="date" value="',today,'" style="min-width:118px"></td>',
@@ -1488,14 +1464,7 @@ function renderDetail(){
     '<td><input class="t-inp" id="nr-kwota" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcPrev()" style="min-width:80px"></td>',
     '<td class="calc" id="pr-mv">—</td><td class="calc" id="pr-tx">—</td><td class="net" id="pr-nt">—</td>',
     '<td><input class="t-inp" id="nr-dplat" type="date" style="min-width:118px"></td>',
-    '<td style="text-align:center"><select id="nr-paid" '
-    +'style="background:rgba(18,25,42,0.9);border:.5px solid rgba(238,240,244,0.2);border-radius:4px;'
-    +'color:rgba(238,240,244,0.4);font-family:Open Sans,sans-serif;font-size:9px;font-weight:700;'
-    +'letter-spacing:.18em;text-transform:uppercase;padding:5px 7px;cursor:pointer;width:120px">'
-    +'<option value="null">— status —</option>'
-    +'<option value="true">✓ Zapłacono</option>'
-    +'<option value="false">✗ Nie zapłacono</option>'
-    +'</select></td></tr>',
+    '<td style="text-align:center;color:rgba(238,240,244,0.3)">—</td></tr>',
     totalRow,
     '</tbody></table></div>',
     '<div style="margin-top:12px;display:flex;align-items:center;gap:12px">',
@@ -1526,12 +1495,9 @@ function saveRow(){
   const kwota=parseFloat(document.getElementById('nr-kwota').value);
   const data_platnosci=document.getElementById('nr-dplat').value;
   if(!czyn||!kwota){showMsg('row-msg','Wypełnij opis i kwotę.','err');return;}
-  const paidSel=document.getElementById('nr-paid');
-  const paidVal=paidSel?paidSel.value:'null';
-  const paid=paidVal==='true'?true:paidVal==='false'?false:null;
   const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
   if(!cl)return;if(!cl.uslugi)cl.uslugi=[];
-  cl.uslugi.push({data,czynnosc:czyn,kwota,data_platnosci,paid});
+  cl.uslugi.push({data,czynnosc:czyn,kwota,data_platnosci,paid:false});
   saveDB(db);renderDetail();showMsg('row-msg','Wpis zapisany.','ok');
 }
 const MONTHS_PL=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
@@ -1877,7 +1843,7 @@ function showReport(type){
     let rows='';let utotB=0,utotN=0;const uRows=[];
     sorted.forEach(cl=>{
       (cl.uslugi||[]).forEach((u,idx)=>{
-        if(u.paid!==true){
+        if(!u.paid){
           const b=parseFloat(u.kwota)||0,nt=+(b-b*0.33).toFixed(2);
           utotB+=b;utotN+=nt;
           uRows.push({cid:cl.id,idx,name:(cl.nazwisko||'')+' '+(cl.imie||''),
@@ -1937,7 +1903,8 @@ function printReport(){
     +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px}'
     +'</style></head><body>'
     +'<h2>Lavnor — Raport</h2>'
-    +'<p>Wygenerowany: '+new Date().toLocaleDateString('pl-PL')+'</p>'+el.outerHTML+'</body></html>');
+    +'<p>Wygenerowany: '+new Date().toLocaleDateString('pl-PL')+'</p>'
+    +el.outerHTML+'</body></html>');
   win.document.close();win.print();
 }
 window.addEventListener('load',()=>{
@@ -1993,70 +1960,48 @@ function deleteClient(clientId){
 }
 
 /* ── CLIENT REPORT ───────────────────────────────────────── */
-function extractDOB(numStr,isDnum){
-  // D-nummer: first digit is day+40 — skip DOB extraction
-  if(!numStr||numStr.length<6) return null;
-  if(isDnum) return null;
-  let d=parseInt(numStr.slice(0,2));
-  const m=numStr.slice(2,4);
-  const y2=numStr.slice(4,6);
-  // D-number detection: first digit >= 4 means day is day+40
-  if(d>40) return null; // D-number — no DOB
-  const y=parseInt(y2)<30?'20'+y2:'19'+y2;
-  return String(d).padStart(2,'0')+'.'+m+'.'+y;
-}
 function printClientReport(clientId){
   const db=loadDB();
   const cl=db.clients.find(x=>x.id===clientId);
   if(!cl)return;
   const now=new Date().toLocaleDateString('pl-PL');
-  // Extract DOB — prefer fodsel (check if D-number: day>40), fallback pesel
-  const hasDnum=cl.dnum&&cl.dnum.trim().length>0;
-  const dobFromFodsel=extractDOB(cl.fodsel,false);
-  const dobFromPesel=cl.pesel?extractDOB(cl.pesel.replace(/[^0-9]/g,''),false):null;
-  const dob=dobFromFodsel||dobFromPesel||'—';
-  let rowsPaid='', rowsUnpaid='', totPaid=0, totUnpaid=0, totAll=0;
+  let rows='';
+  let totB=0;
   (cl.uslugi||[]).forEach((u,i)=>{
     const b=parseFloat(u.kwota)||0;
-    totAll+=b;
-    const row='<tr>'
+    totB+=b;
+    rows+='<tr>'
       +'<td>'+(i+1)+'</td>'
       +'<td>'+(u.data||'—')+'</td>'
       +'<td>'+(u.czynnosc||'—')+'</td>'
       +'<td style="text-align:right;font-weight:600">'+b.toFixed(2)+' NOK</td>'
-      +'<td style="text-align:center;color:'+(u.paid===true?'green':u.paid===false?'red':'#999')+'">'
-      +(u.paid===true?'✓ Zapłacono':u.paid===false?'✗ Nie zapłacono':'—')
-      +'</td></tr>';
-    if(u.paid===true){rowsPaid+=row;totPaid+=b;}
-    else{rowsUnpaid+=row;totUnpaid+=b;}
+      +'<td style="text-align:center">'+(u.paid?'✓':'○')+'</td>'
+      +'</tr>';
   });
-  const allRows=rowsPaid+rowsUnpaid||'<tr><td colspan="5" style="text-align:center;color:#999">Brak czynności</td></tr>';
   const win=window.open('','_blank');
   win.document.write(
     '<html><head><title>Raport – '+cl.imie+' '+cl.nazwisko+'</title>'
     +'<style>'
-    +'body{font-family:Georgia,serif;font-size:13px;color:#111;padding:32px;max-width:760px;margin:0 auto}'
-    +'h1{font-size:22px;letter-spacing:.08em;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:4px}'
-    +'p.sub{color:#666;font-size:11px;margin-bottom:8px}'
-    +'.summary{display:flex;gap:24px;margin-bottom:20px;padding:12px;background:#f9f9f9;border-left:4px solid #333}'
-    +'.s-box{text-align:center} .s-box .val{font-size:18px;font-weight:700} .s-box .lbl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.1em}'
+    +'body{font-family:Georgia,serif;font-size:13px;color:#111;padding:32px;max-width:700px;margin:0 auto}'
+    +'h1{font-size:22px;letter-spacing:.1em;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:4px}'
+    +'p.sub{color:#666;font-size:11px;margin-bottom:24px}'
     +'table{width:100%;border-collapse:collapse;margin-top:8px}'
-    +'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 8px;border-bottom:2px solid #333;text-align:left;background:#f5f5f5}'
+    +'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;'
+       +'padding:7px 8px;border-bottom:2px solid #333;text-align:left;background:#f5f5f5}'
     +'td{padding:8px;border-bottom:1px solid #e5e5e5;font-size:12px}'
-    +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px}'
+    +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px;font-size:13px}'
     +'@media print{button{display:none}}'
     +'</style></head><body>'
     +'<h1>'+cl.imie+' '+cl.nazwisko+'</h1>'
-    +'<p class="sub">Data urodzenia: '+dob+' &nbsp;·&nbsp; Wygenerowano: '+now+'</p>'
-    +'<div class="summary">'
-    +'<div class="s-box"><div class="val" style="color:green">'+totPaid.toFixed(2)+' NOK</div><div class="lbl">Zapłacono</div></div>'
-    +'<div class="s-box"><div class="val" style="color:#c00">'+totUnpaid.toFixed(2)+' NOK</div><div class="lbl">Nie zapłacono</div></div>'
-    +'<div class="s-box"><div class="val">'+totAll.toFixed(2)+' NOK</div><div class="lbl">Łącznie</div></div>'
-    +'</div>'
-    +'<button onclick="window.print()" style="margin-bottom:16px;padding:8px 20px;background:#333;color:#fff;border:none;cursor:pointer;font-size:12px">🖨 Drukuj / PDF</button>'
-    +'<table><thead><tr><th>Lp.</th><th>Data</th><th>Czynność</th><th style="text-align:right">Kwota (NOK)</th><th style="text-align:center">Status</th></tr></thead>'
-    +'<tbody>'+allRows+'</tbody>'
-    +'<tfoot><tr><td colspan="3">Suma łączna</td><td style="text-align:right">'+totAll.toFixed(2)+' NOK</td><td></td></tr></tfoot>'
+    +'<p class="sub">Raport czynności · Wygenerowano: '+now
+      +' · Fødselsnummer: '+(cl.fodsel||'—')+' · PESEL: '+(cl.pesel||'—')+'</p>'
+    +'<button onclick="window.print()" style="margin-bottom:16px;padding:8px 20px;'
+      +'background:#333;color:#fff;border:none;cursor:pointer;font-size:12px">🖨 Drukuj / PDF</button>'
+    +'<table>'
+    +'<thead><tr><th>Lp.</th><th>Data</th><th>Czynność</th><th style="text-align:right">Kwota (NOK)</th><th style="text-align:center">Zapłacono</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr><td colspan="3">Suma łączna</td>'
+      +'<td style="text-align:right">'+totB.toFixed(2)+' NOK</td><td></td></tr></tfoot>'
     +'</table>'
     +'</body></html>'
   );
@@ -2127,7 +2072,30 @@ async function uploadClientFile(file, clientId, source){
   }catch(e){setDriveStatus('warn','Błąd wgrywania');console.error(e);return null;}
 }
 
-/* ── LOVDATA ─────────────────────────────────── */
+/* ── SET PAID (dropdown) ─────────────────────────── */
+function setPaid(clientId,rowIdx,val){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  const idx=parseInt(rowIdx);
+  if(!cl||!cl.uslugi||!cl.uslugi[idx])return;
+  if(val==='true') cl.uslugi[idx].paid=true;
+  else if(val==='false') cl.uslugi[idx].paid=false;
+  else cl.uslugi[idx].paid=null;
+  saveDB(db);renderDetail();
+}
+
+/* ── EXTRACT DOB ─────────────────────────────────── */
+function extractDOB(numStr){
+  if(!numStr||numStr.length<6)return null;
+  let d=parseInt(numStr.slice(0,2));
+  if(d>40)return null; // D-nummer
+  const m=numStr.slice(2,4);
+  const y2=numStr.slice(4,6);
+  const y=parseInt(y2)<30?'20'+y2:'19'+y2;
+  return String(d).padStart(2,'0')+'.'+m+'.'+y;
+}
+
+/* ── LOVDATA ─────────────────────────────────────── */
 const LOVDATA_FOLDER='1tJ4rSto97xnSUO6zFvJYN1OB4l9QB44W';
 
 async function handleLovdataUpload(input){
@@ -2157,12 +2125,12 @@ async function handleLovdataUpload(input){
       {method:'POST',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},
        body:JSON.stringify({role:'reader',type:'anyone'})});
     saveLovEntry(d.id,file.name,title,court,date,keywords,notes,'https://drive.google.com/file/d/'+d.id+'/view');
-    setDriveStatus('ok','Orzeczenie wgrane ✓');
+    setDriveStatus('ok','Orzeczenie wgrane \u2713');
     showMsg('lov-msg','Zapisano w bazie i na Drive.','ok');
   }catch(e){
-    setDriveStatus('warn','Błąd Drive');
+    setDriveStatus('warn','B\u0142\u0105d Drive');
     saveLovEntry(null,file.name,title,court,date,keywords,notes,null);
-    showMsg('lov-msg','Błąd Drive — zapisano lokalnie.','err');
+    showMsg('lov-msg','B\u0142\u0105d Drive \u2014 zapisano lokalnie.','err');
   }
   document.getElementById('lov-upload-bar').style.display='none';
   clearLovForm(input);searchLovdata();
@@ -2198,7 +2166,7 @@ function searchLovdata(){
   const ra=document.getElementById('lov-results');if(!ra)return;
   if(!all.length){
     ra.innerHTML='<div style="text-align:center;padding:28px;font-size:10px;color:var(--text-ter);letter-spacing:.25em;text-transform:uppercase">'
-      +(q||qc||qdf||qdt?'Brak wyników dla podanej frazy':'Baza pusta — dodaj pierwsze orzeczenie')+'</div>';
+      +(q||qc||qdf||qdt?'Brak wynik\u00f3w dla podanej frazy':'Baza pusta \u2014 dodaj pierwsze orzeczenie')+'</div>';
     return;
   }
   ra.innerHTML=all.map(e=>{
@@ -2208,16 +2176,16 @@ function searchLovdata(){
     return '<div style="background:rgba(18,25,42,0.6);border:.5px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">'
       +'<div style="flex:1">'
-      +'<div style="font-size:14px;font-weight:700;color:var(--text);letter-spacing:.05em;margin-bottom:4px">'+e.title+'</div>'
+      +'<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">'+e.title+'</div>'
       +'<div style="font-size:10px;color:var(--text-ter);letter-spacing:.1em;margin-bottom:6px">'
-      +(e.court||'')+(e.court&&e.date?' &nbsp;·&nbsp; ':'')+(e.date||'')
-      +((e.court||e.date)?' &nbsp;·&nbsp; ':'')+'Dodano: '+e.added+'</div>'
+      +(e.court||'')+(e.court&&e.date?' \u00b7 ':'')+(e.date||'')
+      +((e.court||e.date)?' \u00b7 ':'')+'Dodano: '+e.added+'</div>'
       +(e.notes?'<div style="font-size:11px;color:var(--text-sec);font-style:italic;margin-bottom:8px">'+e.notes+'</div>':'')
       +(kws?'<div style="margin-top:4px">'+kws+'</div>':'')
       +'</div>'
       +'<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0">'
       +(e.link?'<a class="file-link" href="'+e.link+'" target="_blank">Otwórz plik</a>':'<span style="font-size:9px;color:var(--text-ter)">Brak pliku</span>')
-      +'<button data-id="'+e.id+'" onclick="deleteLovdata(this.dataset.id)" style="padding:3px 8px;background:rgba(244,63,94,0.1);border:.5px solid rgba(244,63,94,0.3);border-radius:3px;color:rgba(244,63,94,0.7);font-size:9px;cursor:pointer;font-family:Open Sans,sans-serif">✕ Usuń</button>'
+      +'<button data-id="'+e.id+'" onclick="deleteLovdata(this.dataset.id)" style="padding:3px 8px;background:rgba(244,63,94,0.1);border:.5px solid rgba(244,63,94,0.3);border-radius:3px;color:rgba(244,63,94,0.7);font-size:9px;cursor:pointer;font-family:Open Sans,sans-serif">\u2715 Usu\u0144</button>'
       +'</div>'
       +'</div>'
       +'</div>';
@@ -2225,98 +2193,11 @@ function searchLovdata(){
 }
 
 function deleteLovdata(id){
-  if(!confirm('Usunąć z bazy? Plik na Drive pozostanie.'))return;
+  if(!confirm('Usun\u0105\u0107 z bazy? Plik na Drive pozostanie.'))return;
   const db=loadDB();db.lovdata=(db.lovdata||[]).filter(e=>e.id!==id);
   saveDB(db);searchLovdata();
 }
-33}'
-    +'.s-box{text-align:center} .s-box .val{font-size:18px;font-weight:700} .s-box .lbl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.1em}'
-    +'table{width:100%;border-collapse:collapse;margin-top:8px}'
-    +'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 8px;border-bottom:2px solid #333;text-align:left;background:#f5f5f5}'
-    +'td{padding:8px;border-bottom:1px solid #e5e5e5;font-size:12px}'
-    +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px}'
-    +'@media print{button{display:none}}'
-    +'</style></head><body>'
-    +'<h1>'+cl.imie+' '+cl.nazwisko+'</h1>'
-    +'<p class="sub">Data urodzenia: '+dob+' &nbsp;·&nbsp; Wygenerowano: '+now+'</p>'
-    +'<div class="summary">'
-    +'<div class="s-box"><div class="val" style="color:green">'+totPaid.toFixed(2)+' NOK</div><div class="lbl">Zapłacono</div></div>'
-    +'<div class="s-box"><div class="val" style="color:#c00">'+totUnpaid.toFixed(2)+' NOK</div><div class="lbl">Nie zapłacono</div></div>'
-    +'<div class="s-box"><div class="val">'+totAll.toFixed(2)+' NOK</div><div class="lbl">Łącznie</div></div>'
-    +'</div>'
-    +'<button onclick="window.print()" style="margin-bottom:16px;padding:8px 20px;background:#333;color:#fff;border:none;cursor:pointer;font-size:12px">🖨 Drukuj / PDF</button>'
-    +'<table><thead><tr><th>Lp.</th><th>Data</th><th>Czynność</th><th style="text-align:right">Kwota (NOK)</th><th style="text-align:center">Status</th></tr></thead>'
-    +'<tbody>'+allRows+'</tbody>'
-    +'<tfoot><tr><td colspan="3">Suma łączna</td><td style="text-align:right">'+totAll.toFixed(2)+' NOK</td><td></td></tr></tfoot>'
-    +'</table>'
-    +'</body></html>'
-  );
-  win.document.close();
-}
 
-/* ── DRIVE FOLDER UPLOAD ─────────────────────────────────── */
-const CLIENT_DRIVE_FOLDER='16_wIAhxbZlkikHsGiIP0NUpOBCY316am';
-
-async function getOrCreateClientFolder(clientName){
-  // Search for existing folder with client name inside the main folder
-  const search=await fetch(
-    'https://www.googleapis.com/drive/v3/files?q='
-    +encodeURIComponent(
-      'name="'+clientName+'" and mimeType="application/vnd.google-apps.folder"'
-      +' and "'+CLIENT_DRIVE_FOLDER+'" in parents and trashed=false'
-    )+'&fields=files(id,name)',
-    {headers:{Authorization:'Bearer '+accessToken}}
-  );
-  const data=await search.json();
-  if(data.files&&data.files.length>0) return data.files[0].id;
-  // Create new folder
-  const create=await fetch('https://www.googleapis.com/drive/v3/files',{
-    method:'POST',
-    headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},
-    body:JSON.stringify({
-      name:clientName,
-      mimeType:'application/vnd.google-apps.folder',
-      parents:[CLIENT_DRIVE_FOLDER]
-    })
-  });
-  const folder=await create.json();
-  return folder.id;
-}
-
-async function uploadClientFile(file, clientId, source){
-  if(!accessToken){alert('Zaloguj się do Google Drive.');return null;}
-  const db=loadDB();
-  const cl=db.clients.find(x=>x.id===clientId);
-  if(!cl)return null;
-  const clientName=cl.nazwisko+' '+cl.imie;
-  setDriveStatus('sync','Tworzenie folderu…');
-  try{
-    const folderId=await getOrCreateClientFolder(clientName);
-    setDriveStatus('sync','Wgrywanie pliku…');
-    const meta={name:file.name,parents:[folderId]};
-    const body=new FormData();
-    body.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
-    body.append('file',file);
-    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',
-      {method:'POST',headers:{Authorization:'Bearer '+accessToken},body});
-    const d=await r.json();
-    // Make file readable by link
-    await fetch('https://www.googleapis.com/drive/v3/files/'+d.id+'/permissions',{
-      method:'POST',
-      headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},
-      body:JSON.stringify({role:'reader',type:'anyone'})
-    });
-    setDriveStatus('ok','Plik wgrany ✓');
-    return{
-      id:d.id,name:file.name,
-      link:'https://drive.google.com/file/d/'+d.id+'/view',
-      folderLink:'https://drive.google.com/drive/folders/'+folderId,
-      date:new Date().toLocaleDateString('pl-PL'),
-      size:Math.round(file.size/1024)+'KB',
-      source:source||''
-    };
-  }catch(e){setDriveStatus('warn','Błąd wgrywania');console.error(e);return null;}
-}
 </script>
 
 <!-- ══ REPORTS ══ -->
