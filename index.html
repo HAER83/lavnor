@@ -1356,8 +1356,10 @@ async function handleFileUpload(input){
   if(!['pdf','txt','docx','doc','xlsx','xls','png','jpg','jpeg'].includes(ext)){
     alert('Dozwolone: PDF, TXT, DOCX, XLSX, PNG, JPG');return;
   }
+  const source=document.getElementById('file-source-select')
+    ?document.getElementById('file-source-select').value:'';
   document.getElementById('upload-bar').style.display='block';
-  const result=await uploadClientFile(file,currentId);
+  const result=await uploadClientFile(file,currentId,source);
   document.getElementById('upload-bar').style.display='none';
   if(!result)return;
   const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
@@ -1367,8 +1369,9 @@ async function handleFileUpload(input){
 function togglePaid(clientId,rowIdx){
   const db=loadDB();
   const cl=db.clients.find(x=>x.id===clientId);
-  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx])return;
-  cl.uslugi[rowIdx].paid=!cl.uslugi[rowIdx].paid;
+  const idx=parseInt(rowIdx);
+  if(!cl||!cl.uslugi||!cl.uslugi[idx])return;
+  cl.uslugi[idx].paid=!cl.uslugi[idx].paid;
   saveDB(db);renderDetail();
 }
 function renderDetail(){
@@ -1378,12 +1381,16 @@ function renderDetail(){
   (cl.uslugi||[]).forEach((u,i)=>{
     const b=parseFloat(u.kwota)||0;
     const mv=(b*0.25/1.25).toFixed(2),tx=(b*0.33).toFixed(2),nt=(b-b*0.33).toFixed(2);
-    const paidBtn=[
-      '<button onclick="togglePaid(\'',q(cl.id),'\',',i,')" ',
-      'style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1">',
-      u.paid?'<span style="color:#22c55e">✓</span>':'<span style="color:rgba(238,240,244,0.2);font-size:16px">○</span>',
-      '</button>'
-    ].join('');
+    const paidBtn='<div class="paid-toggle-wrap">'
+      +'<label class="paid-toggle">'
+      +'<input type="checkbox" data-id="'+cl.id+'" data-idx="'+i+'" '
+      +(u.paid?'checked ':' ')
+      +'onchange="togglePaid(this.dataset.id,this.dataset.idx)">'
+      +'<span class="paid-slider"></span>'
+      +'</label>'
+      +'<span class="paid-toggle-label" style="color:'+(u.paid?'#22c55e':'rgba(244,63,94,0.8)')+';">'
+      +(u.paid?'Tak':'Nie')
+      +'</span></div>';
     rows+=[
       '<tr><td class="num">',(i+1),'</td>',
       '<td style="white-space:nowrap">',(u.data||'—'),'</td>',
@@ -1410,30 +1417,30 @@ function renderDetail(){
   });
   let fileList='';
   (cl.pliki||[]).forEach(f=>{
+    const srcBadge=f.source?'<span style="padding:1px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:rgba(212,175,90,0.15);color:var(--gold);border:.5px solid rgba(212,175,90,0.3)">'+f.source+'</span>':'';
     fileList+='<div class="file-item"><div class="file-item-left">'
       +'<span style="font-size:17px">'+fileIcon(f.name)+'</span>'
-      +'<div><div class="file-name">'+f.name+'</div>'
-      +'<div class="file-meta">'+f.date+' · '+f.size+'</div></div></div>'
+      +'<div>'
+      +'<div class="file-name" style="display:flex;align-items:center;gap:6px">'+f.name+' '+srcBadge+'</div>'
+      +'<div class="file-meta">'+f.date+' · '+f.size+'</div>'
+      +'</div></div>'
       +'<div style="display:flex;gap:6px;align-items:center">'
       +'<a class="file-link" href="'+f.link+'" target="_blank">Otwórz</a>'
-      +(f.folderLink?'<a class="file-link" href="'+f.folderLink+'" target="_blank" style="font-size:8px">📁 Folder</a>':'')
+      +(f.folderLink?'<a class="file-link" href="'+f.folderLink+'" target="_blank" style="font-size:8px;padding:3px 8px">📁</a>':'')
       +'</div></div>';
   });
   document.getElementById('detail-inner').innerHTML=[
-    '<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px">',
-    '<div>',
-    '<div class="pg-title" style="text-align:left">',cl.imie,' ',cl.nazwisko,'</div>',
-    '<div class="pg-ornament" style="justify-content:flex-start"><div class="pg-line" style="max-width:80px"></div><div class="pg-diamond"></div><div class="pg-line r" style="max-width:80px"></div></div>',
-    '<div class="pg-sub" style="text-align:left">Karta klienta</div>',
-    '</div>',
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:8px">',
-    '<button class="btn-client-report" data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)">🖨 Raport</button>',
-    '<button class="btn-edit-client" data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)">✏️ Edytuj</button>',
-    '<button class="btn-delete-client" data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)">🗑 Usuń</button>',
-    '</div></div>',
     '<div class="detail-wrap">',
     '<div class="left-col">',
     '<div class="card" style="padding:18px">',
+    '<div class="pg-title" style="text-align:left;font-size:22px;margin-bottom:4px">',cl.imie,' ',cl.nazwisko,'</div>',
+    '<div class="pg-ornament" style="justify-content:flex-start;margin:4px 0 4px"><div class="pg-line" style="max-width:60px"></div><div class="pg-diamond"></div><div class="pg-line r" style="max-width:60px"></div></div>',
+    '<div class="pg-sub" style="text-align:left;margin-bottom:12px">Karta klienta</div>',
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">',
+    '<button class="btn-client-report" data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)">🖨 Raport</button>',
+    '<button class="btn-edit-client" data-id="'+cl.id+'" onclick="openEditClient(this.dataset.id)">✏️ Edytuj</button>',
+    '<button class="btn-delete-client" data-id="'+cl.id+'" onclick="deleteClient(this.dataset.id)">🗑 Usuń</button>',
+    '</div>',
     '<div class="sec-lbl">Dane osobowe</div>',
     '<div style="display:flex;flex-direction:column;gap:7px">',
     '<div class="d-item"><span class="d-lbl">Imię i Nazwisko</span><span class="d-val">',fmt(cl.imie),' ',fmt(cl.nazwisko),'</span></div>',
@@ -2038,7 +2045,7 @@ async function getOrCreateClientFolder(clientName){
   return folder.id;
 }
 
-async function uploadClientFile(file, clientId){
+async function uploadClientFile(file, clientId, source){
   if(!accessToken){alert('Zaloguj się do Google Drive.');return null;}
   const db=loadDB();
   const cl=db.clients.find(x=>x.id===clientId);
@@ -2067,7 +2074,8 @@ async function uploadClientFile(file, clientId){
       link:'https://drive.google.com/file/d/'+d.id+'/view',
       folderLink:'https://drive.google.com/drive/folders/'+folderId,
       date:new Date().toLocaleDateString('pl-PL'),
-      size:Math.round(file.size/1024)+'KB'
+      size:Math.round(file.size/1024)+'KB',
+      source:source||''
     };
   }catch(e){setDriveStatus('warn','Błąd wgrywania');console.error(e);return null;}
 }
