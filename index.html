@@ -1379,11 +1379,9 @@ function setPaid(clientId,rowIdx,val){
   const cl=db.clients.find(x=>x.id===clientId);
   const idx=parseInt(rowIdx);
   if(!cl||!cl.uslugi||!cl.uslugi[idx])return;
-  // val=true means paid, val=false means explicitly not paid
-  // If unchecking the already-set value, set to null (unknown)
-  const current=cl.uslugi[idx].paid;
-  const newVal=(val===true)?true:false;
-  cl.uslugi[idx].paid=(current===newVal)?null:newVal;
+  if(val==='true') cl.uslugi[idx].paid=true;
+  else if(val==='false') cl.uslugi[idx].paid=false;
+  else cl.uslugi[idx].paid=null;
   saveDB(db);renderDetail();
 }
 function renderDetail(){
@@ -1393,22 +1391,15 @@ function renderDetail(){
   (cl.uslugi||[]).forEach((u,i)=>{
     const b=parseFloat(u.kwota)||0;
     const mv=(b*0.25/1.25).toFixed(2),tx=(b*0.33).toFixed(2),nt=(b-b*0.33).toFixed(2);
-    const paidBtn='<div style="display:flex;flex-direction:column;gap:5px;align-items:center">'
-      +'<label style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap">'
-      +'<input type="checkbox" data-id="'+cl.id+'" data-idx="'+i+'" data-val="true" '
-      +(u.paid===true?'checked ':'')
-      +'onchange="setPaid(this.dataset.id,this.dataset.idx,true)" '
-      +'style="accent-color:#22c55e;width:14px;height:14px;cursor:pointer">'
-      +'<span style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#22c55e">Zapłacono</span>'
-      +'</label>'
-      +'<label style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap">'
-      +'<input type="checkbox" data-id="'+cl.id+'" data-idx="'+i+'" data-val="false" '
-      +(u.paid===false?'checked ':'')
-      +'onchange="setPaid(this.dataset.id,this.dataset.idx,false)" '
-      +'style="accent-color:#f43f5e;width:14px;height:14px;cursor:pointer">'
-      +'<span style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(244,63,94,0.8)">Nie zapłacono</span>'
-      +'</label>'
-      +'</div>';
+    const paidColor=u.paid===true?'#22c55e':u.paid===false?'#f43f5e':'rgba(238,240,244,0.4)';
+    const paidBtn='<select data-id="'+cl.id+'" data-idx="'+i+'" onchange="setPaid(this.dataset.id,this.dataset.idx,this.value)" '
+      +'style="background:rgba(18,25,42,0.9);border:.5px solid '+paidColor+';border-radius:4px;'
+      +'color:'+paidColor+';font-family:Open Sans,sans-serif;font-size:9px;font-weight:700;'
+      +'letter-spacing:.18em;text-transform:uppercase;padding:5px 7px;cursor:pointer;width:120px">'
+      +'<option value="null"'+(u.paid===null||u.paid===undefined?' selected':'')+'">— status —</option>'
+      +'<option value="true"'+(u.paid===true?' selected':'')+'>✓ Zapłacono</option>'
+      +'<option value="false"'+(u.paid===false?' selected':'')+'>✗ Nie zapłacono</option>'
+      +'</select>';
     rows+=[
       '<tr><td class="num">',(i+1),'</td>',
       '<td style="white-space:nowrap">',(u.data||'—'),'</td>',
@@ -1502,7 +1493,14 @@ function renderDetail(){
     '<td><input class="t-inp" id="nr-kwota" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcPrev()" style="min-width:80px"></td>',
     '<td class="calc" id="pr-mv">—</td><td class="calc" id="pr-tx">—</td><td class="net" id="pr-nt">—</td>',
     '<td><input class="t-inp" id="nr-dplat" type="date" style="min-width:118px"></td>',
-    '<td style="text-align:center;color:rgba(238,240,244,0.2);font-size:10px">—</td></tr>',
+    '<td style="text-align:center"><select id="nr-paid" '
+    +'style="background:rgba(18,25,42,0.9);border:.5px solid rgba(238,240,244,0.2);border-radius:4px;'
+    +'color:rgba(238,240,244,0.4);font-family:Open Sans,sans-serif;font-size:9px;font-weight:700;'
+    +'letter-spacing:.18em;text-transform:uppercase;padding:5px 7px;cursor:pointer;width:120px">'
+    +'<option value="null">— status —</option>'
+    +'<option value="true">✓ Zapłacono</option>'
+    +'<option value="false">✗ Nie zapłacono</option>'
+    +'</select></td></tr>',
     totalRow,
     '</tbody></table></div>',
     '<div style="margin-top:12px;display:flex;align-items:center;gap:12px">',
@@ -1533,9 +1531,12 @@ function saveRow(){
   const kwota=parseFloat(document.getElementById('nr-kwota').value);
   const data_platnosci=document.getElementById('nr-dplat').value;
   if(!czyn||!kwota){showMsg('row-msg','Wypełnij opis i kwotę.','err');return;}
+  const paidSel=document.getElementById('nr-paid');
+  const paidVal=paidSel?paidSel.value:'null';
+  const paid=paidVal==='true'?true:paidVal==='false'?false:null;
   const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
   if(!cl)return;if(!cl.uslugi)cl.uslugi=[];
-  cl.uslugi.push({data,czynnosc:czyn,kwota,data_platnosci,paid:false});
+  cl.uslugi.push({data,czynnosc:czyn,kwota,data_platnosci,paid});
   saveDB(db);renderDetail();showMsg('row-msg','Wpis zapisany.','ok');
 }
 const MONTHS_PL=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
@@ -1941,8 +1942,7 @@ function printReport(){
     +'tfoot td{font-weight:700;border-top:2px solid #333;padding-top:10px}'
     +'</style></head><body>'
     +'<h2>Lavnor — Raport</h2>'
-    +'<p>Wygenerowany: '+new Date().toLocaleDateString('pl-PL')+'</p>'
-    +el.outerHTML+'</body></html>');
+    +'<p>Wygenerowany: '+new Date().toLocaleDateString('pl-PL')+'</p>'+el.outerHTML+'</body></html>');
   win.document.close();win.print();
 }
 window.addEventListener('load',()=>{
@@ -1998,22 +1998,28 @@ function deleteClient(clientId){
 }
 
 /* ── CLIENT REPORT ───────────────────────────────────────── */
-function extractDOB(numStr){
-  // Fødselsnummer: DDMMYY + 5 digits — extract DD.MM.YYYY
+function extractDOB(numStr,isDnum){
+  // D-nummer: first digit is day+40 — skip DOB extraction
   if(!numStr||numStr.length<6) return null;
-  const d=numStr.slice(0,2);
+  if(isDnum) return null;
+  let d=parseInt(numStr.slice(0,2));
   const m=numStr.slice(2,4);
   const y2=numStr.slice(4,6);
+  // D-number detection: first digit >= 4 means day is day+40
+  if(d>40) return null; // D-number — no DOB
   const y=parseInt(y2)<30?'20'+y2:'19'+y2;
-  return d+'.'+m+'.'+y;
+  return String(d).padStart(2,'0')+'.'+m+'.'+y;
 }
 function printClientReport(clientId){
   const db=loadDB();
   const cl=db.clients.find(x=>x.id===clientId);
   if(!cl)return;
   const now=new Date().toLocaleDateString('pl-PL');
-  // Extract DOB — prefer fodsel, fallback pesel
-  const dob=extractDOB(cl.fodsel)||extractDOB(cl.pesel)||'—';
+  // Extract DOB — prefer fodsel (check if D-number: day>40), fallback pesel
+  const hasDnum=cl.dnum&&cl.dnum.trim().length>0;
+  const dobFromFodsel=extractDOB(cl.fodsel,false);
+  const dobFromPesel=cl.pesel?extractDOB(cl.pesel.replace(/[^0-9]/g,''),false):null;
+  const dob=dobFromFodsel||dobFromPesel||'—';
   let rowsPaid='', rowsUnpaid='', totPaid=0, totUnpaid=0, totAll=0;
   (cl.uslugi||[]).forEach((u,i)=>{
     const b=parseFloat(u.kwota)||0;
