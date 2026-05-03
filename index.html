@@ -593,11 +593,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
   border-top:1px solid rgba(255,255,255,0.26);border-left:1px solid rgba(255,255,255,0.15);
   border-right:1px solid rgba(0,114,198,0.2);border-bottom:1px solid rgba(0,114,198,0.14);
   box-shadow:0 4px 22px rgba(0,0,0,0.3),0 0 22px rgba(0,114,198,0.14),inset 0 1px 0 rgba(255,255,255,0.2);}
-.sc-lavnor:hover{
-  background:linear-gradient(145deg,rgba(0,114,198,0.38) 0%,rgba(0,114,198,0.2) 100%);
-  border-color:rgba(0,114,198,0.6);
-  box-shadow:0 8px 40px rgba(0,0,0,0.4),0 0 32px rgba(0,114,198,0.26),inset 0 1px 0 rgba(255,255,255,0.26);
-  transform:translateY(-2px);}
+.sc-lavnor:hover{border-color:rgba(245,230,200,0.7);background:linear-gradient(145deg,rgba(60,50,35,0.9) 0%,rgba(45,38,25,0.95) 100%);box-shadow:0 8px 32px rgba(245,220,180,0.18),inset 0 1px 0 rgba(255,240,210,0.15)}
 .sc-lavnor .icon-svg{width:28px;height:28px;stroke:var(--gold);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(198,166,103,0.25));transition:filter .28s;position:relative;z-index:2}
 .sc-lavnor:hover .icon-svg{width:28px;height:28px;stroke:var(--gold);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(198,166,103,0.25));transition:filter .28s;position:relative;z-index:2}
 
@@ -738,7 +734,10 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .hg-col-title{font-family:'Open Sans',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.38em;text-transform:uppercase;color:var(--gold-dim);padding-bottom:8px;width:100%;text-align:center;border-bottom:.5px solid rgba(198,166,103,0.22);margin-bottom:6px;white-space:nowrap}
 .hg-row{display:flex;flex-direction:row;gap:8px;justify-content:center;flex-wrap:nowrap}
 .hg-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px 12px;width:118px;height:118px;flex-shrink:0;flex-grow:0;background:linear-gradient(145deg,rgba(16,47,94,0.85) 0%,rgba(10,26,47,0.92) 100%);border:.5px solid rgba(47,79,79,0.35);border-radius:8px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.07)}
-.hg-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1)}
+.hg-btn:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(245,220,180,0.22),inset 0 1px 0 rgba(255,240,210,0.12)}
+.hg-btn:hover .hg-svg{color:#F5DEB3;filter:drop-shadow(0 0 10px rgba(245,222,179,0.6))}
+.hg-btn:hover .hg-label{color:#F5E6C8}
+.hg-btn:hover .hg-sub{color:rgba(245,222,179,0.7)}
 .hg-svg{width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px rgba(198,166,103,0.3));transition:filter .25s;position:relative;z-index:2}
 .hg-label{font-family:'Open Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text);text-align:center;line-height:1.35;position:relative;z-index:2}
 .hg-sub{font-family:'Open Sans',sans-serif;font-size:8.5px;font-weight:400;letter-spacing:.06em;color:var(--gold-dim);text-align:center;margin-top:-2px;position:relative;z-index:2}
@@ -1288,6 +1287,11 @@ function renderDetail(){
   });
   let fileList='';
   (cl.pliki||[]).forEach((f,fi)=>{
+    const delBtn='<button data-cid="'+cl.id+'" data-idx="'+fi+'"'
+      +' onclick="deleteClientFile(this.dataset.cid,parseInt(this.dataset.idx))"'
+      +' style="padding:3px 8px;background:rgba(244,63,94,0.1);border:.5px solid rgba(244,63,94,0.3);'
+      +'border-radius:3px;color:rgba(244,63,94,0.7);font-size:9px;font-weight:700;cursor:pointer">&#10005;</button>';
+    const openBtn=f.link?'<a class="file-link" href="'+f.link+'" target="_blank">Otwórz</a>':'';
     fileList+='<div class="file-item">'
       +'<div class="file-item-left">'
       +'<span style="font-size:10px;font-weight:700;color:var(--text-ter);min-width:22px;text-align:right">'+(fi+1)+'.</span>'
@@ -1295,9 +1299,8 @@ function renderDetail(){
       +'<div>'
       +'<div class="file-name">'+f.name+'</div>'
       +'<div class="file-meta">'+f.date+(f.size?' · '+f.size:'')+'</div>'
-      +'</div>'
-      +'</div>'
-      +'<a class="file-link" href="'+f.link+'" target="_blank">Otwórz</a>'
+      +'</div></div>'
+      +'<div style="display:flex;gap:6px;align-items:center">'+openBtn+delBtn+'</div>'
       +'</div>';
   });
   document.getElementById('detail-inner').innerHTML=[
