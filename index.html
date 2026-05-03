@@ -731,6 +731,29 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
   letter-spacing:.28em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-left:8px}
 .btn-delete-client:hover{background:rgba(244,63,94,0.1)}
 
+
+/* HOME GRID */
+.home-grid-main{display:grid;grid-template-columns:repeat(4,1fr);gap:0;width:100%;max-width:1320px;margin:20px auto 0;align-items:start}
+.hg-col{display:flex;flex-direction:column;gap:8px;padding:0 12px}
+.hg-col-title{font-family:'Open Sans',sans-serif;font-size:8px;font-weight:700;letter-spacing:.45em;text-transform:uppercase;color:var(--gold-dim);padding-bottom:7px;width:100%;text-align:center;border-bottom:.5px solid rgba(198,166,103,0.22);margin-bottom:4px;white-space:nowrap}
+.hg-row{display:flex;flex-direction:row;gap:8px;justify-content:flex-start;flex-wrap:nowrap}
+.hg-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 8px 10px;width:100px;height:100px;flex-shrink:0;flex-grow:0;background:linear-gradient(145deg,rgba(16,47,94,0.85) 0%,rgba(10,26,47,0.92) 100%);border:.5px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.07)}
+.hg-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1)}
+.hg-svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(198,166,103,0.3));transition:filter .25s;position:relative;z-index:2}
+.hg-label{font-family:'Open Sans',sans-serif;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text);text-align:center;line-height:1.3;position:relative;z-index:2}
+.hg-sub{font-family:'Open Sans',sans-serif;font-size:7px;font-weight:400;letter-spacing:.06em;color:var(--gold-dim);text-align:center;margin-top:-3px;position:relative;z-index:2}
+/* Color themes for buttons */
+.sc-email .hg-svg, .sc-email svg{color:rgba(138,163,194,0.85)}
+.sc-email:hover{border-color:rgba(138,163,194,0.4);background:linear-gradient(145deg,rgba(16,47,94,0.95) 0%,rgba(10,26,47,0.98) 100%)}
+.sc-lavnor .hg-svg, .sc-lavnor svg{color:var(--gold)}
+.sc-lavnor:hover{border-color:rgba(198,166,103,0.45);background:linear-gradient(145deg,rgba(25,55,100,0.95) 0%,rgba(16,40,75,0.98) 100%)}
+.sc-norsk .hg-svg, .sc-norsk svg{color:rgba(100,200,160,0.85)}
+.sc-norsk:hover{border-color:rgba(100,200,160,0.4);background:linear-gradient(145deg,rgba(10,60,50,0.9) 0%,rgba(8,40,35,0.95) 100%)}
+.sc-ai .hg-svg, .sc-ai svg{color:rgba(167,130,210,0.85)}
+.sc-ai:hover{border-color:rgba(167,130,210,0.4);background:linear-gradient(145deg,rgba(50,20,80,0.9) 0%,rgba(35,12,60,0.95) 100%)}
+/* Divider between cols */
+.hg-col:not(:last-child){border-right:.5px solid rgba(198,166,103,0.15)}
+
 </style>
 </head>
 <body>
@@ -793,6 +816,8 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 <!-- ══ HOME ══ -->
 <div class="page" id="pg-home">
   <div class="home-inner">
+
+    <!-- LOGO -->
     <div class="logo-wrap">
       <div class="logo-text">Lavnor</div>
       <div class="logo-ornament">
@@ -802,164 +827,156 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
       </div>
       <div class="logo-sub">System zarządzania klientami</div>
     </div>
-    <div class="home-sections">
 
-      <!-- SECTION 1: Email -->
-      <div class="home-section">
-        <div class="home-section-title">Poczta e-mail</div>
-        <div class="section-icons">
-          <button class="icon-card sc-email" onclick="window.open('https://mail.proton.me/u/0/inbox','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="26" rx="3"/><polyline points="4,10 22,26 40,10"/></svg>
-            <div class="icon-label">Proton Mail</div>
-            <div class="icon-sub">Szyfrowana poczta</div>
+    <!-- MAIN GRID: 4 columns -->
+    <div class="home-grid-main">
+
+      <!-- COL 1: POCZTA E-MAIL -->
+      <div class="hg-col">
+        <div class="hg-col-title">Poczta e-mail</div>
+        <div class="hg-row">
+          <button class="hg-btn sc-email" onclick="window.open('https://mail.proton.me/u/0/inbox','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="4" y="9" width="36" height="26" rx="3"/><polyline points="4,9 22,26 40,9"/></svg>
+            <div class="hg-label">Proton Mail</div>
+            <div class="hg-sub">Szyfrowana poczta</div>
           </button>
-          <button class="icon-card sc-email" onclick="window.open('https://outlook.live.com/mail/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="26" rx="3"/><polyline points="4,10 22,26 40,10"/></svg>
-            <div class="icon-label">Outlook</div>
-            <div class="icon-sub">Microsoft Mail</div>
+          <button class="hg-btn sc-email" onclick="window.open('https://outlook.live.com/mail/','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="3" y="6" width="24" height="32" rx="2"/><rect x="17" y="12" width="24" height="24" rx="2"/><line x1="17" y1="20" x2="41" y2="20"/><line x1="17" y1="28" x2="41" y2="28"/></svg>
+            <div class="hg-label">Outlook</div>
+            <div class="hg-sub">Microsoft Mail</div>
           </button>
-          <button class="icon-card sc-email" onclick="window.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="26" rx="3"/><polyline points="4,10 22,26 40,10"/></svg>
-            <div class="icon-label">Gmail</div>
-            <div class="icon-sub">Google Mail</div>
+          <button class="hg-btn sc-email" onclick="window.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="4" y="9" width="36" height="26" rx="3"/><polyline points="4,9 22,24 40,9"/><line x1="4" y1="35" x2="16" y2="22"/><line x1="40" y1="35" x2="28" y2="22"/></svg>
+            <div class="hg-label">Gmail</div>
+            <div class="hg-sub">Google Mail</div>
           </button>
         </div>
       </div>
 
-      <div class="home-section-sep"></div>
-
-      <!-- SECTION 2: System Lavnor -->
-      <div class="home-section">
-        <div class="home-section-title">System Lavnor</div>
-        <div class="section-icons">
-          <button class="icon-card sc-lavnor" onclick="nav('pg-add')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><circle cx="18" cy="14" r="7"/><path d="M4 38c0-7.7 6.3-14 14-14"/><line x1="32" y1="26" x2="32" y2="40"/><line x1="25" y1="33" x2="39" y2="33"/></svg>
-            <div class="icon-label">Dodaj klienta</div>
-            <div class="icon-sub">Nowy klient</div>
+      <!-- COL 2: SYSTEM LAVNOR -->
+      <div class="hg-col">
+        <div class="hg-col-title">System Lavnor</div>
+        <div class="hg-row">
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-add')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="18" cy="14" r="7"/><path d="M4 38c0-7.7 6.3-14 14-14"/><line x1="32" y1="26" x2="32" y2="40"/><line x1="25" y1="33" x2="39" y2="33"/></svg>
+            <div class="hg-label">Dodaj klienta</div>
+            <div class="hg-sub">Nowy klient</div>
           </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-search')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><circle cx="19" cy="19" r="12"/><line x1="28" y1="28" x2="40" y2="40"/></svg>
-            <div class="icon-label">Wyszukaj klienta</div>
-            <div class="icon-sub">Znajdź klienta</div>
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-search')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="19" cy="19" r="12"/><line x1="28" y1="28" x2="40" y2="40"/></svg>
+            <div class="hg-label">Wyszukaj klienta</div>
+            <div class="hg-sub">Znajdź klienta</div>
           </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-forms')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="7" y="4" width="24" height="32" rx="2"/><polyline points="23,4 31,4 31,12 23,4"/><line x1="13" y1="16" x2="24" y2="16"/><line x1="13" y1="22" x2="26" y2="22"/><line x1="13" y1="28" x2="20" y2="28"/><circle cx="34" cy="34" r="7"/><polyline points="30,34 33,37 38,31"/></svg>
-            <div class="icon-label">Wnioski</div>
-            <div class="icon-sub">Formularze</div>
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-calendar')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="4" y="8" width="36" height="32" rx="3"/><line x1="4" y1="18" x2="40" y2="18"/><line x1="14" y1="4" x2="14" y2="13"/><line x1="30" y1="4" x2="30" y2="13"/><rect x="10" y="24" width="6" height="5" rx="1"/><rect x="19" y="24" width="6" height="5" rx="1"/><rect x="28" y="24" width="6" height="5" rx="1"/></svg>
+            <div class="hg-label">Stałe zlecenia</div>
+            <div class="hg-sub">Zlecenia</div>
           </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-calendar')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="9" width="36" height="30" rx="3"/><line x1="4" y1="18" x2="40" y2="18"/><line x1="13" y1="4" x2="13" y2="14"/><line x1="31" y1="4" x2="31" y2="14"/><rect x="10" y="23" width="6" height="5" rx="1"/><rect x="19" y="23" width="6" height="5" rx="1"/><rect x="28" y="23" width="6" height="5" rx="1"/></svg>
-            <div class="icon-label">Stałe zlecenia</div>
-            <div class="icon-sub">Zlecenia</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-decisions')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 4 L38 10 L38 24 C38 33 30 39 22 42 C14 39 6 33 6 24 L6 10 Z"/><line x1="15" y1="21" x2="29" y2="21"/><line x1="15" y1="27" x2="29" y2="27"/><line x1="15" y1="15" x2="22" y2="15"/></svg>
-            <div class="icon-label">Decyzje</div>
-            <div class="icon-sub">Baza wiedzy</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-pismo')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="7" y="4" width="24" height="32" rx="2"/><line x1="13" y1="12" x2="25" y2="12"/><line x1="13" y1="18" x2="25" y2="18"/><line x1="13" y1="24" x2="20" y2="24"/><line x1="27" y1="30" x2="40" y2="17" stroke-width="1.8"/><polyline points="27,30 24,38 32,35 27,30"/></svg>
-            <div class="icon-label">Napisz pismo</div>
-            <div class="icon-sub">Edytor</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-reports')">
-            <svg class="icon-svg" viewBox="0 0 44 44">
-              <rect x="6" y="4" width="32" height="36" rx="3"/>
-              <line x1="12" y1="14" x2="32" y2="14"/>
-              <line x1="12" y1="20" x2="32" y2="20"/>
-              <line x1="12" y1="26" x2="24" y2="26"/>
-              <rect x="26" y="28" width="4" height="8" rx="1" fill="currentColor" opacity=".7"/>
-              <rect x="32" y="24" width="4" height="12" rx="1" fill="currentColor" opacity=".9"/>
-              <rect x="20" y="31" width="4" height="5" rx="1" fill="currentColor" opacity=".5"/>
-            </svg>
-            <div class="icon-label">Raporty</div>
-            <div class="icon-sub">Analizy</div>
-          </button>
-          <button class="icon-card sc-lavnor" onclick="nav('pg-lovdata')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="5" y="3" width="26" height="34" rx="2"/><line x1="11" y1="11" x2="25" y2="11"/><line x1="11" y1="17" x2="25" y2="17"/><line x1="11" y1="23" x2="19" y2="23"/><circle cx="33" cy="34" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="37" y1="38" x2="41" y2="42" stroke-width="2" stroke-linecap="round"/><line x1="30" y1="34" x2="36" y2="34"/><line x1="33" y1="31" x2="33" y2="37"/></svg>
-            <div class="icon-label">Orzeczenia Lovdata</div>
-            <div class="icon-sub">Baza wiedzy</div>
-          </button>
-          
         </div>
-      </div>
-
-      </div>
-
-      <div class="home-section-sep"></div>
-
-      <!-- SECTION 3: Norweskie portale -->
-      <div class="home-section">
-        <div class="home-section-title">Portale urzędowe</div>
-        <div class="section-icons">
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.nav.no/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 4 L38 12 L38 27 C38 35 30 40 22 43 C14 40 6 35 6 27 L6 12 Z" stroke-width="1.4"/><line x1="11" y1="28" x2="15" y2="18" stroke-width="1.8"/><line x1="15" y1="18" x2="22" y2="28" stroke-width="1.8"/><line x1="22" y1="28" x2="29" y2="18" stroke-width="1.8"/><line x1="29" y1="18" x2="33" y2="28" stroke-width="1.8"/></svg>
-            <div class="icon-label">NAV</div>
-            <div class="icon-sub">System informacji</div>
+        <div class="hg-row">
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-forms')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="7" y="4" width="24" height="32" rx="2"/><polyline points="23,4 31,4 31,12 23,4"/><line x1="13" y1="16" x2="24" y2="16"/><line x1="13" y1="22" x2="26" y2="22"/><line x1="13" y1="28" x2="20" y2="28"/></svg>
+            <div class="hg-label">Wnioski</div>
+            <div class="hg-sub">Formularze</div>
           </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.helsenorge.no/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="17" y="6" width="10" height="32" rx="3"/><rect x="6" y="17" width="32" height="10" rx="3"/></svg>
-            <div class="icon-label">Helsenorge</div>
-            <div class="icon-sub">Zdrowie</div>
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-pismo')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="6" y="4" width="26" height="34" rx="2"/><line x1="12" y1="14" x2="26" y2="14"/><line x1="12" y1="21" x2="26" y2="21"/><line x1="12" y1="28" x2="20" y2="28"/><path d="M30 28l8-8 4 4-8 8z"/></svg>
+            <div class="hg-label">Napisz pismo</div>
+            <div class="hg-sub">Edytor</div>
           </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.skatteetaten.no/person/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><line x1="22" y1="8" x2="22" y2="36" stroke-width="1.6"/><line x1="10" y1="14" x2="34" y2="14" stroke-width="1.4"/><line x1="10" y1="14" x2="10" y2="22" stroke-width="1.4"/><line x1="34" y1="14" x2="34" y2="22" stroke-width="1.4"/><path d="M6 22 Q10 28 14 22" stroke-width="1.4" fill="none"/><path d="M30 22 Q34 28 38 22" stroke-width="1.4" fill="none"/><line x1="16" y1="36" x2="28" y2="36" stroke-width="1.6"/></svg>
-            <div class="icon-label">Skatteetaten</div>
-            <div class="icon-sub">Podatki</div>
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-decisions')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="16"/><line x1="22" y1="13" x2="22" y2="22"/><line x1="22" y1="22" x2="30" y2="26"/><circle cx="22" cy="22" r="2" fill="currentColor"/></svg>
+            <div class="hg-label">Decyzje</div>
+            <div class="hg-sub">Baza wiedzy</div>
           </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://info.altinn.no/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 5 L40 38 L4 38 Z" stroke-linejoin="round"/><line x1="12" y1="28" x2="32" y2="28"/><path d="M22 15 L30 32 L14 32 Z" opacity=".4"/></svg>
-            <div class="icon-label">Altinn</div>
-            <div class="icon-sub">Platforma</div>
+        </div>
+        <div class="hg-row">
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-reports')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="6" y="4" width="32" height="36" rx="3"/><line x1="12" y1="14" x2="32" y2="14"/><line x1="12" y1="20" x2="32" y2="20"/><line x1="12" y1="26" x2="24" y2="26"/><rect x="26" y="28" width="4" height="8" rx="1"/><rect x="32" y="24" width="4" height="12" rx="1"/></svg>
+            <div class="hg-label">Raporty</div>
+            <div class="hg-sub">Analizy</div>
           </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.udi.no/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="17"/><path d="M15 15 L15 24 C15 28.4 18.1 32 22 32 C25.9 32 29 28.4 29 24 L29 15"/><line x1="12" y1="15" x2="32" y2="15" stroke-width="1.6"/></svg>
-            <div class="icon-label">UDI</div>
-            <div class="icon-sub">Imigracja</div>
-          </button>
-          <button class="icon-card sc-norsk" onclick="window.open('https://www.digipost.no/innlogging/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="26" rx="3"/><polyline points="4,10 22,26 40,10"/><line x1="4" y1="36" x2="15" y2="24"/><line x1="40" y1="36" x2="29" y2="24"/></svg>
-            <div class="icon-label">Digipost</div>
-            <div class="icon-sub">Poczta urzędowa</div>
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-lovdata')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="5" y="3" width="26" height="34" rx="2" fill="none"/><line x1="11" y1="11" x2="25" y2="11"/><line x1="11" y1="17" x2="25" y2="17"/><line x1="11" y1="23" x2="19" y2="23"/><circle cx="32" cy="33" r="7" fill="none"/><line x1="37" y1="38" x2="41" y2="42"/><line x1="29" y1="33" x2="35" y2="33"/><line x1="32" y1="30" x2="32" y2="36"/></svg>
+            <div class="hg-label">Orzeczenia Lovdata</div>
+            <div class="hg-sub">Baza wiedzy</div>
           </button>
         </div>
       </div>
 
-      <div class="home-section-sep"></div>
-
-      <!-- SECTION 4: AI -->
-      <div class="home-section">
-        <div class="home-section-title">Asystenci AI</div>
-        <div class="section-icons">
-          <button class="icon-card sc-ai" onclick="window.open('https://claude.ai/new','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 5C13.7 5 7 11.7 7 20C7 28.3 13.7 35 22 35C26 35 29.6 33.4 32.2 30.8" stroke-linecap="round"/><path d="M22 12L28 17L30 24L25 32L19 32L14 24L16 17Z" opacity=".7"/><circle cx="22" cy="22" r="4"/></svg>
-            <div class="icon-label">Claude AI</div>
-            <div class="icon-sub">Anthropic</div>
+      <!-- COL 3: PORTALE URZĘDOWE -->
+      <div class="hg-col">
+        <div class="hg-col-title">Portale urzędowe</div>
+        <div class="hg-row">
+          <button class="hg-btn sc-norsk" onclick="window.open('https://www.nav.no','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="14" r="8"/><path d="M6 38c0-8.8 7.2-16 16-16s16 7.2 16 16"/><line x1="22" y1="28" x2="22" y2="38"/></svg>
+            <div class="hg-label">NAV</div>
+            <div class="hg-sub">System informacji</div>
           </button>
-          <button class="icon-card sc-ai" onclick="window.open('https://gemini.google.com/app','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 4 C22 4 25 18 34 22 C25 26 22 40 22 40 C22 40 19 26 10 22 C19 18 22 4 22 4 Z"/><path d="M4 22 C4 22 18 19 22 10 C26 19 40 22 40 22 C40 22 26 25 22 34 C18 25 4 22 4 22 Z" opacity=".6"/></svg>
-            <div class="icon-label">Gemini</div>
-            <div class="icon-sub">AI Google</div>
+          <button class="hg-btn sc-norsk" onclick="window.open('https://www.skatteetaten.no','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="6" y="10" width="32" height="24" rx="3"/><line x1="6" y1="18" x2="38" y2="18"/><circle cx="14" cy="28" r="3"/><line x1="20" y1="28" x2="32" y2="28"/></svg>
+            <div class="hg-label">Skatteetaten</div>
+            <div class="hg-sub">Podatki</div>
           </button>
-          <button class="icon-card sc-ai" onclick="window.open('https://chatgpt.com/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M22 7C14.3 7 8 13.3 8 21C8 24.5 9.3 27.7 11.5 30.1L10 37L17.2 35.7C18.7 36.2 20.3 36.5 22 36.5C29.7 36.5 36 30.2 36 22.5C36 14.8 29.7 8 22 7Z"/><circle cx="22" cy="22" r="4"/></svg>
-            <div class="icon-label">ChatGPT</div>
-            <div class="icon-sub">AI OpenAI</div>
+          <button class="hg-btn sc-norsk" onclick="window.open('https://www.altinn.no','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><polygon points="22,4 40,34 4,34"/><line x1="22" y1="16" x2="22" y2="26"/><circle cx="22" cy="30" r="1.5" fill="currentColor"/></svg>
+            <div class="hg-label">Altinn</div>
+            <div class="hg-sub">Platforma</div>
           </button>
-          <button class="icon-card sc-ai" onclick="window.open('https://grok.com/','_blank')">
-            <svg class="icon-svg" viewBox="0 0 44 44"><path d="M10 8 L34 22 L10 36 Z" stroke-linejoin="round"/><path d="M20 22 L40 8" stroke-linecap="round"/><path d="M20 22 L40 36" stroke-linecap="round"/></svg>
-            <div class="icon-label">Grok</div>
-            <div class="icon-sub">AI xAI</div>
+        </div>
+        <div class="hg-row">
+          <button class="hg-btn sc-norsk" onclick="window.open('https://www.helsenorge.no','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="6" y="6" width="32" height="32" rx="4"/><line x1="22" y1="14" x2="22" y2="30"/><line x1="14" y1="22" x2="30" y2="22"/></svg>
+            <div class="hg-label">Helsenorge</div>
+            <div class="hg-sub">Zdrowie</div>
+          </button>
+          <button class="hg-btn sc-norsk" onclick="window.open('https://www.udi.no','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="16"/><line x1="22" y1="6" x2="22" y2="38"/><line x1="6" y1="22" x2="38" y2="22"/><ellipse cx="22" cy="22" rx="8" ry="16"/></svg>
+            <div class="hg-label">UDI</div>
+            <div class="hg-sub">Imigracja</div>
+          </button>
+          <button class="hg-btn sc-norsk" onclick="window.open('https://www.digipost.no','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="4" y="9" width="36" height="26" rx="3"/><polyline points="4,9 22,26 40,9"/></svg>
+            <div class="hg-label">DigiPost</div>
+            <div class="hg-sub">Poczta urzędowa</div>
           </button>
         </div>
       </div>
 
-    </div>
+      <!-- COL 4: ASYSTENCI AI -->
+      <div class="hg-col">
+        <div class="hg-col-title">Asystenci AI</div>
+        <div class="hg-row">
+          <button class="hg-btn sc-ai" onclick="window.open('https://claude.ai','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="14"/><path d="M15 28 Q22 10 29 28"/><path d="M17 23 Q22 18 27 23"/></svg>
+            <div class="hg-label">Claude AI</div>
+            <div class="hg-sub">Anthropic</div>
+          </button>
+          <button class="hg-btn sc-ai" onclick="window.open('https://gemini.google.com','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><path d="M22 4 C22 4 36 22 22 40 C8 22 22 4 22 4z"/><path d="M4 22 C4 22 22 8 40 22 C22 36 4 22 4 22z"/></svg>
+            <div class="hg-label">Gemini</div>
+            <div class="hg-sub">AI Google</div>
+          </button>
+          <button class="hg-btn sc-ai" onclick="window.open('https://chat.openai.com','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><circle cx="22" cy="22" r="14"/><path d="M14 18 Q22 8 30 18 Q36 26 28 32 Q22 36 16 32 Q8 26 14 18z"/></svg>
+            <div class="hg-label">ChatGPT</div>
+            <div class="hg-sub">AI OpenAI</div>
+          </button>
+        </div>
+        <div class="hg-row">
+          <button class="hg-btn sc-ai" onclick="window.open('https://grok.com','_blank')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><line x1="10" y1="10" x2="34" y2="34"/><line x1="34" y1="10" x2="10" y2="34"/><circle cx="22" cy="22" r="6"/></svg>
+            <div class="hg-label">Grok</div>
+            <div class="hg-sub">AI xAI</div>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- end home-grid-main -->
   </div>
   <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
 </div>
 
-<!-- ══ ADD ══ -->
 <div class="page hidden" id="pg-add">
   <button class="back-btn" onclick="nav('pg-home')">
     <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
