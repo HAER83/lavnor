@@ -1088,7 +1088,15 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
         <div class="sec-lbl">Szablony pism</div>
         <div class="pismo-intro">Kliknij <strong style="color:var(--gold)">„Nowe pismo"</strong> aby otworzyć pusty dokument w Google Docs, lub wybierz szablon poniżej.</div>
         <div class="pismo-shortcuts" style="margin-top:18px">
-          <a class="pismo-shortcut" h<a class="pismo-shortcut" href="https://docs.google.com/doc
+          <a class="pismo-shortcut" href="https://docs.google.com/document/create" target="_blank"><span class="pismo-app-icon">📝</span><span>Nowe pismo</span></a>
+        </div>
+    </div>
+  </div>
+  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='lavnor_baza_klientow.json';
 const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar';
@@ -2252,22 +2260,13 @@ function searchLovdata(){
 }
 
 function deleteLovdata(id){
-  if(!confirm('Usun\u0105\u0107 z bazy? Plik na Drive pozostanie.'))return;
-  const db=loadDB();db.lovdata=(db.lovdata||[]).filter(e=>e.id!==id);
-  saveDB(db);searchLovdata();
-}Open Sans,sans-serif">\u2715 Usu\u0144</button>'
-      +'</div>'
-      +'</div>'
-      +'</div>';
-  }).join('');
-}
-
-function deleteLovdata(id){
-  if(!confirm('Usun\u0105\u0107 z bazy? Plik na Drive pozostanie.'))return;
-  const db=loadDB();db.lovdata=(db.lovdata||[]).filter(e=>e.id!==id);
+  if(!confirm('Usunąć z bazy? Plik na Drive pozostanie.'))return;
+  const db=loadDB();db.lovdata=(db.lovdata||[]).filter(function(e){return e.id!==id;});
   saveDB(db);searchLovdata();
 }
 </script>
+
+
 
 
 
