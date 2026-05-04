@@ -1136,24 +1136,37 @@ function driveLogout(){accessToken=null;driveFileId=null;localStorage.removeItem
 async function driveLoadOrCreate(){
   setDriveStatus('sync','Łączenie…');
   try{
-    const r=await fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%22'+DRIVE_FILE_NAME+'%22&fields=files(id)',{headers:{Authorization:'Bearer '+accessToken}});
+    // Search in visible folder (CLIENT_DRIVE_FOLDER)
+    const q=encodeURIComponent('"'+CLIENT_DRIVE_FOLDER+'" in parents and name="'+DRIVE_FILE_NAME+'" and trashed=false');
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)',
+      {headers:{Authorization:'Bearer '+accessToken}});
     const data=await r.json();
-    if(data.files&&data.files.length>0){driveFileId=data.files[0].id;await driveDownload();}
-    else await driveUploadNew();
+    if(data.files&&data.files.length>0){
+      driveFileId=data.files[0].id;
+      await driveDownload();
+    } else {
+      await driveUploadNew();
+    }
     setDriveStatus('ok','Drive – zsynchronizowano ✓');
-  }catch(e){console.warn('Drive sync error:',e);if(accessToken)setDriveStatus('ok','Drive – zalogowany');}
+  }catch(e){
+    console.warn('Drive sync error:',e);
+    if(accessToken)setDriveStatus('ok','Drive – zalogowany');
+  }
 }
 async function driveDownload(){
   const r=await fetch('https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media',{headers:{Authorization:'Bearer '+accessToken}});
   localStorage.setItem(DB_KEY,JSON.stringify(await r.json()));
 }
 async function driveUploadNew(){
-  const meta={name:DRIVE_FILE_NAME,parents:['appDataFolder']};
+  // Save DB file in visible CLIENT_DRIVE_FOLDER
+  const meta={name:DRIVE_FILE_NAME,parents:[CLIENT_DRIVE_FOLDER]};
   const body=new FormData();
   body.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
   body.append('file',new Blob([JSON.stringify(loadDB())],{type:'application/json'}));
-  const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:'Bearer '+accessToken},body});
-  driveFileId=(await r.json()).id;
+  const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+    {method:'POST',headers:{Authorization:'Bearer '+accessToken},body});
+  const d=await r.json();
+  driveFileId=d.id;
 }
 async function driveUpdate(){
   if(!accessToken||!driveFileId)return;
