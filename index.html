@@ -770,6 +770,12 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .hg-btn:hover .hg-label{color:#F5E6C8;font-size:15px}
 .hg-btn:hover .hg-sub{color:rgba(245,222,179,0.75);font-size:12px}
 
+
+.t-inp-edit{background:rgba(198,166,103,0.08);border:.5px solid rgba(198,166,103,0.4);
+  border-radius:3px;color:var(--text);font-family:'Open Sans',sans-serif;font-size:11px;
+  padding:4px 7px;width:100%;box-sizing:border-box}
+.t-inp-edit:focus{outline:none;border-color:var(--gold);background:rgba(198,166,103,0.14)}
+
 </style>
 </head>
 <body>
@@ -1082,15 +1088,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
         <div class="sec-lbl">Szablony pism</div>
         <div class="pismo-intro">Kliknij <strong style="color:var(--gold)">„Nowe pismo"</strong> aby otworzyć pusty dokument w Google Docs, lub wybierz szablon poniżej.</div>
         <div class="pismo-shortcuts" style="margin-top:18px">
-          <a class="pismo-shortcut" h<a class="pismo-shortcut" href="https://docs.google.com/document/create" target="_blank"><span class="pismo-app-icon">📝</span><span>Nowe pismo</span></a>
-        </div>
-    </div>
-  </div>
-  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
-</div>
-
-<script src="https://accounts.google.com/gsi/client" async></script>
-<script>
+          <a class="pismo-shortcut" h<a class="pismo-shortcut" href="https://docs.google.com/doc
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='lavnor_baza_klientow.json';
 const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar';
@@ -1301,17 +1299,36 @@ function renderDetail(){
       +'<span class="paid-toggle-label" style="color:'+(u.paid?'#22c55e':'rgba(244,63,94,0.8)')+';">'
       +(u.paid?'Tak':'Nie')
       +'</span></div>';
-    rows+=[
-      '<tr><td class="num">',(i+1),'</td>',
-      '<td style="white-space:nowrap">',(u.data||'—'),'</td>',
-      '<td style="min-width:155px">',(u.czynnosc||'—'),'</td>',
-      '<td style="white-space:nowrap">',b.toFixed(2),' NOK</td>',
-      '<td class="calc" style="white-space:nowrap">',mv,' NOK</td>',
-      '<td class="calc" style="white-space:nowrap">',tx,' NOK</td>',
-      '<td class="net" style="white-space:nowrap">',nt,' NOK</td>',
-      '<td style="white-space:nowrap;color:var(--text-ter)">',(u.data_platnosci||'—'),'</td>',
-      '<td style="text-align:center">',paidBtn,'</td></tr>'
-    ].join('');
+    rows+='<tr>'
+      +'<td class="num" style="vertical-align:middle">'+(i+1)+'</td>'
+      +'<td style="white-space:nowrap;vertical-align:middle">'
+        +(u._edit?'<input class="t-inp t-inp-edit" data-cid="'+cl.id+'" data-idx="'+i+'" data-field="data" type="date" value="'+(u.data||'')+'" oninput="editUsługa(this)" style="min-width:110px">'
+                 :(u.data||'—'))
+      +'</td>'
+      +'<td style="vertical-align:middle">'
+        +(u._edit?'<input class="t-inp t-inp-edit" data-cid="'+cl.id+'" data-idx="'+i+'" data-field="czynnosc" value="'+(u.czynnosc||'').replace(/"/g,"&quot;")+'" oninput="editUsługa(this)" style="min-width:140px">'
+                 :(u.czynnosc||'—'))
+      +'</td>'
+      +'<td style="white-space:nowrap;vertical-align:middle">'
+        +(u._edit?'<input class="t-inp t-inp-edit" data-cid="'+cl.id+'" data-idx="'+i+'" data-field="kwota" type="number" min="0" step="0.01" value="'+(u.kwota||'')+'" oninput="editUsługa(this);calcEditRow(this)" style="min-width:80px">'
+                 :b.toFixed(2)+' NOK')
+      +'</td>'
+      +'<td class="calc" style="white-space:nowrap;vertical-align:middle" id="calc-mv-'+cl.id+'-'+i+'">'+mv+' NOK</td>'
+      +'<td class="calc" style="white-space:nowrap;vertical-align:middle" id="calc-tx-'+cl.id+'-'+i+'">'+tx+' NOK</td>'
+      +'<td class="net" style="white-space:nowrap;vertical-align:middle" id="calc-nt-'+cl.id+'-'+i+'">'+nt+' NOK</td>'
+      +'<td style="white-space:nowrap;vertical-align:middle">'
+        +(u._edit?'<input class="t-inp t-inp-edit" data-cid="'+cl.id+'" data-idx="'+i+'" data-field="data_platnosci" type="date" value="'+(u.data_platnosci||'')+'" oninput="editUsługa(this)" style="min-width:110px">'
+                 :(u.data_platnosci||'—'))
+      +'</td>'
+      +'<td style="text-align:center;vertical-align:middle">'+paidBtn+'</td>'
+      +'<td style="vertical-align:middle;white-space:nowrap">'
+        +(u._edit
+          ?'<button data-cid="'+cl.id+'" data-idx="'+i+'" onclick="saveEditRow(this.dataset.cid,+this.dataset.idx)" style="padding:4px 8px;background:rgba(34,197,94,0.15);border:.5px solid rgba(34,197,94,0.4);border-radius:3px;color:#4ade80;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:.1em;white-space:nowrap">✓ Zapisz</button>'
+           +' <button data-cid="'+cl.id+'" data-idx="'+i+'" onclick="cancelEditRow(this.dataset.cid,+this.dataset.idx)" style="padding:4px 8px;background:rgba(238,240,244,0.06);border:.5px solid rgba(238,240,244,0.2);border-radius:3px;color:var(--text-ter);font-size:9px;font-weight:700;cursor:pointer;letter-spacing:.1em;white-space:nowrap">✕</button>'
+          :'<button data-cid="'+cl.id+'" data-idx="'+i+'" onclick="startEditRow(this.dataset.cid,+this.dataset.idx)" style="padding:4px 8px;background:transparent;border:.5px solid var(--gold-border);border-radius:3px;color:var(--gold);font-size:9px;font-weight:700;cursor:pointer;letter-spacing:.1em;white-space:nowrap">✏ Edytuj</button>'
+           +' <button data-cid="'+cl.id+'" data-idx="'+i+'" onclick="deleteUsługa(this.dataset.cid,+this.dataset.idx)" style="padding:4px 8px;background:rgba(244,63,94,0.1);border:.5px solid rgba(244,63,94,0.3);border-radius:3px;color:rgba(244,63,94,0.8);font-size:9px;font-weight:700;cursor:pointer;letter-spacing:.1em;white-space:nowrap">🗑</button>')
+      +'</td>'
+      +'</tr>';
   });
   const totB=(cl.uslugi||[]).reduce((s,u)=>s+(parseFloat(u.kwota)||0),0);
   const totN=(cl.uslugi||[]).reduce((s,u)=>{const b=parseFloat(u.kwota)||0;return s+(b-b*0.33);},0);
@@ -1382,7 +1399,7 @@ function renderDetail(){
     '<div class="bill-table-wrap"><table class="bill-tbl">',
     '<thead><tr><th>Lp.</th><th>Data</th><th style="min-width:155px">Wykonana czynność</th>',
     '<th>Kwota brutto</th><th>MVA 25%</th><th>Podatek 33%</th><th>Na rękę</th><th>Data płatności</th>',
-    '<th style="text-align:center">Zapłacono</th></tr></thead>',
+    '<th style="text-align:center">Zapłacono</th><th style="text-align:center">Akcje</th></tr></thead>',
     '<tbody>',rows,
     '<tr><td class="num" style="color:var(--text-ter)">·</td>',
     '<td><input class="t-inp" id="nr-data" type="date" value="',today,'" style="min-width:118px"></td>',
@@ -1390,7 +1407,8 @@ function renderDetail(){
     '<td><input class="t-inp" id="nr-kwota" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcPrev()" style="min-width:80px"></td>',
     '<td class="calc" id="pr-mv">—</td><td class="calc" id="pr-tx">—</td><td class="net" id="pr-nt">—</td>',
     '<td><input class="t-inp" id="nr-dplat" type="date" style="min-width:118px"></td>',
-    '<td style="text-align:center;color:rgba(238,240,244,0.3)">—</td></tr>',
+    '<td style="text-align:center;color:rgba(238,240,244,0.3)">—</td>',
+    '<td></td></tr>',
     totalRow,
     '</tbody></table></div>',
     '<div style="margin-top:12px;display:flex;align-items:center;gap:12px">',
@@ -1415,6 +1433,64 @@ function calcPrev(){
   document.getElementById('pr-tx').textContent=(b*0.33).toFixed(2)+' NOK';
   document.getElementById('pr-nt').textContent=(b-b*0.33).toFixed(2)+' NOK';
 }
+
+/* EDYCJA WIERSZY USŁUG */
+function startEditRow(clientId, rowIdx){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx])return;
+  cl.uslugi[rowIdx]._edit=true;
+  saveDB(db);renderDetail();
+}
+function cancelEditRow(clientId, rowIdx){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx])return;
+  delete cl.uslugi[rowIdx]._edit;
+  saveDB(db);renderDetail();
+}
+function saveEditRow(clientId, rowIdx){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl||!cl.uslugi||!cl.uslugi[rowIdx])return;
+  delete cl.uslugi[rowIdx]._edit;
+  saveDB(db);renderDetail();
+}
+function editUsługa(inp){
+  const cid=inp.dataset.cid;
+  const idx=parseInt(inp.dataset.idx);
+  const field=inp.dataset.field;
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===cid);
+  if(!cl||!cl.uslugi||!cl.uslugi[idx])return;
+  if(field==='kwota') cl.uslugi[idx].kwota=parseFloat(inp.value)||0;
+  else cl.uslugi[idx][field]=inp.value;
+  // Save without re-render so user can keep typing
+  localStorage.setItem('lavnor_v11',JSON.stringify(db));
+}
+function calcEditRow(inp){
+  const cid=inp.dataset.cid;
+  const idx=inp.dataset.idx;
+  const b=parseFloat(inp.value)||0;
+  const mv=(b*0.25/1.25).toFixed(2);
+  const tx=(b*0.33).toFixed(2);
+  const nt=(b-b*0.33).toFixed(2);
+  const elMv=document.getElementById('calc-mv-'+cid+'-'+idx);
+  const elTx=document.getElementById('calc-tx-'+cid+'-'+idx);
+  const elNt=document.getElementById('calc-nt-'+cid+'-'+idx);
+  if(elMv)elMv.textContent=mv+' NOK';
+  if(elTx)elTx.textContent=tx+' NOK';
+  if(elNt)elNt.textContent=nt+' NOK';
+}
+function deleteUsługa(clientId, rowIdx){
+  if(!confirm('Usunąć ten wpis usługi?'))return;
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl||!cl.uslugi)return;
+  cl.uslugi.splice(rowIdx,1);
+  saveDB(db);renderDetail();
+}
+
 function saveRow(){
   const data=document.getElementById('nr-data').value;
   const czyn=document.getElementById('nr-czyn').value.trim();
@@ -2169,6 +2245,17 @@ function searchLovdata(){
       +'<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0">'
       +(e.link?'<a class="file-link" href="'+e.link+'" target="_blank">Otwórz plik</a>':'<span style="font-size:9px;color:var(--text-ter)">Brak pliku</span>')
       +'<button data-id="'+e.id+'" onclick="deleteLovdata(this.dataset.id)" style="padding:3px 8px;background:rgba(244,63,94,0.1);border:.5px solid rgba(244,63,94,0.3);border-radius:3px;color:rgba(244,63,94,0.7);font-size:9px;cursor:pointer;font-family:Open Sans,sans-serif">\u2715 Usu\u0144</button>'
+      +'</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function deleteLovdata(id){
+  if(!confirm('Usun\u0105\u0107 z bazy? Plik na Drive pozostanie.'))return;
+  const db=loadDB();db.lovdata=(db.lovdata||[]).filter(e=>e.id!==id);
+  saveDB(db);searchLovdata();
+}Open Sans,sans-serif">\u2715 Usu\u0144</button>'
       +'</div>'
       +'</div>'
       +'</div>';
