@@ -1490,6 +1490,27 @@ function calcEditRow(inp){
   if(elTx)elTx.textContent=tx+' NOK';
   if(elNt)elNt.textContent=nt+' NOK';
 }
+
+function deleteClientFile(clientId, fileIdx){
+  const db=loadDB();
+  const cl=db.clients.find(x=>x.id===clientId);
+  if(!cl||!cl.pliki||!cl.pliki[fileIdx])return;
+  const file=cl.pliki[fileIdx];
+  const driveNote=file.driveId&&accessToken
+    ?'\n\nPlik zostanie też usunięty z Google Drive.'
+    :'\n\nPlik na Google Drive pozostanie.';
+  if(!confirm('Usunąć plik "'+file.name+'"?'+driveNote))return;
+  if(file.driveId&&accessToken){
+    fetch('https://www.googleapis.com/drive/v3/files/'+file.driveId,
+      {method:'DELETE',headers:{Authorization:'Bearer '+accessToken}})
+    .then(function(){setDriveStatus('ok','Plik usunięty z Drive \u2713');})
+    .catch(function(e){console.warn('Drive delete error:',e);});
+  }
+  cl.pliki.splice(fileIdx,1);
+  saveDB(db);
+  renderDetail();
+}
+
 function deleteUsługa(clientId, rowIdx){
   if(!confirm('Usunąć ten wpis usługi?'))return;
   const db=loadDB();
