@@ -733,7 +733,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .hg-col{display:flex;flex-direction:column;gap:18px;padding:0 18px;align-items:center;width:100%}
 .hg-col-title{font-family:'Open Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--gold-dim);padding-bottom:10px;width:100%;text-align:center;border-bottom:.5px solid rgba(198,166,103,0.22);margin-bottom:10px;white-space:nowrap}
 .hg-row{display:flex;flex-direction:row;gap:18px;justify-content:center;flex-wrap:nowrap}
-.hg-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px 20px 24px;width:189px;height:189px;flex-shrink:0;flex-grow:0;background:linear-gradient(145deg,rgba(16,47,94,0.85) 0%,rgba(10,26,47,0.92) 100%);border:.5px solid rgba(47,79,79,0.5);border-radius:12px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;backdrop-filter:blur(6px);box-shadow:0 6px 28px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.08)}
+.hg-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px 20px 24px;width:189px;height:189px;flex-shrink:0;flex-grow:0;background:#04070D;border:.5px solid rgba(47,79,79,0.5);border-radius:12px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;backdrop-filter:blur(6px);box-shadow:0 6px 28px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.08)}
 
 
 
@@ -927,6 +927,9 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
         <div class="f-wrap"><label class="f-lbl">D-nummer</label><input class="f-inp" id="a-dnum" placeholder="41019912345" maxlength="11" oninput="onlyDigits(this)"></div></div>
       <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">PESEL</label><input class="f-inp" id="a-pesel" placeholder="99010112345" maxlength="11" oninput="onlyDigits(this)"></div></div>
       <div class="sep-line"></div>
+      <div class="sec-lbl">Data urodzenia</div>
+      <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">Data urodzenia (DD.MM.RRRR)</label><input class="f-inp" id="a-dob" placeholder="01.01.1990" maxlength="10" oninput="formatDOB(this)"></div></div>
+      <div class="sep-line"></div>
       <div class="sec-lbl">Kontakt</div>
       <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">E-mail</label><input class="f-inp" id="a-email" type="email" placeholder="jan.kowalski@example.com"></div></div>
       <div class="f-grid">
@@ -1097,7 +1100,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
         <div class="sec-lbl">Szablony pism</div>
         <div class="pismo-intro">Kliknij <strong style="color:var(--gold)">„Nowe pismo"</strong> aby otworzyć pusty dokument w Google Docs, lub wybierz szablon poniżej.</div>
         <div class="pismo-shortcuts" style="margin-top:18px">
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create" target="_blank"><span class="pismo-app-icon">📝</span><span>Nowe pismo</span></a>
+          <a class="pismo-shortcut" href="https://docs.google.com/document/create" target="_blank"><span>Nowe pismo</span></a>
         </div>
     </div>
   </div>
@@ -1116,6 +1119,16 @@ const DB_KEY='lavnor_v11';
 function loadDB(){return JSON.parse(localStorage.getItem(DB_KEY)||'{"clients":[],"tasks":{},"decisions":[],"forms":{"praca":[],"zdrowie":[],"rodzina":[],"emerytura":[],"socjalne":[]}}');}
 function saveDB(db){localStorage.setItem(DB_KEY,JSON.stringify(db));if(accessToken)scheduleDriveSync();}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+
+function formatDOB(el){
+  let v=el.value.replace(/[^0-9.]/g,'');
+  // Auto-insert dots
+  v=v.replace(/^(\d{2})(\d)/, '$1.$2');
+  v=v.replace(/^(\d{2}\.\d{2})(\d)/, '$1.$2');
+  if(v.length>10)v=v.slice(0,10);
+  el.value=v;
+}
+
 function onlyDigits(el){el.value=el.value.replace(/\D/g,'')}
 function fmt(v){return v||'—'}
 function q(s){return s.replace(/'/g,"\\x27")}
@@ -1280,7 +1293,7 @@ function saveClient(){
     const cl=db.clients.find(x=>x.id===currentId);
     if(cl){
       cl.imie=imie;cl.nazwisko=nazwisko;cl.fodsel=g('a-fodsel');cl.dnum=g('a-dnum');
-      cl.pesel=g('a-pesel');cl.email=g('a-email');cl.tel_pl=g('a-tel-pl');
+      cl.pesel=g('a-pesel');cl.dob=g('a-dob');cl.email=g('a-email');cl.tel_pl=g('a-tel-pl');
       cl.tel_no=g('a-tel-no');cl.haslo=g('a-haslo');
       cl.ulica=g('a-ulica');cl.kod=g('a-kod');cl.miasto=g('a-miasto');cl.kommune=g('a-kommune');
     }
@@ -1291,11 +1304,12 @@ function saveClient(){
   }
   // ADD mode
   db.clients.push({id:uid(),imie,nazwisko,fodsel:g('a-fodsel'),dnum:g('a-dnum'),pesel:g('a-pesel'),
+    dob:g('a-dob'),
     email:g('a-email'),tel_pl:g('a-tel-pl'),tel_no:g('a-tel-no'),haslo:g('a-haslo'),
     ulica:g('a-ulica'),kod:g('a-kod'),miasto:g('a-miasto'),kommune:g('a-kommune'),
     notatki:[],uslugi:[],pliki:[]});
   saveDB(db);
-  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo','a-ulica','a-kod','a-miasto','a-kommune'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-dob','a-email','a-tel-pl','a-tel-no','a-haslo','a-ulica','a-kod','a-miasto','a-kommune'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   showMsg('add-msg','Klient zapisany.','ok');
 }
 function liveSearch(){
@@ -1502,7 +1516,9 @@ function renderDetail(){
     '</div>',
     '<div class="uploading-bar" id="upload-bar"><div class="uploading-bar-inner"></div></div>',
     fileList||'<div style="font-size:10px;color:var(--text-ter);text-align:center;padding:14px 0;letter-spacing:.2em;text-transform:uppercase">Brak plików</div>',
-    '</div></div></div>'
+    '</div></div>',
+    '<div style="margin-top:16px;padding-top:14px;border-top:.5px solid var(--border);text-align:center"><button data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)" style="padding:11px 36px;background:var(--gold);border:none;border-radius:4px;color:#070F17;font-size:11px;font-weight:700;letter-spacing:.35em;text-transform:uppercase;cursor:pointer">&#128196; RAPORT</button></div>',
+    '</div></div>'
   ].join('');
 }
 function calcPrev(){
@@ -2033,6 +2049,7 @@ function openEditClient(clientId){
   document.getElementById('a-tel-no').value=cl.tel_no||'';
   document.getElementById('a-haslo').value=cl.haslo||'';
   const setv=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+  setv('a-dob',cl.dob);
   setv('a-ulica',cl.ulica);setv('a-kod',cl.kod);setv('a-miasto',cl.miasto);setv('a-kommune',cl.kommune);
   // Switch form to edit mode
   document.getElementById('add-form-title').textContent='Edytuj klienta';
@@ -2048,7 +2065,7 @@ function cancelEdit(){
   document.getElementById('add-form-sub').textContent='Uzupełnij dane nowego klienta';
   document.getElementById('add-btn-label').textContent='Zapisz klienta';
   document.getElementById('add-cancel-btn').style.display='none';
-  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo','a-ulica','a-kod','a-miasto','a-kommune']
+  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-dob','a-email','a-tel-pl','a-tel-no','a-haslo','a-ulica','a-kod','a-miasto','a-kommune']
     .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   nav('pg-home');
 }
@@ -2351,12 +2368,16 @@ function searchLovdata(){
   }).join('');
 }
 
+
 function deleteLovdata(id){
   if(!confirm('Usunąć z bazy? Plik na Drive pozostanie.'))return;
   const db=loadDB();db.lovdata=(db.lovdata||[]).filter(function(e){return e.id!==id;});
   saveDB(db);searchLovdata();
 }
+
 </script>
+
+
 
 
 
