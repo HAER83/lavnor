@@ -918,6 +918,14 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
         <div class="f-wrap"><label class="f-lbl">Telefon – Polska</label><input class="f-inp" id="a-tel-pl" placeholder="+48 500 000 000"></div>
         <div class="f-wrap"><label class="f-lbl">Telefon – Norwegia</label><input class="f-inp" id="a-tel-no" placeholder="+47 900 00 000"></div></div>
       <div class="sep-line"></div>
+      <div class="sec-lbl">Adres w Norwegii</div>
+      <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">Ulica i numer</label><input class="f-inp" id="a-ulica" placeholder="Storgata 1"></div></div>
+      <div class="f-grid">
+        <div class="f-wrap"><label class="f-lbl">Kod pocztowy</label><input class="f-inp" id="a-kod" placeholder="0180" maxlength="4" oninput="onlyDigits(this)"></div>
+        <div class="f-wrap"><label class="f-lbl">Miejscowość</label><input class="f-inp" id="a-miasto" placeholder="Oslo"></div>
+      </div>
+      <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">Gmina (Kommune)</label><input class="f-inp" id="a-kommune" placeholder="Oslo kommune"></div></div>
+      <div class="sep-line"></div>
       <div class="sec-lbl">Dostęp</div>
       <div class="f-grid one"><div class="f-wrap"><label class="f-lbl">Hasło</label><input class="f-inp" id="a-haslo" type="text" placeholder="wpisz hasło" autocomplete="off"></div></div>
       <button class="btn-cta" onclick="saveClient()"><span id="add-btn-label">Zapisz klienta</span></button>
@@ -1074,16 +1082,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
         <div class="sec-lbl">Szablony pism</div>
         <div class="pismo-intro">Kliknij <strong style="color:var(--gold)">„Nowe pismo"</strong> aby otworzyć pusty dokument w Google Docs, lub wybierz szablon poniżej.</div>
         <div class="pismo-shortcuts" style="margin-top:18px">
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Odwo%C5%82anie+do+NAV" target="_blank">
-            <div class="pismo-shortcut-title">Odwołanie do NAV</div><div class="pismo-shortcut-desc">Pusty dokument z tytułem</div>
-          </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Skarga+do+Statsforvalteren" target="_blank">
-            <div class="pismo-shortcut-title">Skarga administracyjna</div><div class="pismo-shortcut-desc">Statsforvalteren / organ nadrzędny</div>
-          </a>
-          <a class="pismo-shortcut" href="https://docs.google.com/document/create?title=Wniosek+o+ponowne+rozpatrzenie"_blank">Nowe pismo (Google Docs)</a>
-
-<script src="https://accounts.google.com/gsi/client" async></script>
-<script>
+          <a class="pismo-shortcut" href="https:/
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='lavnor_baza_klientow.json';
 const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar';
@@ -1209,6 +1208,7 @@ function saveClient(){
       cl.imie=imie;cl.nazwisko=nazwisko;cl.fodsel=g('a-fodsel');cl.dnum=g('a-dnum');
       cl.pesel=g('a-pesel');cl.email=g('a-email');cl.tel_pl=g('a-tel-pl');
       cl.tel_no=g('a-tel-no');cl.haslo=g('a-haslo');
+      cl.ulica=g('a-ulica');cl.kod=g('a-kod');cl.miasto=g('a-miasto');cl.kommune=g('a-kommune');
     }
     saveDB(db);
     showMsg('add-msg','Dane zaktualizowane.','ok');
@@ -1217,9 +1217,11 @@ function saveClient(){
   }
   // ADD mode
   db.clients.push({id:uid(),imie,nazwisko,fodsel:g('a-fodsel'),dnum:g('a-dnum'),pesel:g('a-pesel'),
-    email:g('a-email'),tel_pl:g('a-tel-pl'),tel_no:g('a-tel-no'),haslo:g('a-haslo'),notatki:[],uslugi:[],pliki:[]});
+    email:g('a-email'),tel_pl:g('a-tel-pl'),tel_no:g('a-tel-no'),haslo:g('a-haslo'),
+    ulica:g('a-ulica'),kod:g('a-kod'),miasto:g('a-miasto'),kommune:g('a-kommune'),
+    notatki:[],uslugi:[],pliki:[]});
   saveDB(db);
-  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo'].forEach(id=>document.getElementById(id).value='');
+  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo','a-ulica','a-kod','a-miasto','a-kommune'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   showMsg('add-msg','Klient zapisany.','ok');
 }
 function liveSearch(){
@@ -1846,6 +1848,8 @@ function openEditClient(clientId){
   document.getElementById('a-tel-pl').value=cl.tel_pl||'';
   document.getElementById('a-tel-no').value=cl.tel_no||'';
   document.getElementById('a-haslo').value=cl.haslo||'';
+  const setv=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||'';};
+  setv('a-ulica',cl.ulica);setv('a-kod',cl.kod);setv('a-miasto',cl.miasto);setv('a-kommune',cl.kommune);
   // Switch form to edit mode
   document.getElementById('add-form-title').textContent='Edytuj klienta';
   document.getElementById('add-form-sub').textContent='Zaktualizuj dane klienta';
@@ -1860,8 +1864,8 @@ function cancelEdit(){
   document.getElementById('add-form-sub').textContent='Uzupełnij dane nowego klienta';
   document.getElementById('add-btn-label').textContent='Zapisz klienta';
   document.getElementById('add-cancel-btn').style.display='none';
-  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo']
-    .forEach(id=>document.getElementById(id).value='');
+  ['a-imie','a-nazwisko','a-fodsel','a-dnum','a-pesel','a-email','a-tel-pl','a-tel-no','a-haslo','a-ulica','a-kod','a-miasto','a-kommune']
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   nav('pg-home');
 }
 
@@ -2155,6 +2159,20 @@ function searchLovdata(){
       +(kws?'<div style="margin-top:4px">'+kws+'</div>':'')
       +'</div>'
       +'<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0">'
+      +(e.link?'<a class="file-link" href="'+e.link+'" target="_blank">Otwórz plik</a>':'<span style="font-size:9px;color:var(--text-ter)">Brak pliku</span>')
+      +'<button data-id="'+e.id+'" onclick="deleteLovdata(this.dataset.id)" style="padding:3px 8px;background:rgba(244,63,94,0.1);border:.5px solid rgba(244,63,94,0.3);border-radius:3px;color:rgba(244,63,94,0.7);font-size:9px;cursor:pointer;font-family:Open Sans,sans-serif">\u2715 Usu\u0144</button>'
+      +'</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function deleteLovdata(id){
+  if(!confirm('Usun\u0105\u0107 z bazy? Plik na Drive pozostanie.'))return;
+  const db=loadDB();db.lovdata=(db.lovdata||[]).filter(e=>e.id!==id);
+  saveDB(db);searchLovdata();
+}
+-end;flex-shrink:0">'
       +(e.link?'<a class="file-link" href="'+e.link+'" target="_blank">Otwórz plik</a>':'<span style="font-size:9px;color:var(--text-ter)">Brak pliku</span>')
       +'<button data-id="'+e.id+'" onclick="deleteLovdata(this.dataset.id)" style="padding:3px 8px;background:rgba(244,63,94,0.1);border:.5px solid rgba(244,63,94,0.3);border-radius:3px;color:rgba(244,63,94,0.7);font-size:9px;cursor:pointer;font-family:Open Sans,sans-serif">\u2715 Usu\u0144</button>'
       +'</div>'
