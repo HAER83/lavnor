@@ -1167,8 +1167,42 @@ async function driveLoadOrCreate(){
   }
 }
 async function driveDownload(){
-  const r=await fetch('https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media',{headers:{Authorization:'Bearer '+accessToken}});
-  localStorage.setItem(DB_KEY,JSON.stringify(await r.json()));
+  const r=await fetch('https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media',
+    {headers:{Authorization:'Bearer '+accessToken}});
+  const driveData=await r.json();
+  const localData=loadDB();
+  // Per-client merge: Drive is authority for structure,
+  // local is authority for pliki/uslugi/notatki if more recent
+  if(driveData&&driveData.clients&&localData&&localData.clients){
+    driveData.clients.forEach(function(dc){
+      const lc=localData.clients.find(function(x){return x.id===dc.id;});
+      if(!lc)return;
+      // PLIKI: merge by file id — no cross-client contamination
+      const driveFiles=dc.pliki||[];
+      const localFiles=lc.pliki||[];
+      const driveIds=new Set(driveFiles.map(function(f){return f.id;}));
+      const merged=driveFiles.slice();
+      localFiles.forEach(function(f){
+        if(f.id&&!driveIds.has(f.id))merged.push(f);
+        else if(!f.id)merged.push(f);
+      });
+      dc.pliki=merged;
+      // USLUGI: keep whichever array is longer (most up to date)
+      if(lc.uslugi&&lc.uslugi.length>(dc.uslugi?dc.uslugi.length:0)){
+        dc.uslugi=lc.uslugi;
+      }
+      // NOTATKI: merge by date+text, deduplicate
+      const driveNotes=dc.notatki||[];
+      const localNotes=lc.notatki||[];
+      const noteKeys=new Set(driveNotes.map(function(n){return n.data+'|'+n.tekst;}));
+      const mergedNotes=driveNotes.slice();
+      localNotes.forEach(function(n){
+        if(!noteKeys.has(n.data+'|'+n.tekst))mergedNotes.push(n);
+      });
+      dc.notatki=mergedNotes;
+    });
+  }
+  localStorage.setItem(DB_KEY,JSON.stringify(driveData));
 }
 async function driveUploadNew(){
   // Save DB file in visible CLIENT_DRIVE_FOLDER
@@ -1280,7 +1314,13 @@ async function handleFileUpload(input){
   if(!result)return;
   const db=loadDB();const cl=db.clients.find(x=>x.id===currentId);
   if(!cl)return;if(!cl.pliki)cl.pliki=[];
-  cl.pliki.unshift(result);saveDB(db);renderDetail();
+  cl.pliki.unshift(result);
+  saveDB(db);
+  // Force immediate Drive sync after file upload
+  if(accessToken)setTimeout(function(){driveUpdate().then(function(){
+    setDriveStatus('ok','Drive – zsynchronizowano ✓');
+  });},100);
+  renderDetail();
 }
 function togglePaid(clientId,rowIdx){
   const db=loadDB();
@@ -1389,6 +1429,11 @@ function renderDetail(){
     '<div class="d-item"><span class="d-lbl">Tel. Polska</span><span class="d-val">',fmt(cl.tel_pl),'</span></div>',
     '<div class="d-item"><span class="d-lbl">Tel. Norwegia</span><span class="d-val">',fmt(cl.tel_no),'</span></div>',
     '<div class="d-item"><span class="d-lbl">Hasło</span><span class="d-val" style="font-family:monospace;color:var(--gold)">',fmt(cl.haslo),'</span></div>',
+    (cl.ulica||cl.miasto||cl.kod||cl.kommune)?'<div style="height:.5px;background:var(--border);margin:10px 0"></div>':'',
+    (cl.ulica||cl.miasto||cl.kod||cl.kommune)?'<div class="sec-lbl" style="margin-bottom:6px">Adres w Norwegii</div>':'',
+    cl.ulica?'<div class="d-item"><span class="d-lbl">Ulica</span><span class="d-val">'+fmt(cl.ulica)+'</span></div>':'',
+    (cl.kod||cl.miasto)?'<div class="d-item"><span class="d-lbl">Kod / Miasto</span><span class="d-val">'+(cl.kod?cl.kod+' ':'')+fmt(cl.miasto)+'</span></div>':'',
+    cl.kommune?'<div class="d-item"><span class="d-lbl">Kommune</span><span class="d-val">'+fmt(cl.kommune)+'</span></div>':'',
     '</div></div>',
     '<div class="card" style="padding:18px">',
     '<div class="sec-lbl">Notatki</div>',
