@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0A1A2F;
-  --bg2:#102F5E;
-  --bg3:#1a3a6e;
+  --bg:#070F17;
+  --bg2:#0D1F3C;
+  --bg3:#122040;
   --gold:#C6A667;
   --gold2:#dfc088;
   --gold-dim:rgba(198,166,103,0.8);
@@ -60,7 +60,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* DRIVE BAR */
 .drive-bar{position:fixed;top:0;left:0;right:0;z-index:50;padding:7px 24px;
   display:flex;align-items:center;justify-content:space-between;
-  background:rgba(10,16,30,0.96);border-bottom:.5px solid var(--border);
+  background:rgba(5,10,20,0.98);border-bottom:.5px solid var(--border);
   font-size:11px;backdrop-filter:blur(10px)}
 .drive-status{display:flex;align-items:center;gap:8px;color:var(--text-ter);font-size:10px;letter-spacing:.15em}
 .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
@@ -158,7 +158,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .pg-sub{font-size:10px;font-weight:300;letter-spacing:.45em;text-transform:uppercase;color:var(--text-ter);text-align:center;margin-bottom:24px}
 
 /* CARD */
-.card{background:rgba(28,40,64,0.86);border:.5px solid var(--border2);border-radius:4px;padding:28px;
+.card{background:rgba(10,20,35,0.95);border:.5px solid var(--border2);border-radius:4px;padding:28px;
   backdrop-filter:blur(8px);
   box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(201,168,76,0.08)}
 
@@ -229,7 +229,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .note-entry-date{font-size:9px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:3px}
 .note-entry-text{font-size:12px;color:var(--text-sec);line-height:1.5}
 
-.billing-card,.files-card{background:rgba(28,40,64,0.86);border:.5px solid var(--border2);border-radius:4px;padding:20px;
+.billing-card,.files-card{background:rgba(8,16,30,0.97);border:.5px solid var(--border2);border-radius:4px;padding:20px;
   box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(201,168,76,0.08)}
 .bill-title{font-size:9px;font-weight:700;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;
   display:flex;align-items:center;gap:10px}
@@ -424,7 +424,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .daily-widget{
   position:fixed;top:38px;right:20px;z-index:40;
   width:280px;
-  background:rgba(10,26,47,0.97);
+  background:rgba(5,10,20,0.97);
   border:.5px solid rgba(212,175,90,0.35);
   border-radius:6px;
   padding:12px 14px;
@@ -676,7 +676,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 
 
 /* REPORTS */
-.report-card{background:rgba(10,18,35,0.92);border:.5px solid var(--gold-border,rgba(212,175,90,0.35));
+.report-card{background:rgba(8,16,28,0.95);border:.5px solid var(--gold-border,rgba(212,175,90,0.35));
   border-radius:6px;padding:22px;box-shadow:0 8px 40px rgba(0,0,0,.4);margin-bottom:14px}
 .report-table{width:100%;border-collapse:collapse}
 .report-table th{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
@@ -776,6 +776,12 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
   padding:4px 7px;width:100%;box-sizing:border-box}
 .t-inp-edit:focus{outline:none;border-color:var(--gold);background:rgba(198,166,103,0.14)}
 
+
+/* pg-home keeps its own background - other pages use #070F17 */
+#pg-home{background:#0A1A2F}
+#pg-home::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(10,26,47,0.75) 0%,rgba(10,26,47,0.65) 50%,rgba(10,26,47,0.80) 100%);
+  z-index:0;pointer-events:none}
 </style>
 </head>
 <body>
@@ -1171,36 +1177,53 @@ async function driveDownload(){
     {headers:{Authorization:'Bearer '+accessToken}});
   const driveData=await r.json();
   const localData=loadDB();
-  // Per-client merge: Drive is authority for structure,
-  // local is authority for pliki/uslugi/notatki if more recent
-  if(driveData&&driveData.clients&&localData&&localData.clients){
-    driveData.clients.forEach(function(dc){
-      const lc=localData.clients.find(function(x){return x.id===dc.id;});
-      if(!lc)return;
-      // PLIKI: merge by file id — no cross-client contamination
-      const driveFiles=dc.pliki||[];
-      const localFiles=lc.pliki||[];
-      const driveIds=new Set(driveFiles.map(function(f){return f.id;}));
-      const merged=driveFiles.slice();
-      localFiles.forEach(function(f){
-        if(f.id&&!driveIds.has(f.id))merged.push(f);
-        else if(!f.id)merged.push(f);
+  if(driveData&&driveData.clients){
+    if(localData&&localData.clients){
+      // Step 1: merge data into Drive clients
+      driveData.clients.forEach(function(dc){
+        const lc=localData.clients.find(function(x){return x.id===dc.id;});
+        if(!lc)return;
+        // PLIKI: merge by file id — strictly per-client, no contamination
+        const driveFiles=dc.pliki||[];
+        const localFiles=lc.pliki||[];
+        const driveIds=new Set(driveFiles.map(function(f){return f.id;}));
+        const merged=driveFiles.slice();
+        localFiles.forEach(function(f){
+          if(f.id&&!driveIds.has(f.id))merged.push(f);
+          else if(!f.id)merged.push(f);
+        });
+        dc.pliki=merged;
+        // USLUGI: keep longer array
+        if(lc.uslugi&&lc.uslugi.length>(dc.uslugi?dc.uslugi.length:0)){
+          dc.uslugi=lc.uslugi;
+        }
+        // NOTATKI: merge by content
+        const driveNotes=dc.notatki||[];
+        const localNotes=lc.notatki||[];
+        const noteKeys=new Set(driveNotes.map(function(n){return n.data+'|'+n.tekst;}));
+        const mergedNotes=driveNotes.slice();
+        localNotes.forEach(function(n){
+          if(!noteKeys.has(n.data+'|'+n.tekst))mergedNotes.push(n);
+        });
+        dc.notatki=mergedNotes;
       });
-      dc.pliki=merged;
-      // USLUGI: keep whichever array is longer (most up to date)
-      if(lc.uslugi&&lc.uslugi.length>(dc.uslugi?dc.uslugi.length:0)){
-        dc.uslugi=lc.uslugi;
-      }
-      // NOTATKI: merge by date+text, deduplicate
-      const driveNotes=dc.notatki||[];
-      const localNotes=lc.notatki||[];
-      const noteKeys=new Set(driveNotes.map(function(n){return n.data+'|'+n.tekst;}));
-      const mergedNotes=driveNotes.slice();
-      localNotes.forEach(function(n){
-        if(!noteKeys.has(n.data+'|'+n.tekst))mergedNotes.push(n);
+      // Step 2: add LOCAL-ONLY clients (new clients not yet on Drive)
+      // These must have ONLY their own data — no contamination from others
+      const driveIds=new Set(driveData.clients.map(function(c){return c.id;}));
+      localData.clients.forEach(function(lc){
+        if(!driveIds.has(lc.id)){
+          // New client — ensure clean arrays
+          driveData.clients.push({
+            id:lc.id,imie:lc.imie,nazwisko:lc.nazwisko,
+            fodsel:lc.fodsel||'',dnum:lc.dnum||'',pesel:lc.pesel||'',
+            email:lc.email||'',tel_pl:lc.tel_pl||'',tel_no:lc.tel_no||'',
+            haslo:lc.haslo||'',ulica:lc.ulica||'',kod:lc.kod||'',
+            miasto:lc.miasto||'',kommune:lc.kommune||'',
+            notatki:[],uslugi:[],pliki:[]
+          });
+        }
       });
-      dc.notatki=mergedNotes;
-    });
+    }
   }
   localStorage.setItem(DB_KEY,JSON.stringify(driveData));
 }
