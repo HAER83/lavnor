@@ -777,10 +777,13 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 .t-inp-edit:focus{outline:none;border-color:var(--gold);background:rgba(198,166,103,0.14)}
 
 
-/* pg-home keeps its own background - other pages use #070F17 */
-#pg-home{background:#0A1A2F}
+/* pg-home uses foto.jpg as full background */
+#pg-home{
+  background:url('foto.jpg') center center / cover no-repeat;
+  background-color:#070F17;
+}
 #pg-home::before{content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(10,26,47,0.75) 0%,rgba(10,26,47,0.65) 50%,rgba(10,26,47,0.80) 100%);
+  background:rgba(7,15,23,0.35);
   z-index:0;pointer-events:none}
 </style>
 </head>
