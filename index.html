@@ -1545,7 +1545,6 @@ function renderDetail(){
     '<div class="uploading-bar" id="upload-bar"><div class="uploading-bar-inner"></div></div>',
     fileList||'<div style="font-size:10px;color:var(--text-ter);text-align:center;padding:14px 0;letter-spacing:.2em;text-transform:uppercase">Brak plików</div>',
     '</div></div>',
-    '<div style="margin-top:16px;padding-top:14px;border-top:.5px solid var(--border);text-align:center"><button data-id="'+cl.id+'" onclick="printClientReport(this.dataset.id)" style="padding:11px 36px;background:var(--gold);border:none;border-radius:4px;color:#070F17;font-size:11px;font-weight:700;letter-spacing:.35em;text-transform:uppercase;cursor:pointer">&#128196; RAPORT</button></div>',
     '</div></div>'
   ].join('');
 }
@@ -2060,7 +2059,118 @@ window.addEventListener('load',()=>{
 });
 
 
-/* ── EDIT CLIENT ─────────────────────────────────────────── */
+function extractDOB(numStr,isDnum){
+  if(!numStr||numStr.length<6)return null;
+  let d=parseInt(numStr.slice(0,2));
+  const m=numStr.slice(2,4);
+  const y2=numStr.slice(4,6);
+  if(d>40)return null;
+  const y=parseInt(y2)<30?'20'+y2:'19'+y2;
+  return String(d).padStart(2,'0')+'.'+m+'.'+y;
+}
+
+function printClientReport(clientId){
+  const db=loadDB();
+  const cl=db.clients.find(function(x){return x.id===clientId;});
+  if(!cl)return;
+  const now=new Date().toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const dob=cl.dob||(extractDOB(cl.fodsel,false)||extractDOB(cl.pesel,false)||'—');
+  const uslugi=(cl.uslugi||[]).slice().sort(function(a,b){return (a.data||'').localeCompare(b.data||'');});
+  let totB=0,totPaid=0,totUnpaid=0,rows='';
+  uslugi.forEach(function(u,i){
+    const b=parseFloat(u.kwota)||0;
+    const mv=+(b*0.25/1.25).toFixed(2);
+    const tx=+(b*0.33).toFixed(2);
+    const nt=+(b-b*0.33).toFixed(2);
+    totB+=b;
+    if(u.paid===true)totPaid+=nt; else totUnpaid+=nt;
+    rows+='<tr>'
+      +'<td>'+( i+1)+'</td>'
+      +'<td style="white-space:nowrap">'+(u.data||'—')+'</td>'
+      +'<td>'+(u.czynnosc||'—')+'</td>'
+      +'<td style="text-align:right">'+b.toFixed(2)+' NOK</td>'
+      +'<td style="text-align:right;color:#555">'+mv.toFixed(2)+' NOK</td>'
+      +'<td style="text-align:right;color:#555">'+tx.toFixed(2)+' NOK</td>'
+      +'<td style="text-align:right;font-weight:700">'+nt.toFixed(2)+' NOK</td>'
+      +'</tr>';
+  });
+  const signatureURL='https://haer83.github.io/lavnor/foto.signatur.png';
+  const saveBtn=accessToken
+    ?'<button onclick="saveReportToDrive()" id="btn-dr" style="margin-left:10px;padding:9px 22px;background:#1a7f37;color:#fff;border:none;cursor:pointer;font-size:12px">&#128190; Zapisz na Drive</button>'
+    :'';
+  const html='<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8">'
+    +'<title>Raport — '+cl.imie+' '+cl.nazwisko+'</title>'
+    +'<style>'
+    +'*{box-sizing:border-box}'
+    +'body{font-family:Georgia,serif;font-size:13px;color:#111;padding:40px;max-width:820px;margin:0 auto}'
+    +'h1{font-size:24px;letter-spacing:.05em;margin:0 0 4px;color:#0A1A2F}'
+    +'.dob{font-size:12px;color:#555;margin-bottom:24px}'
+    +'table{width:100%;border-collapse:collapse;margin:8px 0 0}'
+    +'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:8px;border-bottom:2px solid #0A1A2F;background:#f5f5f5;text-align:left}'
+    +'th.r{text-align:right}'
+    +'td{padding:7px 8px;border-bottom:1px solid #e8e8e8;vertical-align:top}'
+    +'.sum-row td{font-weight:700;font-size:13px;border-top:2px solid #0A1A2F;padding-top:10px}'
+    +'.meta{margin-top:30px;font-size:11px;color:#666}'
+    +'.sig-block{margin-top:36px}'
+    +'.sig-label{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#888;margin-bottom:8px}'
+    +'.sig-img{max-height:90px;max-width:240px}'
+    +'.legal{margin-top:32px;font-size:10px;color:#888;line-height:1.65;border-top:1px solid #ddd;padding-top:16px}'
+    +'@media print{.noprint{display:none}}'
+    +'</style></head><body>'
+    +'<h1>'+cl.imie+' '+cl.nazwisko+'</h1>'
+    +'<div class="dob">Data urodzenia: '+dob+'</div>'
+    +'<table>'
+    +'<thead><tr>'
+    +'<th>Lp.</th><th>Data</th><th>Usługa</th>'
+    +'<th class="r">Brutto</th><th class="r">MVA</th><th class="r">Podatek</th><th class="r">Netto</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr class="sum-row">'
+    +'<td colspan="3">Suma łączna</td>'
+    +'<td style="text-align:right">'+totB.toFixed(2)+' NOK</td>'
+    +'<td colspan="2"></td>'
+    +'<td style="text-align:right">'+( totPaid+totUnpaid).toFixed(2)+' NOK'
+    +'<br><span style="color:#22c55e;font-size:11px">&#10003; Opłacono: '+totPaid.toFixed(2)+' NOK</span>'
+    +'<br><span style="color:#e53e3e;font-size:11px">&#10007; Nieopłacone: '+totUnpaid.toFixed(2)+' NOK</span>'
+    +'</td>'
+    +'</tr></tfoot>'
+    +'</table>'
+    +'<div class="meta">Raport wygenerowany: '+now+' &nbsp;|&nbsp; System Lavnor</div>'
+    +'<div class="sig-block">'
+    +'<div class="sig-label">Podpis</div>'
+    +'<img class="sig-img" src="'+signatureURL+'" alt="Podpis" crossorigin="anonymous">'
+    +'</div>'
+    +'<div class="legal">'
+    +'Dane klienta są przechowywane w Systemie Lavnor i są wykorzystywane wyłącznie do wykonania usług '
+    +'zawartych w niniejszym raporcie. Klient ma prawo do wglądu, zmiany bądź całkowitego usunięcia danych '
+    +'z systemu, wysyłając prośbę na adres: <strong>lavnor@protonmail.com</strong>'
+    +'</div>'
+    +'<div class="noprint" style="text-align:center;margin-top:28px">'
+    +'<button onclick="window.print()" style="padding:9px 24px;background:#0A1A2F;color:#fff;border:none;cursor:pointer;font-size:12px">&#128438; Drukuj / PDF</button>'
+    +saveBtn
+    +'</div>'
+    +'<script>'
+    +'var _tok="'+accessToken+'";'
+    +'var _fn="Raport_'+cl.nazwisko.replace(/[^a-zA-Z0-9]/g,'_')+'_'+cl.imie.replace(/[^a-zA-Z0-9]/g,'_')+'.html";'
+    +'function saveReportToDrive(){'
+    +'var btn=document.getElementById("btn-dr");'
+    +'if(btn)btn.textContent="Zapisywanie…";'
+    +'var blob=new Blob([document.documentElement.outerHTML],{type:"text/html"});'
+    +'var meta={name:_fn,parents:["1W-B_qbeeJQnQ25auS95NIc_0wsrV0uYT"]};'
+    +'var fd=new FormData();'
+    +'fd.append("metadata",new Blob([JSON.stringify(meta)],{type:"application/json"}));'
+    +'fd.append("file",blob);'
+    +'fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{method:"POST",headers:{Authorization:"Bearer "+_tok},body:fd})'
+    +'.then(function(r){return r.json();})'
+    +'.then(function(d){if(btn)btn.textContent=d.id?"&#10003; Zapisano":"Błąd";});'
+    +'}'
+    +'<\/script>'
+    +'</body></html>';
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+}
+
 function openEditClient(clientId){
   const db=loadDB();
   const cl=db.clients.find(x=>x.id===clientId);
