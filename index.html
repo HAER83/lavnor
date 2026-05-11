@@ -941,7 +941,7 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 <script>
 const GOOGLE_CLIENT_ID='428543910969-5skr7a5ht0jovfvei3rva8ikehef6916.apps.googleusercontent.com';
 const DRIVE_FILE_NAME='lavnor_baza_klientow.json';
-const SCOPES='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar';
+const SCOPES='https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
 let accessToken=null,driveFileId=null,syncPending=false,currentId=null;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 let modalDate=null,remindOn=false;
@@ -2112,60 +2112,8 @@ function saveLovEntry(driveId,fileName,title,court,date,keywords,notes,link){
   saveDB(db);
 }
 
-function clearLovForm(input){
-  ['lov-title','lov-court','lov-date','lov-keywords','lov-notes'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.value='';
-  });
-  if(input)input.value='';
-}
 
-function searchLovdata(){
-  const q=(document.getElementById('lov-q')||{value:''}).value.trim().toLowerCase();
-  const qc=(document.getElementById('lov-q-court')||{value:''}).value.trim().toLowerCase();
-  const qdf=(document.getElementById('lov-q-df')||{value:''}).value;
-  const qdt=(document.getElementById('lov-q-dt')||{value:''}).value;
-  const db=loadDB();
-  const all=(db.lovdata||[]).filter(e=>{
-    const text=[e.title,e.court,e.keywords,e.notes,e.fileName].join(' ').toLowerCase();
-    return (!q||text.includes(q))
-      &&(!qc||(e.court||'').toLowerCase().includes(qc))
-      &&(!qdf||e.date>=qdf)
-      &&(!qdt||e.date<=qdt);
-  });
-  const ra=document.getElementById('lov-results');if(!ra)return;
-  if(!all.length){
-    ra.innerHTML='<div style="text-align:center;padding:28px;font-size:10px;color:var(--text-ter);letter-spacing:.25em;text-transform:uppercase">'
-      +(q||qc||qdf||qdt?'Brak wynik\u00f3w dla podanej frazy':'Baza pusta \u2014 dodaj pierwsze orzeczenie')+'</div>';
-    return;
-  }
-  ra.innerHTML=all.map(e=>{
-    const kws=(e.keywords||'').split(',').filter(Boolean).map(k=>
-      '<span style="display:inline-block;padding:1px 8px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.1em;background:rgba(212,175,90,0.12);color:var(--gold);border:.5px solid rgba(212,175,90,0.25);margin:1px 2px">'+k.trim()+'</span>'
-    ).join('');
-    return '<div style="background:rgba(18,25,42,0.6);border:.5px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:10px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">'
-      +'<div style="flex:1">'
-      +'<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">'+e.title+'</div>'
-      +'<div style="font-size:10px;color:var(--text-ter);letter-spacing:.1em;margin-bottom:6px">'
-      +(e.court||'')+(e.court&&e.date?' \u00b7 ':'')+(e.date||'')
-      +((e.court||e.date)?' \u00b7 ':'')+'Dodano: '+e.added+'</div>'
-      +(e.notes?'<div style="font-size:11px;color:var(--text-sec);font-style:italic;margin-bottom:8px">'+e.notes+'</div>':'')
-      +(kws?'<div style="margin-top:4px">'+kws+'</div>':'')
-      +'</div>'
-      +'<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0">'
-      +(e.link?'<a class="file-link" href="'+e.link+'" target="_blank">Otwórz plik</a>':'<span style="font-size:9px;color:var(--text-ter)">Brak pliku</span>')
-      +'<button data-id="'+e.id+'" onclick="deleteLovdata(this.dataset.id)" style="padding:3px 8px;background:rgba(244,63,94,0.1);border:.5px solid rgba(244,63,94,0.3);border-radius:3px;color:rgba(244,63,94,0.7);font-size:9px;cursor:pointer;font-family:Open Sans,sans-serif">\u2715 Usu\u0144</button>'
-      +'</div>'
-      +'</div>'
-      +'</div>';
-  }).join('');
-}
 
-function deleteLovdata(id){
-  if(!confirm('Usun\u0105\u0107 z bazy? Plik na Drive pozostanie.'))return;
-  const db=loadDB();db.lovdata=(db.lovdata||[]).filter(e=>e.id!==id);
-  saveDB(db);searchLovdata();
-}
 
 function clearLovForm(input){
   ['lov-title','lov-court','lov-date','lov-keywords','lov-notes'].forEach(id=>{
@@ -2218,11 +2166,6 @@ function searchLovdata(){
 
 
 function deleteLovdata(id){
-  if(!confirm('Usunąć z bazy? Plik na Drive pozostanie.'))return;
-  const db=loadDB();db.lovdata=(db.lovdata||[]).filter(function(e){return e.id!==id;});
-  saveDB(db);searchLovdata();
-}
-{
   if(!confirm('Usunąć z bazy? Plik na Drive pozostanie.'))return;
   const db=loadDB();db.lovdata=(db.lovdata||[]).filter(function(e){return e.id!==id;});
   saveDB(db);searchLovdata();
