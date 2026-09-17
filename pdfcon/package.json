@@ -1,0 +1,61 @@
+{
+  "name": "pdfcon",
+  "productName": "PDFcon",
+  "version": "1.0.0",
+  "description": "PDFcon – lokalny konwerter i edytor plików PDF (DOC/DOCX/JPG/PNG <-> PDF, scalanie i dzielenie PDF)",
+  "author": "Michał",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "icons": "node scripts/generate-icons.js",
+    "postinstall": "npm run icons",
+    "prebuild": "npm run icons",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^3.11.174"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "icon-gen": "^4.0.0",
+    "sharp": "^0.33.4"
+  },
+  "build": {
+    "appId": "pl.michal.pdfcon",
+    "productName": "PDFcon",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icons/win/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icons/mac/icon.icns"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "build/icons/png/icon-512.png",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

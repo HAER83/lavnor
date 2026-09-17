@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6D28D9"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="badgeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" rx="224" fill="url(#bgGrad)"/>
+
+  <path d="M300,204 a24,24 0 0 1 24,-24 H560 L664,284 V700 a24,24 0 0 1 -24,24 H324 a24,24 0 0 1 -24,-24 Z"
+        fill="#FFFFFF"/>
+  <path d="M560,180 L664,284 H584 a24,24 0 0 1 -24,-24 Z" fill="#C7D2FE"/>
+
+  <rect x="356" y="400" width="252" height="28" rx="14" fill="#94A3B8"/>
+  <rect x="356" y="460" width="252" height="28" rx="14" fill="#94A3B8"/>
+  <rect x="356" y="520" width="172" height="28" rx="14" fill="#94A3B8"/>
+
+  <circle cx="742" cy="706" r="146" fill="url(#badgeGrad)" stroke="#FFFFFF" stroke-width="16"/>
+  <path d="M694,650 a76,76 0 1 1 -42,58" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round"/>
+  <polygon points="612,680 662,662 662,730" fill="#FFFFFF"/>
+  <path d="M790,762 a76,76 0 1 1 42,-58" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round"/>
+  <polygon points="872,732 822,750 822,682" fill="#FFFFFF"/>
+</svg>

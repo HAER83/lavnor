@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self';" />
+<title>PDFcon</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<svg style="display:none">
+  <symbol id="icon-to-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8h7M7 5l3 3-3 3"/>
+    <rect x="13" y="4" width="8" height="16" rx="2"/>
+    <path d="M15.5 9h3M15.5 12h3M15.5 15h1.5"/>
+  </symbol>
+  <symbol id="icon-from-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="8" height="16" rx="2"/>
+    <path d="M5.5 9h3M5.5 12h3M5.5 15h1.5"/>
+    <path d="M14 8h7M18 5l3 3-3 3"/>
+  </symbol>
+  <symbol id="icon-merge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 7h6M5 4l3 3-3 3"/>
+    <path d="M2 17h6M5 14l3 3-3 3"/>
+    <rect x="12" y="6" width="10" height="12" rx="2"/>
+  </symbol>
+  <symbol id="icon-split" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="6" width="10" height="12" rx="2"/>
+    <path d="M16 7h6M19 4l3 3-3 3"/>
+    <path d="M16 17h6M19 14l3 3-3 3"/>
+  </symbol>
+  <symbol id="icon-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 17.5a4 4 0 0 1-.9-7.9A5.5 5.5 0 0 1 16.7 8H17a3.7 3.7 0 0 1 0 7.4h-.8"/>
+    <path d="M12 20v-8.5"/>
+    <path d="M9 14.3l3-2.8 3 2.8"/>
+  </symbol>
+  <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 7.2A2 2 0 0 1 5 5.2h3.6l1.8 2h8.6a2 2 0 0 1 2 2v8.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+  </symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4.5 7h15"/>
+    <path d="M9.5 7V4.3h5V7"/>
+    <path d="M6.5 7l.9 12.2a2 2 0 0 0 2 1.8h5.2a2 2 0 0 0 2-1.8L17.5 7"/>
+  </symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 12.5l4.5 4.5L19 7.5"/>
+  </symbol>
+  <symbol id="icon-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 4l9.5 16.5H2.5z"/>
+    <path d="M12 10v4"/>
+    <path d="M12 17.2v.1"/>
+  </symbol>
+  <symbol id="icon-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+    <path d="M12 3a9 9 0 1 1-6.4 2.6"/>
+  </symbol>
+  <symbol id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M6 6l12 12M18 6L6 18"/>
+  </symbol>
+  <symbol id="icon-logo" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="url(#logoGrad)"/>
+    <defs>
+      <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#6D28D9"/>
+        <stop offset="1" stop-color="#2563EB"/>
+      </linearGradient>
+    </defs>
+    <path d="M15 11a1.4 1.4 0 0 1 1.4-1.4H27l6 6v18a1.4 1.4 0 0 1-1.4 1.4H16.4A1.4 1.4 0 0 1 15 33.6z" fill="#fff"/>
+    <path d="M27 9.6l6 6h-4.6a1.4 1.4 0 0 1-1.4-1.4z" fill="#C7D2FE"/>
+    <rect x="18.5" y="20" width="11" height="2.4" rx="1.2" fill="#94A3B8"/>
+    <rect x="18.5" y="24.6" width="11" height="2.4" rx="1.2" fill="#94A3B8"/>
+  </symbol>
+</svg>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 48 48"><use href="#icon-logo"/></svg>
+      <div class="brand-text">
+        <strong>PDFcon</strong>
+        <span>Twój lokalny konwerter PDF</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="to-pdf">
+        <svg class="icon"><use href="#icon-to-pdf"/></svg>
+        <span>Konwertuj na PDF</span>
+      </button>
+      <button class="nav-item" data-view="from-pdf">
+        <svg class="icon"><use href="#icon-from-pdf"/></svg>
+        <span>Konwertuj z PDF</span>
+      </button>
+      <button class="nav-item" data-view="merge">
+        <svg class="icon"><use href="#icon-merge"/></svg>
+        <span>Scal PDF</span>
+      </button>
+      <button class="nav-item" data-view="split">
+        <svg class="icon"><use href="#icon-split"/></svg>
+        <span>Podziel PDF</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="ghost-btn" id="open-output-btn">
+        <svg class="icon"><use href="#icon-folder"/></svg>
+        <span>Otwórz folder Pobrane/PDFcon</span>
+      </button>
+      <div class="lo-status" id="lo-status">Sprawdzanie LibreOffice…</div>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <!-- KONWERTUJ NA PDF -->
+    <section class="view active" id="view-to-pdf" data-accept=".doc,.docx,.jpg,.jpeg,.png">
+      <header class="view-header">
+        <h1>Konwertuj na PDF</h1>
+        <p>Dodaj pliki DOC, DOCX, JPG lub PNG — zostaną zapisane jako PDF w folderze Pobrane/PDFcon.</p>
+      </header>
+
+      <div class="dropzone" data-dropzone>
+        <svg class="icon icon-xl"><use href="#icon-upload"/></svg>
+        <p><strong>Przeciągnij i upuść pliki tutaj</strong></p>
+        <p class="muted">lub</p>
+        <button class="primary-btn" data-pick>Wybierz pliki</button>
+        <p class="muted small">Obsługiwane formaty: DOC, DOCX, JPG, PNG</p>
+      </div>
+
+      <ul class="file-list" data-file-list></ul>
+
+      <div class="options" data-options-images hidden>
+        <label class="checkbox">
+          <input type="checkbox" id="combine-images" checked />
+          <span>Połącz wszystkie obrazy w jeden plik PDF (wielostronicowy)</span>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="primary-btn large" data-action disabled>
+          <svg class="icon"><use href="#icon-to-pdf"/></svg>
+          <span>Konwertuj na PDF</span>
+        </button>
+      </div>
+
+      <div class="results" data-results></div>
+    </section>
+
+    <!-- KONWERTUJ Z PDF -->
+    <section class="view" id="view-from-pdf" data-accept=".pdf">
+      <header class="view-header">
+        <h1>Konwertuj z PDF</h1>
+        <p>Wybierz pliki PDF i format docelowy: DOCX (edytowalny dokument), JPG lub PNG (obraz każdej strony).</p>
+      </header>
+
+      <div class="dropzone" data-dropzone>
+        <svg class="icon icon-xl"><use href="#icon-upload"/></svg>
+        <p><strong>Przeciągnij i upuść pliki PDF tutaj</strong></p>
+        <p class="muted">lub</p>
+        <button class="primary-btn" data-pick>Wybierz pliki PDF</button>
+      </div>
+
+      <ul class="file-list" data-file-list></ul>
+
+      <div class="options">
+        <span class="options-label">Konwertuj na:</span>
+        <div class="segmented" data-target-format>
+          <button class="segmented-item active" data-format="docx">DOCX</button>
+          <button class="segmented-item" data-format="jpg">JPG</button>
+          <button class="segmented-item" data-format="png">PNG</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary-btn large" data-action disabled>
+          <svg class="icon"><use href="#icon-from-pdf"/></svg>
+          <span>Konwertuj</span>
+        </button>
+      </div>
+
+      <div class="progress" data-progress hidden>
+        <div class="progress-bar"><div class="progress-fill" data-progress-fill></div></div>
+        <span data-progress-text></span>
+      </div>
+
+      <div class="results" data-results></div>
+    </section>
+
+    <!-- SCAL PDF -->
+    <section class="view" id="view-merge" data-accept=".pdf">
+      <header class="view-header">
+        <h1>Scal pliki PDF</h1>
+        <p>Dodaj co najmniej dwa pliki PDF. Kolejność na liście odpowiada kolejności stron w wynikowym pliku — użyj strzałek, aby ją zmienić.</p>
+      </header>
+
+      <div class="dropzone" data-dropzone>
+        <svg class="icon icon-xl"><use href="#icon-merge"/></svg>
+        <p><strong>Przeciągnij i upuść pliki PDF tutaj</strong></p>
+        <p class="muted">lub</p>
+        <button class="primary-btn" data-pick>Wybierz pliki PDF</button>
+      </div>
+
+      <ul class="file-list" data-file-list data-reorderable></ul>
+
+      <div class="actions">
+        <button class="primary-btn large" data-action disabled>
+          <svg class="icon"><use href="#icon-merge"/></svg>
+          <span>Scal w jeden plik PDF</span>
+        </button>
+      </div>
+
+      <div class="results" data-results></div>
+    </section>
+
+    <!-- PODZIEL PDF -->
+    <section class="view" id="view-split" data-accept=".pdf">
+      <header class="view-header">
+        <h1>Podziel plik PDF</h1>
+        <p>Wybierz jeden plik PDF i sposób podziału.</p>
+      </header>
+
+      <div class="dropzone" data-dropzone>
+        <svg class="icon icon-xl"><use href="#icon-split"/></svg>
+        <p><strong>Przeciągnij i upuść plik PDF tutaj</strong></p>
+        <p class="muted">lub</p>
+        <button class="primary-btn" data-pick>Wybierz plik PDF</button>
+      </div>
+
+      <ul class="file-list" data-file-list data-single></ul>
+
+      <div class="options" data-split-options hidden>
+        <div class="radio-group">
+          <label class="radio">
+            <input type="radio" name="split-mode" value="all" checked />
+            <span>Podziel na osobne pliki — każda strona jako oddzielny PDF</span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="split-mode" value="range" />
+            <span>Wydziel zakres stron, np. <code>1-3,5,7-9</code></span>
+          </label>
+        </div>
+        <input type="text" class="text-input" data-range-input placeholder="np. 1-3,5,7-9" disabled />
+        <p class="muted small" data-page-count-hint></p>
+      </div>
+
+      <div class="actions">
+        <button class="primary-btn large" data-action disabled>
+          <svg class="icon"><use href="#icon-split"/></svg>
+          <span>Podziel PDF</span>
+        </button>
+      </div>
+
+      <div class="results" data-results></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="../../node_modules/pdfjs-dist/build/pdf.min.js"></script>
+<script src="renderer.js"></script>
+</body>
+</html>
