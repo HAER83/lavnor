@@ -4,11 +4,16 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
+const { pathToFileURL } = require('url');
+
+// Maksymalny czas oczekiwania na pojedynczą konwersję LibreOffice, zanim uznamy
+// proces za zawieszony (np. przez działający w tle Szybki Uruchamiacz LibreOffice
+// blokujący profil użytkownika) i przerwiemy go z czytelnym komunikatem.
+const CONVERT_TIMEOUT_MS = 120000;
 
 // Miejsca, w których typowo instaluje się LibreOffice na poszczególnych systemach.
 const CANDIDATES = {
   win32: [
-    'C\\Program Files\\LibreOffice\\program\\soffice.exe',
     'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
     'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe'
   ],
@@ -98,7 +103,10 @@ async function convertWithLibreOffice(inputPath, outDir, targetFormat) {
     '--norestore',
     '--nolockcheck',
     '--nodefault',
-    '-env:UserInstallation=file://' + userProfileDir.replace(/\\/g, '/')
+    // pathToFileURL koduje poprawnie ścieżki z literą dysku Windows (file:///C:/...);
+    // ręczne sklejanie stringów tutaj dawało błędny URI i powodowało zawieszanie się
+    // konwersji na Windows (LibreOffice czekał na zablokowany domyślny profil).
+    '-env:UserInstallation=' + pathToFileURL(userProfileDir).href
   ];
 
   // Domyślnie LibreOffice otwiera PDF jako dokument Draw (obraz strony), z którego
@@ -124,11 +132,30 @@ function runProcess(command, args) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { windowsHide: true });
     let stderr = '';
+    let timedOut = false;
+
+    const timer = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+      reject(
+        new Error(
+          'LibreOffice nie odpowiedział w ciągu 2 minut i konwersja została przerwana. ' +
+            'Zamknij wszystkie otwarte okna LibreOffice oraz jego "Szybki Uruchamiacz" ' +
+            '(ikona w zasobniku systemowym obok zegara) i spróbuj ponownie.'
+        )
+      );
+    }, CONVERT_TIMEOUT_MS);
+
     child.stderr.on('data', (chunk) => {
       stderr += chunk.toString();
     });
-    child.on('error', reject);
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      if (!timedOut) reject(err);
+    });
     child.on('close', (code) => {
+      clearTimeout(timer);
+      if (timedOut) return;
       if (code === 0) {
         resolve();
       } else {
