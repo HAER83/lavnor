@@ -49,6 +49,23 @@ to najszybszy sposób na korzystanie z PDFcon i nie wymaga tworzenia instalatora
 Można powtarzać ten krok za każdym razem, gdy chcesz uruchomić aplikację, albo
 utworzyć skrót do polecenia `npm start` w tym folderze.
 
+## Ikona na pulpicie bez budowania instalatora (najprostszy sposób)
+
+Jeśli budowanie instalatora (`npm run build:win`) zawiedzie z powodu firewalla
+lub antywirusa blokującego pobieranie plików przez `electron-builder`, możesz
+zamiast tego stworzyć zwykły skrót do pliku `PDFcon.vbs` (dołączonego w tym
+folderze) — uruchamia on `npm start` w tle, bez okna konsoli.
+
+**Windows:**
+
+1. W Eksploratorze plików przejdź do folderu `pdfcon`.
+2. Kliknij prawym przyciskiem na plik `PDFcon.vbs` → **Wyślij do** → **Pulpit (utwórz skrót)**.
+3. Na pulpicie kliknij prawym przyciskiem na nowy skrót → **Właściwości** → **Zmień ikonę…**
+   → **Przeglądaj** → wskaż plik `pdfcon\build\icons\win\icon.ico` → **OK**.
+4. (Opcjonalnie) zmień nazwę skrótu na "PDFcon".
+
+Od teraz dwuklik w ten skrót uruchamia aplikację, bez terminala.
+
 ## Zbudowanie instalatora z ikoną na pulpicie (zalecane)
 
 Jeśli chcesz mieć zwykłą ikonę na pulpicie, w którą klikasz jak w każdy inny
@@ -69,6 +86,13 @@ można kliknąć, aby uruchomić PDFcon bez terminala.
 
 Uwaga: budowanie instalatora dla Windows/macOS wymaga wykonania tej komendy
 na komputerze z danym systemem operacyjnym (np. `build:mac` trzeba uruchomić na Macu).
+
+Jeśli podczas `npm run build:win` pojawi się błąd sieciowy przy pobieraniu
+pliku `electron-...-win32-x64.zip` (np. "dial tcp ... zabroniony przez
+przypisane do niego uprawnienia dostępu"), to zwykle antywirus lub firewall
+blokuje pobieranie przez `electron-builder`. Spróbuj tymczasowo wyłączyć
+ochronę w czasie rzeczywistym i uruchomić komendę ponownie, albo skorzystaj
+z prostszej metody opisanej wyżej ("Ikona na pulpicie bez budowania instalatora").
 
 ## Struktura projektu
 
