@@ -11,8 +11,6 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "icons": "node scripts/generate-icons.js",
-    "postinstall": "node scripts/generate-icons.js || node -e \"console.log('Pominięto generowanie ikony (opcjonalne) - aplikacja użyje domyślnej ikony Electrona.')\"",
-    "prebuild": "npm run icons",
     "build": "electron-builder",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
@@ -31,6 +29,7 @@
   "build": {
     "appId": "pl.michal.pdfcon",
     "productName": "PDFcon",
+    "publish": null,
     "directories": {
       "output": "release"
     },
@@ -55,7 +54,10 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PDFcon"
     }
   }
 }

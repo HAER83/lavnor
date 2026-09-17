@@ -49,28 +49,39 @@ to najszybszy sposób na korzystanie z PDFcon i nie wymaga tworzenia instalatora
 Można powtarzać ten krok za każdym razem, gdy chcesz uruchomić aplikację, albo
 utworzyć skrót do polecenia `npm start` w tym folderze.
 
-## Zbudowanie gotowego pliku instalacyjnego (opcjonalnie)
+## Zbudowanie instalatora z ikoną na pulpicie (zalecane)
 
-Jeśli wolisz mieć klasyczny plik instalacyjny (`.exe` dla Windows, `.dmg` dla macOS,
-`.AppImage` dla Linuksa) zamiast uruchamiania przez `npm start`, wykonaj build na
-tym samym systemie operacyjnym, na którym chcesz używać aplikacji:
+Jeśli chcesz mieć zwykłą ikonę na pulpicie, w którą klikasz jak w każdy inny
+program (zamiast wpisywać `npm start` w terminalu za każdym razem), zbuduj
+instalator. Wykonaj poniższą komendę na tym samym systemie operacyjnym,
+na którym chcesz używać aplikacji:
 
 ```bash
-npm run build:win     # Windows -> plik instalatora w folderze release/
+npm run build:win     # Windows -> instalator .exe w folderze release/
 npm run build:mac     # macOS   -> plik .dmg w folderze release/
 npm run build:linux   # Linux   -> plik .AppImage w folderze release/
 ```
 
+Po zakończeniu builda w folderze `release/` pojawi się plik instalatora
+(np. `PDFcon Setup 1.0.0.exe`). Uruchom go i przejdź przez kreator instalacji —
+automatycznie utworzy skrót w Menu Start **oraz ikonę na pulpicie**, w którą
+można kliknąć, aby uruchomić PDFcon bez terminala.
+
 Uwaga: budowanie instalatora dla Windows/macOS wymaga wykonania tej komendy
 na komputerze z danym systemem operacyjnym (np. `build:mac` trzeba uruchomić na Macu).
-Jeżeli po prostu chcesz korzystać z aplikacji na własnym laptopie, `npm start`
-w zupełności wystarczy i jest najprostszą opcją.
 
 ## Struktura projektu
 
+Gotowe pliki ikony (`.ico`, `.icns`, `.png`) są już dołączone w folderze
+`build/icons/`, więc budowanie instalatora działa "out of the box" — nie
+trzeba niczego generować. Jeśli chcesz podmienić ikonę na własną, edytuj
+`assets/icon.svg` i uruchom `npm run icons`, aby przeliczyć pliki na nowo
+(wymaga to poprawnie działającej biblioteki `sharp`).
+
 ```
 pdfcon/
-├── assets/icon.svg          # źródłowa ikona aplikacji (generowana do ico/icns/png)
+├── assets/icon.svg          # źródłowa ikona aplikacji (do edycji)
+├── build/icons/             # gotowe pliki ikony .ico/.icns/.png (dołączone do repo)
 ├── scripts/generate-icons.js
 ├── src/
 │   ├── main/                # proces główny Electron (Node.js)
