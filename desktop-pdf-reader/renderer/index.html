@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
+<title>Lavnor Czytnik PDF</title>
+<style>
+:root{
+  --bg:#070F17;
+  --bg2:#0D1F3C;
+  --gold:#C6A667;
+  --gold-dim:rgba(198,166,103,0.8);
+  --gold-faint:rgba(198,166,103,0.12);
+  --gold-border:rgba(198,166,103,0.35);
+  --text:#F7F7F7;
+  --text-sec:rgba(247,247,247,0.82);
+  --text-ter:#9aa3ad;
+  --border:rgba(198,166,103,0.18);
+  --border2:rgba(198,166,103,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%}
+
+/* TITLE BAR */
+.titlebar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;
+  background:rgba(5,10,20,0.98);border-bottom:.5px solid var(--border);flex-shrink:0}
+.brand{font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:700;
+  letter-spacing:.35em;text-transform:uppercase;color:var(--gold-dim)}
+.brand-sub{font-size:10px;letter-spacing:.15em;color:var(--text-ter);margin-left:12px}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:9px 16px;background:rgba(9,16,28,0.96);border-bottom:.5px solid var(--border);flex-wrap:wrap}
+.tbtn{background:transparent;border:.5px solid var(--gold-border);border-radius:4px;color:var(--gold);
+  height:30px;padding:0 12px;font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:center;
+  gap:6px;font-family:inherit}
+.tbtn:hover{background:rgba(201,168,76,0.12);border-color:var(--gold)}
+.tbtn.square{width:30px;padding:0;justify-content:center}
+.tbtn:disabled{opacity:.35;cursor:default}
+.tbtn:disabled:hover{background:transparent;border-color:var(--gold-border)}
+.filename{font-size:12px;color:var(--text-sec);overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;max-width:280px}
+.toolbar-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pageinput{width:50px;padding:4px 6px;background:rgba(18,28,48,0.65);
+  border:.5px solid rgba(201,168,76,0.25);border-radius:3px;color:var(--text);font-size:12px;text-align:center}
+.count-sep{color:var(--text-ter);font-size:12px}
+#count{font-size:12px;color:var(--text-ter);min-width:20px;text-align:center}
+.zoom-label{font-size:12px;color:var(--gold-dim);min-width:42px;text-align:center}
+.sep{width:.5px;height:20px;background:var(--border2);margin:0 4px}
+
+/* MAIN AREA */
+.main{flex:1;position:relative;overflow:hidden;display:flex}
+.dropzone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;cursor:pointer;transition:background .2s;padding:40px}
+.dropzone.drag-over{background:rgba(201,168,76,0.06)}
+.dropzone-icon{font-size:44px;opacity:.35;color:var(--gold)}
+.dropzone-text{text-align:center;font-size:13px;color:var(--text-ter);line-height:1.7;max-width:420px}
+.dropzone-text strong{color:var(--gold-dim);font-weight:600}
+.dropzone-hint{font-size:11px;color:var(--text-ter);opacity:.6}
+
+.canvas-scroll{flex:1;overflow:auto;display:none;justify-content:center;
+  padding:28px;background:rgba(5,10,18,0.5)}
+#pdf-canvas{background:#fff;box-shadow:0 10px 44px rgba(0,0,0,.55);height:fit-content}
+
+.status-bar{padding:6px 16px;font-size:11px;color:#f87171;min-height:14px;
+  background:rgba(5,10,20,0.9);border-top:.5px solid var(--border);flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="titlebar">
+    <div><span class="brand">Lavnor</span><span class="brand-sub">Czytnik PDF &mdash; dziala w 100% lokalnie</span></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-group">
+      <button class="tbtn" id="btn-open">Otworz plik&hellip;</button>
+      <span class="sep"></span>
+      <span class="filename" id="filename"></span>
+    </div>
+    <div class="toolbar-group" id="doc-controls" style="display:none">
+      <button class="tbtn square" id="btn-prev" title="Poprzednia strona">&lsaquo;</button>
+      <input class="pageinput" id="pageinput" type="number" min="1" value="1">
+      <span class="count-sep">/</span>
+      <span id="count">&ndash;</span>
+      <button class="tbtn square" id="btn-next" title="Nastepna strona">&rsaquo;</button>
+      <span class="sep"></span>
+      <button class="tbtn square" id="btn-zoom-out" title="Pomniejsz">&minus;</button>
+      <span class="zoom-label" id="zoom-label">120%</span>
+      <button class="tbtn square" id="btn-zoom-in" title="Powieksz">+</button>
+      <button class="tbtn square" id="btn-fit" title="Dopasuj do szerokosci">&#8596;</button>
+      <button class="tbtn square" id="btn-rotate" title="Obroc">&#10227;</button>
+      <span class="sep"></span>
+      <button class="tbtn square" id="btn-print" title="Drukuj">&#9099;</button>
+      <button class="tbtn square" id="btn-close" title="Zamknij dokument">&times;</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-icon">&#9650;</div>
+      <div class="dropzone-text"><strong>Przeciagnij plik PDF tutaj</strong><br>albo kliknij, aby wybrac plik z dysku</div>
+      <div class="dropzone-hint">Dokument nigdy nie opuszcza tego komputera</div>
+    </div>
+    <div class="canvas-scroll" id="canvas-scroll">
+      <canvas id="pdf-canvas"></canvas>
+    </div>
+  </div>
+
+  <div class="status-bar" id="status"></div>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

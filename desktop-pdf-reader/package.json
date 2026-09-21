@@ -1,0 +1,16 @@
+{
+  "name": "lavnor-pdf-reader",
+  "productName": "Lavnor Czytnik PDF",
+  "description": "Lokalny czytnik plikow PDF - dziala calkowicie offline, bez zadnych serwerow zewnetrznych.",
+  "main": "main.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "package:win": "electron-packager . LavnorPDFReader --platform=win32 --arch=x64 --out=dist --overwrite --asar"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-packager": "^17.1.2"
+  }
+}
