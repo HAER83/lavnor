@@ -651,6 +651,34 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
 }
 .hg-btn:hover .hg-label{color:#F5E6C8}
 .hg-btn:hover .hg-sub{color:rgba(245,222,179,0.7)}
+
+/* PDF READER */
+.pdf-dropzone{width:100%;max-width:640px;border:1px dashed rgba(201,168,76,0.35);border-radius:6px;
+  padding:50px 30px;text-align:center;cursor:pointer;transition:all .2s;margin-top:10px}
+.pdf-dropzone:hover,.pdf-dropzone.drag-over{border-color:var(--gold);background:rgba(201,168,76,0.05)}
+.pdf-viewer-wrap{width:100%;max-width:1100px;display:flex;flex-direction:column;
+  background:rgba(10,20,35,0.95);border:.5px solid var(--border2);border-radius:4px;
+  overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4);height:76vh;margin-top:10px}
+.pdf-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:10px 16px;background:rgba(5,10,20,0.9);border-bottom:.5px solid var(--border);flex-wrap:wrap}
+.pdf-filename{font-size:12px;color:var(--text-sec);font-weight:500;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+.pdf-toolbar-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pdf-tbtn{background:transparent;border:.5px solid var(--gold-border);border-radius:3px;color:var(--gold);
+  width:28px;height:28px;font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.pdf-tbtn:hover{background:rgba(201,168,76,0.12);border-color:var(--gold)}
+.pdf-tbtn-close{color:#f87171;border-color:rgba(248,113,113,0.4)}
+.pdf-tbtn-close:hover{background:rgba(248,113,113,0.1)}
+.pdf-pageinput{width:48px;padding:4px 6px;background:rgba(18,28,48,0.65);
+  border:.5px solid rgba(201,168,76,0.2);border-radius:3px;color:var(--text);font-size:12px;text-align:center}
+.pdf-count-sep{color:var(--text-ter);font-size:11px}
+#pdf-count{font-size:11px;color:var(--text-ter);min-width:20px;text-align:center}
+.pdf-zoom-label{font-size:11px;color:var(--gold-dim);min-width:38px;text-align:center}
+.pdf-tb-sep{width:.5px;height:18px;background:var(--border2);margin:0 4px}
+.pdf-canvas-scroll{width:100%;flex:1;overflow:auto;display:flex;justify-content:center;
+  padding:20px;background:rgba(5,10,18,0.4)}
+#pdf-canvas{background:#fff;box-shadow:0 8px 40px rgba(0,0,0,.5);height:fit-content}
+.pdf-status-msg{font-size:11px;color:#f87171;text-align:center;min-height:16px;margin-top:10px}
 </style>
 </head>
 <body>
@@ -728,7 +756,14 @@ table.bill-tbl tr.total-row td{border-top:.5px solid var(--gold-border);border-b
             <div class="hg-sub">Baza wiedzy</div>
           </button>
         </div>
-        
+        <div class="hg-row" style="margin-top:18px">
+          <button class="hg-btn sc-lavnor" onclick="nav('pg-pdf')">
+            <svg class="hg-svg" viewBox="0 0 44 44"><rect x="8" y="4" width="24" height="34" rx="2"/><polyline points="24,4 32,12 24,12 24,4"/><line x1="14" y1="20" x2="26" y2="20"/><line x1="14" y1="26" x2="26" y2="26"/><line x1="14" y1="32" x2="20" y2="32"/></svg>
+            <div class="hg-label">Czytnik PDF</div>
+            <div class="hg-sub">Podgląd offline</div>
+          </button>
+        </div>
+
       </div>
     </div><!-- end home-grid-main -->
   </div>
@@ -2260,5 +2295,196 @@ function deleteLovdata(id){
   </div>
   <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michal Harazny</span></div>
 </div>
+
+<!-- ══ PDF READER ══ -->
+<div class="page hidden" id="pg-pdf">
+  <button class="back-btn" onclick="nav('pg-home')">
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="9" x2="4" y2="9"/><polyline points="7.5,5.5 4,9 7.5,12.5"/></svg>
+    Powrót
+  </button>
+  <div class="inner" style="max-width:1200px">
+    <div class="pg-title">Czytnik PDF</div>
+    <div class="pg-ornament"><div class="pg-line"></div><div class="pg-diamond"></div><div class="pg-line r"></div></div>
+    <div class="pg-sub">Podgląd lokalny — bez przesyłania plików do internetu</div>
+
+    <div id="pdf-dropzone" class="pdf-dropzone" onclick="pdfTriggerFileSelect()">
+      <input type="file" id="pdf-file-input" accept="application/pdf,.pdf" style="display:none">
+      <div style="font-size:30px;margin-bottom:10px;opacity:.5;color:var(--gold)">▲</div>
+      <div class="file-upload-text"><strong>Kliknij lub przeciągnij plik PDF</strong><br>Dokument jest odczytywany wyłącznie w tej przeglądarce — nigdzie nie jest wysyłany</div>
+    </div>
+
+    <div id="pdf-viewer-wrap" class="pdf-viewer-wrap" style="display:none">
+      <div class="pdf-toolbar">
+        <div class="pdf-filename" id="pdf-filename"></div>
+        <div class="pdf-toolbar-controls">
+          <button class="pdf-tbtn" onclick="pdfGoPrev()" title="Poprzednia strona">‹</button>
+          <input class="pdf-pageinput" id="pdf-pageinput" type="number" min="1" value="1">
+          <span class="pdf-count-sep">/</span>
+          <span id="pdf-count">–</span>
+          <button class="pdf-tbtn" onclick="pdfGoNext()" title="Następna strona">›</button>
+          <span class="pdf-tb-sep"></span>
+          <button class="pdf-tbtn" onclick="pdfZoomOut()" title="Pomniejsz">−</button>
+          <span id="pdf-zoom-label" class="pdf-zoom-label">120%</span>
+          <button class="pdf-tbtn" onclick="pdfZoomIn()" title="Powiększ">+</button>
+          <button class="pdf-tbtn" onclick="pdfFitWidth()" title="Dopasuj do szerokości">⇔</button>
+          <button class="pdf-tbtn" onclick="pdfRotate()" title="Obróć">⟳</button>
+          <span class="pdf-tb-sep"></span>
+          <button class="pdf-tbtn" onclick="pdfPrint()" title="Drukuj">⎙</button>
+          <button class="pdf-tbtn pdf-tbtn-close" onclick="pdfOpenNew()" title="Otwórz inny plik">✕</button>
+        </div>
+      </div>
+      <div id="pdf-canvas-scroll" class="pdf-canvas-scroll">
+        <canvas id="pdf-canvas"></canvas>
+      </div>
+    </div>
+    <div class="pdf-status-msg" id="pdf-status"></div>
+  </div>
+  <div class="footer"><span class="f-brand">Lavnor</span><span class="f-name">Michał Haraźny</span></div>
+</div>
+
+<script type="module">
+import * as pdfjsLib from './vendor/pdfjs/pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.mjs';
+
+let pdfDoc = null;
+let pdfPageNum = 1;
+let pdfScale = 1.2;
+let pdfRotation = 0;
+let pdfRendering = false;
+let pdfPendingPage = null;
+
+const pdfCanvas = document.getElementById('pdf-canvas');
+const pdfCtx = pdfCanvas.getContext('2d');
+
+function pdfSetStatus(msg){
+  document.getElementById('pdf-status').textContent = msg || '';
+}
+
+async function pdfLoadArrayBuffer(buf, name){
+  pdfSetStatus('Wczytywanie…');
+  try{
+    const loadingTask = pdfjsLib.getDocument({
+      data: buf,
+      standardFontDataUrl: './vendor/pdfjs/standard_fonts/',
+      isEvalSupported: false
+    });
+    pdfDoc = await loadingTask.promise;
+    pdfPageNum = 1;
+    pdfScale = 1.2;
+    pdfRotation = 0;
+    document.getElementById('pdf-filename').textContent = name;
+    document.getElementById('pdf-viewer-wrap').style.display = 'flex';
+    document.getElementById('pdf-dropzone').style.display = 'none';
+    document.getElementById('pdf-count').textContent = pdfDoc.numPages;
+    const pageInput = document.getElementById('pdf-pageinput');
+    pageInput.value = 1;
+    pageInput.max = pdfDoc.numPages;
+    pdfSetStatus('');
+    pdfRenderPage(pdfPageNum);
+  }catch(err){
+    console.error(err);
+    pdfSetStatus('Błąd wczytywania pliku PDF: '+(err && err.message ? err.message : err));
+  }
+}
+
+function pdfRenderPage(num){
+  pdfRendering = true;
+  pdfDoc.getPage(num).then(page=>{
+    const viewport = page.getViewport({scale: pdfScale, rotation: pdfRotation});
+    pdfCanvas.height = viewport.height;
+    pdfCanvas.width = viewport.width;
+    const renderTask = page.render({canvasContext: pdfCtx, viewport});
+    renderTask.promise.then(()=>{
+      pdfRendering = false;
+      if(pdfPendingPage !== null){
+        const p = pdfPendingPage; pdfPendingPage = null; pdfRenderPage(p);
+      }
+    });
+  });
+  document.getElementById('pdf-pageinput').value = num;
+  document.getElementById('pdf-zoom-label').textContent = Math.round(pdfScale*100)+'%';
+}
+
+function pdfQueueRenderPage(num){
+  if(pdfRendering){ pdfPendingPage = num; } else { pdfRenderPage(num); }
+}
+
+function pdfGoPrev(){ if(!pdfDoc || pdfPageNum<=1) return; pdfPageNum--; pdfQueueRenderPage(pdfPageNum); }
+function pdfGoNext(){ if(!pdfDoc || pdfPageNum>=pdfDoc.numPages) return; pdfPageNum++; pdfQueueRenderPage(pdfPageNum); }
+function pdfGoToPage(n){
+  if(!pdfDoc) return;
+  n = Math.max(1, Math.min(pdfDoc.numPages, parseInt(n,10) || 1));
+  pdfPageNum = n; pdfQueueRenderPage(pdfPageNum);
+}
+function pdfZoomIn(){ pdfScale = Math.min(4, pdfScale+0.2); pdfQueueRenderPage(pdfPageNum); }
+function pdfZoomOut(){ pdfScale = Math.max(0.3, pdfScale-0.2); pdfQueueRenderPage(pdfPageNum); }
+function pdfRotate(){ pdfRotation = (pdfRotation+90)%360; pdfQueueRenderPage(pdfPageNum); }
+async function pdfFitWidth(){
+  if(!pdfDoc) return;
+  const page = await pdfDoc.getPage(pdfPageNum);
+  const unscaled = page.getViewport({scale:1, rotation: pdfRotation});
+  const containerWidth = document.getElementById('pdf-canvas-scroll').clientWidth - 40;
+  pdfScale = Math.max(0.3, containerWidth / unscaled.width);
+  pdfQueueRenderPage(pdfPageNum);
+}
+
+function pdfHandleFile(file){
+  if(!file) return;
+  const isPdf = (file.type && file.type === 'application/pdf') || file.name.toLowerCase().endsWith('.pdf');
+  if(!isPdf){ pdfSetStatus('Wybierz plik w formacie PDF.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => pdfLoadArrayBuffer(new Uint8Array(e.target.result), file.name);
+  reader.onerror = () => pdfSetStatus('Nie udało się odczytać pliku.');
+  reader.readAsArrayBuffer(file);
+}
+
+function pdfOpenNew(){
+  pdfDoc = null;
+  document.getElementById('pdf-viewer-wrap').style.display = 'none';
+  document.getElementById('pdf-dropzone').style.display = 'block';
+  document.getElementById('pdf-file-input').value = '';
+  pdfSetStatus('');
+}
+
+function pdfPrint(){ window.print(); }
+
+const pdfDropzone = document.getElementById('pdf-dropzone');
+['dragenter','dragover'].forEach(evt=>pdfDropzone.addEventListener(evt, e=>{
+  e.preventDefault(); e.stopPropagation(); pdfDropzone.classList.add('drag-over');
+}));
+['dragleave','drop'].forEach(evt=>pdfDropzone.addEventListener(evt, e=>{
+  e.preventDefault(); e.stopPropagation(); pdfDropzone.classList.remove('drag-over');
+}));
+pdfDropzone.addEventListener('drop', e=>{
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  pdfHandleFile(f);
+});
+
+document.getElementById('pdf-file-input').addEventListener('change', e=>{
+  pdfHandleFile(e.target.files[0]);
+});
+document.getElementById('pdf-pageinput').addEventListener('change', e=> pdfGoToPage(e.target.value));
+
+document.addEventListener('keydown', e=>{
+  const pg = document.getElementById('pg-pdf');
+  if(!pg || pg.classList.contains('hidden') || !pdfDoc) return;
+  if(e.target && (e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA')) return;
+  if(e.key==='ArrowRight' || e.key==='PageDown'){ pdfGoNext(); }
+  if(e.key==='ArrowLeft' || e.key==='PageUp'){ pdfGoPrev(); }
+  if(e.key==='+' || e.key==='='){ pdfZoomIn(); }
+  if(e.key==='-'){ pdfZoomOut(); }
+});
+
+window.pdfGoPrev = pdfGoPrev;
+window.pdfGoNext = pdfGoNext;
+window.pdfZoomIn = pdfZoomIn;
+window.pdfZoomOut = pdfZoomOut;
+window.pdfRotate = pdfRotate;
+window.pdfFitWidth = pdfFitWidth;
+window.pdfOpenNew = pdfOpenNew;
+window.pdfPrint = pdfPrint;
+window.pdfTriggerFileSelect = () => document.getElementById('pdf-file-input').click();
+</script>
+
 </body>
 </html>
