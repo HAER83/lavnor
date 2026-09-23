@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -23,6 +23,7 @@ async function openPdfPath(filePath) {
     const data = await fs.promises.readFile(filePath);
     mainWindow.webContents.send('open-pdf', {
       name: path.basename(filePath),
+      path: filePath,
       data,
     });
     mainWindow.show();
@@ -34,12 +35,13 @@ async function openPdfPath(filePath) {
 
 function createWindow(initialFilePath) {
   mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 820,
+    width: 1200,
+    height: 840,
     minWidth: 640,
     minHeight: 480,
-    backgroundColor: '#070F17',
+    backgroundColor: '#12162a',
     autoHideMenuBar: false,
+    icon: path.join(__dirname, 'build', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -48,7 +50,9 @@ function createWindow(initialFilePath) {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'), {
+    search: initialFilePath ? 'pending=1' : '',
+  });
 
   mainWindow.webContents.once('did-finish-load', () => {
     if (initialFilePath) openPdfPath(initialFilePath);
@@ -79,7 +83,7 @@ function buildMenu() {
         {
           label: 'Drukuj',
           accelerator: 'CmdOrCtrl+P',
-          click: () => mainWindow && mainWindow.webContents.print(),
+          click: () => mainWindow && mainWindow.webContents.send('trigger-print'),
         },
         { type: 'separator' },
         { role: 'quit', label: 'Zamknij' },
@@ -90,10 +94,6 @@ function buildMenu() {
       submenu: [
         { role: 'reload', label: 'Odswiez' },
         { role: 'toggleDevTools', label: 'Narzedzia deweloperskie' },
-        { type: 'separator' },
-        { role: 'resetZoom', label: 'Resetuj powiekszenie okna' },
-        { role: 'zoomIn', label: 'Powieksz okno' },
-        { role: 'zoomOut', label: 'Pomniejsz okno' },
         { type: 'separator' },
         { role: 'togglefullscreen', label: 'Pelny ekran' },
       ],
@@ -115,6 +115,22 @@ async function triggerOpenDialog() {
 
 ipcMain.handle('pdf:open-dialog', async () => {
   await triggerOpenDialog();
+});
+
+ipcMain.handle('pdf:read-path', async (_event, filePath) => {
+  const data = await fs.promises.readFile(filePath);
+  return { name: path.basename(filePath), path: filePath, data };
+});
+
+ipcMain.handle('pdf:save-attachment', async (_event, { suggestedName, data }) => {
+  if (!mainWindow) return { saved: false };
+  const result = await dialog.showSaveDialog(mainWindow, {
+    title: 'Zapisz zalacznik',
+    defaultPath: suggestedName,
+  });
+  if (result.canceled || !result.filePath) return { saved: false };
+  await fs.promises.writeFile(result.filePath, Buffer.from(data));
+  return { saved: true, path: result.filePath };
 });
 
 const gotLock = app.requestSingleInstanceLock();
