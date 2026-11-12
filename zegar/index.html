@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1730">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Zegar i pogoda – Racibórz</title>
+<style>
+:root{
+  --sky1:#0a1428; --sky2:#16294d;
+  --card:rgba(255,255,255,.10); --card-b:rgba(255,255,255,.18);
+  --text:#fff; --muted:rgba(255,255,255,.72);
+  --blue:#2e9bd6; --blue-d:#1b7fb8; --yellow:#ffc93c; --orange:#f5a623; --red:#ff6b6b;
+}
+body.day{ --sky1:#1565a8; --sky2:#56a9e0; --card:rgba(255,255,255,.17); --card-b:rgba(255,255,255,.3); --muted:rgba(255,255,255,.85); }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#0a1428}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;
+  color:var(--text);
+  background:linear-gradient(180deg,var(--sky1),var(--sky2));
+  -webkit-user-select:none;user-select:none;cursor:default;
+  -webkit-tap-highlight-color:transparent;
+}
+.wrap{
+  height:100vh;height:100dvh;width:100vw;
+  display:grid;grid-template-rows:auto auto minmax(0,1fr);
+  padding:1.5vh 2vw 2.5vh;
+  transition:transform 3s ease;
+}
+
+/* ---------- ZEGAR ---------- */
+.clock{
+  display:flex;justify-content:center;align-items:baseline;
+  font-weight:700;font-variant-numeric:tabular-nums;
+  font-size:min(38vh,23vw);line-height:.92;letter-spacing:-.02em;
+  text-shadow:0 .03em .12em rgba(0,0,0,.28);
+}
+.clock .colon{animation:blink 2s steps(1) infinite;margin:0 .01em;position:relative;top:-.06em}
+.clock .sec{font-size:.34em;font-weight:500;color:var(--muted);margin-left:.18em;min-width:1.25em}
+@keyframes blink{50%{opacity:.35}}
+.date{
+  text-align:center;font-size:min(4.6vh,3.2vw);font-weight:500;color:var(--muted);
+  margin:.4vh 0 2vh;
+}
+
+/* ---------- RUBRYKI ---------- */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.6vw;min-height:0}
+.card{
+  background:var(--card);border:1px solid var(--card-b);border-radius:2.6vh;
+  padding:1.8vh 1.4vw;min-height:0;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.card h2{
+  font-size:min(2.3vh,1.6vw);font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:1vh;display:flex;justify-content:space-between;gap:1em;white-space:nowrap;
+}
+.card h2 span:last-child{letter-spacing:0;text-transform:none;font-weight:400}
+
+/* pogoda */
+.w-main{display:flex;align-items:center;gap:1vw;flex:1;min-height:0}
+.w-icon{flex:0 0 46%;max-height:100%;aspect-ratio:1}
+.w-main>div:last-child{min-width:0;flex:1}
+.w-icon svg{width:100%;height:100%;display:block}
+.w-temp{font-size:min(11vh,7vw);font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.w-desc{font-size:min(3vh,1.75vw);margin-top:.8vh;line-height:1.15}
+.w-mm{font-size:min(2.4vh,1.45vw);white-space:nowrap;color:var(--muted);margin-top:.6vh}
+.w-details{display:grid;grid-template-columns:repeat(3,1fr);gap:.6vw;margin-top:1.2vh;text-align:center}
+.w-details div{background:rgba(255,255,255,.09);border-radius:1.4vh;padding:.9vh .2vw}
+.w-details b{display:block;font-size:min(3vh,1.9vw);font-variant-numeric:tabular-nums}
+.w-details small{font-size:min(1.9vh,1.25vw);color:var(--muted)}
+.stale{color:#ffd166}
+
+/* słońce */
+.sun-row{display:grid;grid-template-columns:1fr 1fr;gap:1vw;text-align:center}
+.sun-row svg{height:min(12vh,8vw);display:block;margin:0 auto}
+.sun-row b{display:block;font-size:min(7vh,4.4vw);line-height:1.05;font-variant-numeric:tabular-nums}
+.sun-row small{font-size:min(2.2vh,1.4vw);color:var(--muted)}
+.arc{flex:1;min-height:0;margin-top:.5vh}
+.arc svg{width:100%;height:100%;display:block}
+.sun-info{text-align:center;font-size:min(2.6vh,1.65vw);color:var(--muted);line-height:1.35}
+.sun-info b{color:var(--text);font-weight:600}
+
+/* kalendarz */
+.cal{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;text-align:center;align-items:center;justify-items:center}
+.cal div{font-size:min(3.1vh,1.9vw);font-variant-numeric:tabular-nums;width:min(5.4vh,3.4vw);height:min(5.4vh,3.4vw);display:flex;align-items:center;justify-content:center;border-radius:50%}
+.cal .wd{font-size:min(2.2vh,1.4vw);color:var(--muted);font-weight:600}
+.cal .red{color:var(--red)}
+.cal .today{background:#fff;color:#12305c;font-weight:800;box-shadow:0 0 0 .5vh rgba(255,255,255,.25)}
+.cal .today.red{color:#d62839}
+
+/* ---------- IKONY (naklejki) ---------- */
+.w *{fill:#fff!important;stroke:#fff!important;stroke-width:15px!important;stroke-linejoin:round;stroke-linecap:round}
+.spin{transform-box:fill-box;transform-origin:center;animation:spin 24s linear infinite}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 3s ease-in-out infinite}
+.float{animation:float 7s ease-in-out infinite}
+.float2{animation:float 9s ease-in-out infinite reverse}
+.sway{transform-box:fill-box;transform-origin:center;animation:sway 6s ease-in-out infinite}
+.twinkle{transform-box:fill-box;transform-origin:center;animation:twinkle 2.4s ease-in-out infinite}
+.drop{animation:fall 1.3s linear infinite}
+.flake{animation:snow 3.2s linear infinite}
+.flake>g{transform-box:fill-box;transform-origin:center;animation:spin 6s linear infinite}
+.bolt{animation:flash 2.6s linear infinite}
+.fog{animation:fog 4s ease-in-out infinite}
+.rise{animation:rise 4s ease-in-out infinite}
+.set{animation:rise 4s ease-in-out infinite reverse}
+.d1{animation-delay:-.45s}.d2{animation-delay:-.9s}.d3{animation-delay:-1.6s}.d4{animation-delay:-2.3s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{transform:scale(1.07)}}
+@keyframes float{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+@keyframes sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes twinkle{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.45);opacity:.5}}
+@keyframes fall{0%{transform:translateY(-12px);opacity:0}20%{opacity:1}75%{opacity:1}100%{transform:translateY(26px);opacity:0}}
+@keyframes snow{0%{transform:translate(0,-12px);opacity:0}20%{opacity:1}50%{transform:translate(5px,7px)}80%{opacity:1}100%{transform:translate(-2px,26px);opacity:0}}
+@keyframes flash{0%,58%,66%,74%,100%{opacity:1}62%,70%{opacity:.15}}
+@keyframes fog{0%,100%{transform:translateX(-7px)}50%{transform:translateX(7px)}}
+@keyframes rise{0%,100%{transform:translateY(5px)}50%{transform:translateY(-4px)}}
+
+@media (orientation:portrait){
+  .clock{font-size:25vw}
+  .date{font-size:4.2vw}
+  .cards{grid-template-columns:1fr;grid-template-rows:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1.5fr);gap:1.4vh}
+  .w-icon{flex-basis:26%}
+  .card h2{font-size:2.6vw}
+  .w-temp{font-size:9vw}.w-desc{font-size:3.6vw}.w-mm,.sun-info{font-size:2.8vw}
+  .w-details b{font-size:3.2vw}.w-details small,.sun-row small{font-size:2.3vw}
+  .sun-row b{font-size:6vw}.arc{display:none}
+  .cal div{font-size:3vw;width:5vw;height:5vw}.cal .wd{font-size:2.3vw}
+}
+@media (prefers-reduced-motion:reduce){ .spin,.pulse,.float,.float2,.sway,.twinkle,.fog,.rise,.set{animation:none} }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="clock" aria-live="off">
+    <span id="hh">--</span><span class="colon">:</span><span id="mm">--</span><span class="sec" id="ss">--</span>
+  </div>
+  <div class="date" id="date">&nbsp;</div>
+
+  <div class="cards">
+    <section class="card">
+      <h2><span>Pogoda · Racibórz</span><span id="w-upd">ładowanie…</span></h2>
+      <div class="w-main">
+        <div class="w-icon" id="w-icon"></div>
+        <div>
+          <div class="w-temp" id="w-temp">–°</div>
+          <div class="w-desc" id="w-desc">&nbsp;</div>
+          <div class="w-mm" id="w-mm">&nbsp;</div>
+        </div>
+      </div>
+      <div class="w-details">
+        <div><b id="w-feel">–</b><small>odczuwalna</small></div>
+        <div><b id="w-wind">–</b><small>wiatr km/h</small></div>
+        <div><b id="w-hum">–</b><small>wilgotność</small></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span>Słońce</span><span id="sun-len"></span></h2>
+      <div class="sun-row">
+        <div><div id="ic-rise"></div><b id="sunrise">--:--</b><small>wschód</small></div>
+        <div><div id="ic-set"></div><b id="sunset">--:--</b><small>zachód</small></div>
+      </div>
+      <div class="arc" id="arc"></div>
+      <div class="sun-info" id="sun-info">&nbsp;</div>
+    </section>
+
+    <section class="card">
+      <h2><span id="cal-title">Kalendarz</span><span id="cal-sub"></span></h2>
+      <div class="cal" id="cal"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ====== USTAWIENIA ====== */
+const CITY = { name:'Racibórz', lat:50.0919, lon:18.2193, tz:'Europe/Warsaw' };
+const WEATHER_REFRESH_MIN = 10;   // odświeżanie pogody co 10 minut
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+
+/* ====== CZAS (zawsze strefa Europe/Warsaw) ====== */
+const partsFmt = new Intl.DateTimeFormat('en-GB',{timeZone:CITY.tz,hourCycle:'h23',
+  year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric'});
+function now(){
+  const o={}; for(const p of partsFmt.formatToParts(new Date())) if(p.type!=='literal') o[p.type]=+p.value;
+  o.mins = o.hour*60+o.minute;
+  o.key = o.year+'-'+pad(o.month)+'-'+pad(o.day);
+  return o;
+}
+function tzOffsetMin(){ // przesunięcie strefy względem UTC w minutach
+  const t=now(); return Math.round((Date.UTC(t.year,t.month-1,t.day,t.hour,t.minute,t.second)-Date.now())/60000);
+}
+const MONTHS=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+const MONTHS_G=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+const DAYS=['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
+const hm = m => { m=((Math.round(m)%1440)+1440)%1440; return pad(Math.floor(m/60))+':'+pad(m%60); };
+const dur = m => { m=Math.max(0,Math.round(m)); return Math.floor(m/60)+' h '+pad(m%60)+' min'; };
+
+/* ====== IKONY SVG ====== */
+const sticker = inner => `<g class="w">${inner}</g>${inner}`;
+const svg = (inner,vb='0 0 200 200') => `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+const CLOUD_D='M50 132a30 30 0 0 1 4-60a42 42 0 0 1 80-8a35 35 0 0 1 14 68z';
+
+function rays(n=12,r1=45,r2=66,half=7.5){
+  let d='';
+  for(let i=0;i<n;i++){
+    const a=i*2*Math.PI/n, h=half*Math.PI/180;
+    const p=(r,ang)=>(100+r*Math.cos(ang)).toFixed(1)+' '+(100+r*Math.sin(ang)).toFixed(1);
+    d+=`M${p(r1,a-h)}L${p(r2,a)}L${p(r1,a+h)}Z`;
+  }
+  return d;
+}
+const sunG = (t='') => `<g transform="${t}">`+sticker(
+  `<path class="spin" d="${rays()}" fill="#ffc93c" stroke="#f5a623" stroke-width="3" stroke-linejoin="round"/>`+
+  `<circle class="pulse" cx="100" cy="100" r="35" fill="#ffc93c" stroke="#f5a623" stroke-width="5"/>`)+`</g>`;
+const star = (x,y,s,c='') => `<g transform="translate(${x} ${y}) scale(${s})"><path class="twinkle ${c}" d="M0-10L3-3L10 0L3 3L0 10L-3 3L-10 0L-3-3Z" fill="#ffc93c" stroke="#f5a623" stroke-width="1.5"/></g>`;
+const moonG = (t='') => `<g transform="${t}">`+sticker(
+  `<g class="sway"><path d="M112 50A56 56 0 1 0 152 128A44 44 0 1 1 112 50Z" fill="#ffc93c" stroke="#f5a623" stroke-width="5" stroke-linejoin="round"/></g>`+
+  star(132,78,1.1)+star(158,104,.75,'d2'))+`</g>`;
+const cloudG = (t='',filled=false,cls='float') => `<g transform="${t}"><g class="${cls}">`+sticker(
+  `<path d="${CLOUD_D}" fill="${filled?'#2e9bd6':'#fff'}" stroke="${filled?'#1b7fb8':'#2e9bd6'}" stroke-width="7" stroke-linejoin="round"/>`)+`</g></g>`;
+const drop = (x,y,c='') => `<g transform="translate(${x} ${y})">`+sticker(
+  `<path class="drop ${c}" d="M0-12C7-1 9 3 9 7A9 9 0 0 1-9 7C-9 3-7-1 0-12Z" fill="#2e9bd6"/>`)+`</g>`;
+const flake = (x,y,c='') => `<g transform="translate(${x} ${y})">`+sticker(
+  `<g class="flake ${c}"><g><path d="M0-11V11M-9.5-5.5L9.5 5.5M-9.5 5.5L9.5-5.5" fill="none" stroke="#2e9bd6" stroke-width="4.5" stroke-linecap="round"/></g></g>`)+`</g>`;
+const bolt = () => sticker(`<path class="bolt" d="M112 112L82 156H101L90 194L128 144H107L122 112Z" fill="#ffb300" stroke="#e53935" stroke-width="3" stroke-linejoin="round"/>`);
+const fogLines = () => sticker(
+  `<path class="fog" d="M52 150H148" fill="none" stroke="#2e9bd6" stroke-width="8" stroke-linecap="round"/>`+
+  `<path class="fog d3" d="M66 172H134" fill="none" stroke="#2e9bd6" stroke-width="8" stroke-linecap="round"/>`);
+
+const UP='translate(0 -26)';
+function weatherIcon(code,isDay){
+  const orb = isDay ? sunG('translate(72 -4) scale(.62)') : moonG('translate(62 -14) scale(.68)');
+  let s;
+  if(code===0) s = isDay ? sunG() : moonG();
+  else if(code<=2) s = orb + cloudG('translate(-8 22)');
+  else if(code===3) s = cloudG('translate(44 6) scale(.72)',true,'float2') + cloudG('translate(-6 18)');
+  else if(code===45||code===48) s = cloudG(UP) + fogLines();
+  else if(code>=51&&code<=57) s = cloudG(UP) + drop(78,150) + drop(122,150,'d2');
+  else if((code>=61&&code<=67)||(code>=80&&code<=82))
+    s = (code>=80&&code<82 ? orb : '') + cloudG(code>=80&&code<82?'translate(-8 -14)':UP,true) + drop(66,152) + drop(100,152,'d1') + drop(134,152,'d2');
+  else if((code>=71&&code<=77)||code===85||code===86) s = cloudG(UP) + flake(66,154) + flake(100,154,'d3') + flake(134,154,'d4');
+  else if(code>=95) s = cloudG(UP,true) + bolt() + drop(62,152) + drop(146,152,'d2');
+  else s = cloudG('translate(0 0)');
+  return svg(s);
+}
+const WMO={0:'Bezchmurnie',1:'Przeważnie pogodnie',2:'Częściowe zachmurzenie',3:'Pochmurno',45:'Mgła',48:'Mgła osadzająca szadź',
+  51:'Lekka mżawka',53:'Mżawka',55:'Gęsta mżawka',56:'Marznąca mżawka',57:'Gęsta marznąca mżawka',
+  61:'Słaby deszcz',63:'Deszcz',65:'Silny deszcz',66:'Marznący deszcz',67:'Silny marznący deszcz',
+  71:'Słaby śnieg',73:'Śnieg',75:'Intensywny śnieg',77:'Ziarna śnieżne',
+  80:'Przelotny deszcz',81:'Przelotny deszcz',82:'Ulewa',85:'Przelotny śnieg',86:'Śnieżyca',
+  95:'Burza',96:'Burza z gradem',99:'Silna burza z gradem'};
+
+function horizonIcon(up){
+  const arrow = up ? 'M60 96V78M52 85L60 77L68 85' : 'M60 78V96M52 89L60 97L68 89';
+  return svg(
+    `<defs><clipPath id="hz${up?1:2}"><rect x="-20" y="-20" width="160" height="88"/></clipPath></defs>`+
+    `<g clip-path="url(#hz${up?1:2})"><g class="${up?'rise':'set'}"><g transform="translate(-3 3) scale(.63)">`+sunG()+`</g></g></g>`+
+    sticker(`<path d="M12 70H108" fill="none" stroke="#2e9bd6" stroke-width="6" stroke-linecap="round"/>`)+
+    `<path d="${arrow}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
+    '0 0 120 104');
+}
+
+/* ====== ZEGAR ====== */
+let lastDay='', lastMin=-1;
+function tick(){
+  const t=now();
+  $('hh').textContent=pad(t.hour); $('mm').textContent=pad(t.minute); $('ss').textContent=pad(t.second);
+  if(t.key!==lastDay){ lastDay=t.key; renderDate(t); renderCalendar(t); }
+  if(t.minute!==lastMin){ lastMin=t.minute; renderSun(t); shift(); }
+  setTimeout(tick, 1000-(Date.now()%1000)+15);
+}
+function renderDate(t){
+  const wd=new Date(Date.UTC(t.year,t.month-1,t.day)).getUTCDay();
+  const n=DAYS[wd];
+  $('date').textContent=`${n[0].toUpperCase()+n.slice(1)}, ${t.day} ${MONTHS_G[t.month-1]} ${t.year}`;
+}
+/* delikatne przesuwanie obrazu co minutę – ochrona ekranu przed wypaleniem */
+function shift(){
+  const r=()=>Math.round((Math.random()*2-1)*6);
+  $('wrap').style.transform=`translate(${r()}px,${r()}px)`;
+}
+
+/* ====== KALENDARZ ====== */
+function easter(y){ // algorytm Meeusa/Jonesa/Butchera
+  const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+        h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),
+        mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+  return new Date(Date.UTC(y,mo-1,da));
+}
+function holidays(y){ // dni ustawowo wolne od pracy w Polsce
+  const s=new Set(['1-1','1-6','5-1','5-3','8-15','11-1','11-11','12-24','12-25','12-26']);
+  const e=easter(y);
+  for(const off of [0,1,49,60]){ const d=new Date(e.getTime()+off*864e5); s.add((d.getUTCMonth()+1)+'-'+d.getUTCDate()); }
+  return s;
+}
+function renderCalendar(t){
+  $('cal-title').textContent=MONTHS[t.month-1]+' '+t.year;
+  const hol=holidays(t.year);
+  const first=(new Date(Date.UTC(t.year,t.month-1,1)).getUTCDay()+6)%7; // poniedziałek = 0
+  const days=new Date(Date.UTC(t.year,t.month,0)).getUTCDate();
+  let h=['Pn','Wt','Śr','Cz','Pt','So','Nd'].map((d,i)=>`<div class="wd${i===6?' red':''}">${d}</div>`).join('');
+  for(let i=0;i<first;i++) h+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const col=(first+d-1)%7, red=col===6||hol.has(t.month+'-'+d);
+    h+=`<div class="${red?'red':''}${d===t.day?' today':''}">${d}</div>`;
+  }
+  $('cal').innerHTML=h;
+  const doy=Math.round((Date.UTC(t.year,t.month-1,t.day)-Date.UTC(t.year,0,0))/864e5);
+  $('cal-sub').textContent='dzień '+doy;
+}
+
+/* ====== SŁOŃCE ====== */
+let apiSun=null; // {key, rise, set} w minutach od północy – z serwisu pogodowego
+function calcSun(t){ // obliczenie lokalne (NOAA) – działa także bez internetu
+  const rad=Math.PI/180, N=Math.round((Date.UTC(t.year,t.month-1,t.day)-Date.UTC(t.year,0,0))/864e5);
+  const g=2*Math.PI/365*(N-1);
+  const eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  const dec=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  const ha=Math.acos(Math.cos(90.833*rad)/(Math.cos(CITY.lat*rad)*Math.cos(dec))-Math.tan(CITY.lat*rad)*Math.tan(dec))/rad;
+  const off=tzOffsetMin();
+  return { rise:720-4*(CITY.lon+ha)-eq+off, set:720-4*(CITY.lon-ha)-eq+off };
+}
+function sunToday(t){ return (apiSun && apiSun.key===t.key) ? apiSun : calcSun(t); }
+function renderSun(t){
+  const s=sunToday(t), isDay=t.mins>=s.rise && t.mins<s.set;
+  $('sunrise').textContent=hm(s.rise); $('sunset').textContent=hm(s.set);
+  $('sun-len').textContent='dzień '+dur(s.set-s.rise);
+  $('sun-info').innerHTML = isDay ? `Do zachodu słońca: <b>${dur(s.set-t.mins)}</b>`
+    : `Do wschodu słońca: <b>${dur(t.mins<s.rise ? s.rise-t.mins : 1440-t.mins+s.rise)}</b>`;
+  document.body.classList.toggle('day',isDay);
+  // łuk z aktualnym położeniem słońca
+  const f=Math.min(1,Math.max(0,(t.mins-s.rise)/(s.set-s.rise))), a=Math.PI*(1-f);
+  const x=150+120*Math.cos(a), y=104-88*Math.sin(a);
+  $('arc').innerHTML=svg(
+    `<path d="M30 104A120 88 0 0 1 270 104" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>`+
+    (isDay?`<path d="M30 104A120 88 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="#ffc93c" stroke-width="4" stroke-linecap="round"/>`:'')+
+    `<path d="M8 104H292" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round"/>`+
+    (isDay?`<g transform="translate(${(x-22).toFixed(1)} ${(y-22).toFixed(1)}) scale(.22)">${sunG()}</g>`
+          :`<g transform="translate(128 34) scale(.24)">${moonG()}</g>`),
+    '0 0 300 116');
+}
+
+/* ====== POGODA (Open-Meteo, bez klucza API) ====== */
+const API='https://api.open-meteo.com/v1/forecast?latitude='+CITY.lat+'&longitude='+CITY.lon+
+  '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m'+
+  '&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min&timezone='+encodeURIComponent(CITY.tz)+'&forecast_days=1';
+let weather=null, iconKey='', timer=null;
+function renderWeather(){
+  if(!weather) return;
+  const c=weather.current, d=weather.daily, key=c.weather_code+'|'+c.is_day;
+  if(key!==iconKey){ iconKey=key; $('w-icon').innerHTML=weatherIcon(c.weather_code, !!c.is_day); }
+  $('w-temp').textContent=Math.round(c.temperature_2m)+'°';
+  $('w-desc').textContent=WMO[c.weather_code]||'—';
+  $('w-mm').textContent=`min ${Math.round(d.temperature_2m_min[0])}° · max ${Math.round(d.temperature_2m_max[0])}°`;
+  $('w-feel').textContent=Math.round(c.apparent_temperature)+'°';
+  $('w-wind').textContent=Math.round(c.wind_speed_10m);
+  $('w-hum').textContent=Math.round(c.relative_humidity_2m)+'%';
+  const age=(Date.now()-weather.fetched)/60000, u=$('w-upd'), f=new Date(weather.fetched);
+  const t=new Intl.DateTimeFormat('pl-PL',{timeZone:CITY.tz,hour:'2-digit',minute:'2-digit'}).format(f);
+  u.textContent=(age>35?'offline · ':'↻ ')+t; u.classList.toggle('stale',age>35);
+  const toMin=s=>+s.slice(11,13)*60+ +s.slice(14,16);
+  apiSun={key:d.time[0], rise:toMin(d.sunrise[0]), set:toMin(d.sunset[0])};
+  renderSun(now());
+}
+async function loadWeather(){
+  clearTimeout(timer);
+  let ok=false;
+  try{
+    const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),15000);
+    const r=await fetch(API,{cache:'no-store',signal:ctl.signal}); clearTimeout(to);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j=await r.json(); j.fetched=Date.now(); weather=j; ok=true;
+    try{ localStorage.setItem('weather',JSON.stringify(j)); }catch(e){}
+  }catch(e){
+    if(!weather){ $('w-upd').textContent='offline'; $('w-upd').classList.add('stale'); }
+  }
+  renderWeather();
+  timer=setTimeout(loadWeather,(ok?WEATHER_REFRESH_MIN:1)*60000); // po błędzie ponowienie za minutę
+}
+
+/* ====== EKRAN ZAWSZE WŁĄCZONY + PEŁNY EKRAN ====== */
+let lock=null;
+async function keepAwake(){
+  try{ if('wakeLock' in navigator && document.visibilityState==='visible' && !lock){
+    lock=await navigator.wakeLock.request('screen'); lock.addEventListener('release',()=>{lock=null;});
+  }}catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ keepAwake(); loadWeather(); }});
+document.addEventListener('click',()=>{
+  keepAwake();
+  const el=document.documentElement;
+  if(!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({navigationUI:'hide'}).catch(()=>{});
+});
+window.addEventListener('online',loadWeather);
+
+/* ====== START ====== */
+$('ic-rise').innerHTML=horizonIcon(true);
+$('ic-set').innerHTML=horizonIcon(false);
+try{ const c=JSON.parse(localStorage.getItem('weather')); if(c&&c.current&&c.daily) weather=c; }catch(e){}
+tick(); renderWeather(); loadWeather(); keepAwake();
+</script>
+</body>
+</html>
